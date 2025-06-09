@@ -1,0 +1,20 @@
+﻿
+
+okno "ustawienia" :
+włączanie i wyłączanie widoczności pasków narzędzi i stanu - zrobione 
+zmiana widoków - to chyba zostawięna pasku narzędzi
+zmiana kolorów
+katakogi i pliki - w trakcie
+kojażenie plików - co system ma otwierać w tym programie
+przewijanie kółkiem tylko po najechaniu na kontrolkę - tu chodzie o drzewo po lewej lub galerię po prawej
+listbox po prwej ma wbudowany pasek to jest ok
+- zastanawiałem sięnad tym czy nie zmienić lewej kontrolki na mieszanie listboxu z drzewem
+ale to skomplikuje mocno wiązanie i nie jestem pewien czy rozwiąże problem
+
+chciałem dokonać zmian  w VM i dodać włąsną implementację INotifyPropertyChanged
+ale z powodu że kozystam z MaterialDesign a ta z koleji z biblioteki CommunityToolkit.Mvvm
+którą chciałem usunąć w trakcjie tej przebudowy, mija się to z celem.
+
+trzeba też popatrzeć za włąsnymi stylami i odejściem od MaterialDesign
+na pewno będzie się to wiązało z rysowaniem własnych ikon
+ale za to może będzie bardziej elastyczne
