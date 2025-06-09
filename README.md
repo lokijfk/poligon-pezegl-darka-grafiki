@@ -1,0 +1,1 @@
+# poligon pezeglądarka grafiki
