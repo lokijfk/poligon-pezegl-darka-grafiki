@@ -1,9 +1,8 @@
-﻿
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 
-namespace poligon_pezeglądarka_grafiki.ViewModel;
+namespace poligon_pezeglądarka_grafiki.DEP;
 
 public class BaseViewModel : INotifyPropertyChanged
 {
@@ -16,10 +15,10 @@ public class BaseViewModel : INotifyPropertyChanged
                                       T value,
                                       [CallerMemberName] string propertyName = "")
     {
-        if (object.Equals(storage, value)) return false;
+        if (Equals(storage, value)) return false;
 
         storage = value;
-        this.OnPropertyChanged(propertyName);
+        OnPropertyChanged(propertyName);
 
         return true;
     }
