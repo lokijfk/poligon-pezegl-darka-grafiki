@@ -8,8 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
-using static MaterialDesignThemes.Wpf.Theme.ToolBar;
+
 
 
 namespace poligon_pezeglądarka_grafiki;
@@ -19,6 +18,10 @@ namespace poligon_pezeglądarka_grafiki;
 /// </summary>
 public partial class MainWindow : Window
 {
+
+    private decimal znacznik = 0;
+    private TextBox editTextBox = null;
+    private bool edit = false;
     public MainWindow()
     {
         //DataContext = new MainWindowViewModel();
@@ -204,6 +207,109 @@ public partial class MainWindow : Window
         //tu pokazuje na etykietę lub na element drzewa i trzeba to przekierować wyżej
         // jak pokazuję na pasek przewijania to przewija 
     }*/
+    private void TreeViewItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        //Debug.WriteLine(" ok - text blok mouse up 1");
+        //Debug.WriteLine(routed.SelectedItem.GetType().Name);
+        if ((sender as TreeViewItem).DataContext != routed.SelectedItem) return;
+
+        e.Handled = false;// to nic nie daje
+        decimal milliseconds = DateTime.Now.Ticks / (decimal)TimeSpan.TicksPerMillisecond;
+        if ((znacznik > 0) && (milliseconds - znacznik >= 1000) && (milliseconds - znacznik <= 3500))
+        {
+            //Debug.WriteLine(" ok - text blok mouse up 2: "+sender.GetType().ToString());
+            //Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
+            TreeViewItem treeViewItem = sender as TreeViewItem;
+            //Debug.WriteLine("TreeViewItem: " + (treeViewItem.DataContext as TreeModel).Name);
+            //var temp = treeViewItem.
+            
+            TextBox textBox = treeViewItem.GetCHTextBox() as TextBox;
+
+            if (textBox != null)
+            {
+                edit = true;
+                znacznik = 0; 
+                TextBlock textBlock = textBox.GetSisTextBlock();
+                if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
+                textBox.Height = treeViewItem.ActualHeight;
+                textBox.Width = treeViewItem.ActualWidth;
+                textBox.Margin = new Thickness(0, 0, 0, 0);
+                textBox.Padding = new Thickness(0, 0, 0, 0);
+                //textBox.BorderBrush = System.Windows.Media.Brushes.Transparent;
+                textBox.BorderThickness = new Thickness(0);
+                textBox.Visibility = Visibility.Visible;
+                textBox.Focus();
+            }//else Debug.WriteLine("none");
+            
+        }
+        else
+        {
+            Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
+            znacznik = milliseconds;
+        }//*/
+    }
+
+    /*
+    private void routed_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        Debug.WriteLine("MouseLeftButtonUp: " + sender.GetType().Name);
+        //tu trzeba dodać jaki element był testowany jak jest inny to zerujemy znacznik bo wychodzą błędy
+        decimal milliseconds = DateTime.Now.Ticks / (decimal)TimeSpan.TicksPerMillisecond;
+        if ((znacznik > 0) && (milliseconds - znacznik >= 1000) && (milliseconds - znacznik <= 3500))
+        {
+            TreeView treeView = sender as TreeView;
+            TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
+            Debug.WriteLine("MouseLeftButtonUp: " + (treeViewItem?.DataContext as TreeModel).Name);
+
+            if (treeViewItem != null)
+            {
+                Debug.WriteLine(" ok - text blok mouse up 2: " + sender.GetType().ToString());
+                Debug.WriteLine("TreeViewItem: " + (treeViewItem.DataContext as TreeModel).Name);
+                //var temp = treeViewItem.
+                
+                TextBox textBox = treeViewItem.GetCHTextBox() as TextBox;
+                if (textBox != null)
+                {   
+                    edit = true;
+                    TextBlock textBlock = textBox.GetSisTextBlock();
+                    if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
+                    textBox.Visibility = Visibility.Visible;
+                    textBox.Focus();
+                }else Debug.WriteLine("none");
+                
+            }
+        }
+        else
+        {
+            Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
+            znacznik = milliseconds;
+        }
+    }//*/
+
+    private void TextBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        //Debug.WriteLine(" ok - key down text box");
+        if (e.Key == Key.Enter)
+        {
+            TextBox textBox = sender as TextBox;
+            textBox.Visibility = System.Windows.Visibility.Collapsed;
+            TextBlock lb = textBox.GetSisTextBlock();
+            lb.Visibility = System.Windows.Visibility.Visible;
+            edit = false;
+            // to do przerobienia ma zmieniać nazwę katalogu a nie pliku i dataContext musi być TreeModel
+            // ma odbierać info z MainWindowViewModel i jak jest błąd to go wyświetlić w oknie
+            if ((textBox.DataContext as TreeModel).Name != textBox.Text)
+                (DataContext as MainWindowViewModel).RenameFolder(textBox.DataContext as TreeModel, textBox.Text);
+        }
+        else if (e.Key == Key.Escape)
+        {
+            TextBox textBox = sender as TextBox;
+            textBox.Visibility = System.Windows.Visibility.Collapsed;
+            TextBlock lb = textBox.GetSisTextBlock();
+            lb.Visibility = System.Windows.Visibility.Visible;
+            edit = false;
+        }
+    }
 
     #endregion zdarzenia
 
@@ -286,7 +392,24 @@ public partial class MainWindow : Window
 
 
 
+
+
+
+
+
+
     #endregion Tree DragDrop
 
-
+    private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        Debug.WriteLine("TextBox_LostFocus: " + sender.GetType().Name);
+        if (edit)
+        {
+            TextBox textBox = sender as TextBox;
+            textBox.Visibility = System.Windows.Visibility.Collapsed;
+            TextBlock lb = textBox.GetSisTextBlock();
+            lb.Visibility = System.Windows.Visibility.Visible;
+            edit = false;            
+        }
+    }
 }

@@ -1,12 +1,13 @@
 ﻿
-using System.Globalization;
-using System.Windows.Media;
-using System.Windows.Data;
+using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.Windows.Data;
+using System.Windows.Media;
 
 namespace poligon_pezeglądarka_grafiki.View.Converters;
-
-class ColorFromHex : IValueConverter
+[ValueConversion(typeof(string), typeof(Color))]
+public class ColorFromHex : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {

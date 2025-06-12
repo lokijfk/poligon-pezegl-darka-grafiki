@@ -1,4 +1,4 @@
-﻿using GongSolutions.Wpf.DragDrop.Utilities;
+﻿
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 
 
@@ -211,24 +210,27 @@ public partial class Gallery : UserControl
  
     private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {        
-        Debug.WriteLine(" ok - text blok mouse up 1");
+       // Debug.WriteLine(" ok - text blok mouse up 1");
         decimal milliseconds = DateTime.Now.Ticks / (decimal)TimeSpan.TicksPerMillisecond;
         if ((znacznik > 0) && (milliseconds - znacznik >= 1000) && (milliseconds - znacznik <= 3500))
         {
-            edit = true;
-            Debug.WriteLine(" ok - text blok mouse up 2");
-            TextBlock label = sender as TextBlock;
-            ListBoxItem lbi = label.GetParentAsListBoxItem();
-            ListBox LB = lbi.GetParentAsListBox();
-            if ((lbi != null) && (LB != null))
+            if ((sender != null) && (sender is TextBlock) && (edit == false))
             {
-                Photo photo = lbi.DataContext as Photo;
-                Photo select = LB.SelectedItem as Photo;
-                if (photo == select)
+                edit = true;
+               // Debug.WriteLine(" ok - text blok mouse up 2");
+                TextBlock label = sender as TextBlock;
+                ListBoxItem lbi = label.GetParentAsListBoxItem();
+                ListBox LB = lbi.GetParentAsListBox();
+                if ((lbi != null) && (LB != null))
                 {
-                    label.Visibility = System.Windows.Visibility.Collapsed;
-                    Grid p = label.GetParentAsGrid();//to jest z DependencyObject                
-                    if (p != null) ShowTextBox(GetChildrenTB(p));
+                    Photo photo = lbi.DataContext as Photo;
+                    Photo select = LB.SelectedItem as Photo;
+                    if (photo == select)
+                    {
+                        label.Visibility = System.Windows.Visibility.Collapsed;
+                        Grid p = label.GetParentAsGrid();//to jest z DependencyObject                
+                        if (p != null) ShowTextBox(GetChildrenTB(p));
+                    }
                 }
             }
         }
@@ -236,7 +238,7 @@ public partial class Gallery : UserControl
         else
         {
             
-            Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
+            //Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
             znacznik = milliseconds;
         }//*/
     }

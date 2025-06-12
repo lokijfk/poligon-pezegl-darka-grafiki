@@ -183,6 +183,11 @@ class BrokerIni
         set => SetStringValue(GetCurrentMethod(), value.ToString(), "Window");
     }
 
+    public string CurMainWindowStateString
+    {
+        get => GetStringValue(GetCurrentMethod(), "Window");
+        set => SetStringValue(GetCurrentMethod(), value, "Window");
+    }
 
     public double LastWidth
     {

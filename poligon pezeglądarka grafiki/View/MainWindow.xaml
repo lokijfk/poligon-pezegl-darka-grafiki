@@ -32,7 +32,7 @@
                 <!--ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" /-->
             </ResourceDictionary.MergedDictionaries>
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-            
+            <converters:MulitConverterStringToString x:Key="MBConwerterSTS" />
         </ResourceDictionary>
     </Window.Resources>
     <i:Interaction.Triggers>
@@ -162,17 +162,16 @@
                             <RowDefinition Height="auto" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="auto"/>
-                        </Grid.RowDefinitions>
-                        <!--Rectangle Style="{StaticResource PageSectionSeparator}" /-->
+                        </Grid.RowDefinitions>                        
                         <Separator Grid.Row="0" Visibility="{Binding VisibleSeparator, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                Foreground="{DynamicResource WindowTextBrush}"/>
                         <ToolBar  Grid.Row="0" Visibility="{Binding VisibleToolBar, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <!-- tu przerobić na Behawior zamiast zdarzeń-->
-                            <Button Click="Button_Click_ViewGrid"  >
+                            <Button Click="Button_Click_ViewGrid"  ToolTip="Widok miniatur">
                                 <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
                                 <materialDesign:PackIcon Kind="ViewGrid" />
                             </Button>
-                            <Button Click="Button_Click_ViewList" >
+                            <Button Click="Button_Click_ViewList" ToolTip="widok listy">
                                 <materialDesign:PackIcon Kind="ViewList" />
                             </Button>
                             <!--<Button Command="{Binding SetCounterCommand}">
@@ -180,12 +179,13 @@
                                 
                             </Button>-->
                             <ToggleButton
+                                  x:Name="VieWFiles"
                                   Content="{materialDesign:PackIcon Kind=Variable,                                                         Size=21}"
                                   IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"
                                   Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}"
-                                  ToolTip="MaterialDesignFlatPrimaryToggleButton"
+                                  ToolTip="Pokaż ilkość plików w katalogu"
                               />
-                        <!--Viewbox  Height="20">
+                            <!--Viewbox  Height="20">
                                 <ToggleButton  Style="{StaticResource MaterialDesignSwitchToggleButton}" 
                                            WindowChrome.IsHitTestVisibleInChrome ="True" 
                                            IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"                                      
@@ -204,7 +204,7 @@
                                     Click="Button_AddFolder" >                        
                                 <materialDesign:PackIcon Kind="PlusCircleOutline" />
                             </Button>
-                    </ToolBar>
+                        </ToolBar>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition  Width="auto"/>
@@ -212,54 +212,80 @@
                                 <ColumnDefinition  Width="*"/>
                             </Grid.ColumnDefinitions>
                                 
-                                <TreeView  x:Name="routed" MinWidth="220"
-                                ItemsSource="{Binding Tree}" ScrollViewer.CanContentScroll="True" 
-                                           VirtualizingStackPanel.IsVirtualizing="True"
-                                            VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                <TreeView  x:Name="routed" MinWidth="220" ItemsSource="{Binding Tree}" 
+                                            ScrollViewer.CanContentScroll="True" 
+                                            VirtualizingStackPanel.IsVirtualizing="True"
+                                            VirtualizingStackPanel.VirtualizationMode="Recycling"                                           
+                                           
                                            >
-
-                                    <!--i:Interaction.Triggers>
-                                    <i:EventTrigger EventName="SelectedItemChanged" >                                    
-                                        <i:InvokeCommandAction 
-                                                        Command="{Binding TreeModelLBMClickCommand}"
-                                                        CommandParameter="{Binding Source={x:Type TreeViewItem}}"
-                                                        />
-                                    </i:EventTrigger>
-                                </i:Interaction.Triggers-->
-                                    <!--i:Interaction.Behaviors>
-                                    <behaviours:BindableSelectedItemBehavior SelectedItem="{Binding SelectedItem, Mode=TwoWay}" />
-                                </i:Interaction.Behaviors-->
-
+                                            <!--MouseLeftButtonUp="routed_MouseLeftButtonUp" -->
                                     <i:Interaction.Triggers>
                                         <!-- działą bez dodatkowego kodu-->
                                         <i:EventTrigger EventName="SelectedItemChanged">
                                             <i:InvokeCommandAction Command="{Binding TreeModelLBMClickCommand}"
-                                        CommandParameter="{Binding ElementName=routed
-                                             ,Path=SelectedItem}"/>
+                                        CommandParameter="{Binding ElementName=routed ,Path=SelectedItem}"/>
                                         </i:EventTrigger>
+                                        
+                                        <!--i:EventTrigger EventName="MouseLeftButtonUp" SourceName="{Binding Source={x:Type TreeViewItem}}">
+                                            <i:CallMethodAction TargetObject="{Binding}" 
+                                                                MethodName="TreeViewItem_MouseLeftButtonUp" />
+                                        </i:EventTrigger-->   
                                     </i:Interaction.Triggers>
                                     <TreeView.ItemTemplate>
                                         <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children, Mode=OneTime}" >
-                                            <WrapPanel>
-                                                <TextBlock  Text="{Binding Name, Mode=OneTime}" />
-                                                <TextBlock Text="{Binding CountFiles, StringFormat={} ({0})}"
-                                            Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}},
-                                            Path=DataContext.VisibleFilesInTree,Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                            </WrapPanel>
+                                            <Grid>
+                                                <!-- tu zamiast tych dwuch text boxów i wrap
+                                                dać multi binding i konwerter-->
+                                                <!--WrapPanel>
+                                                    <TextBlock  Text="{Binding Name, Mode=OneTime}" />
+                                                    <TextBlock Text="{Binding CountFiles, StringFormat={} ({0})}"
+                                                    Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}},
+                                                    Path=DataContext.VisibleFilesInTree,Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                                </WrapPanel-->
+                                                <TextBlock >
+                                                    <TextBlock.Text>
+                                                        <MultiBinding Converter="{StaticResource MBConwerterSTS}">
+                                                            <Binding Path="Name"/>
+                                                            <Binding Path="CountFiles" />
+                                                            <Binding RelativeSource="{RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}}"
+                                                                Path="DataContext.VisibleFilesInTree" />
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                                <!--TextBox Visibility="Collapsed" 
+                                                         Text="{Binding Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    Style="{StaticResource MaterialDesignTextBox}" 
+                                                    materialDesign:HintAssist.Hint="Nazwa katalogu" 
+                                                    materialDesign:TextFieldAssist.UnderlineBrush="{DynamicResource MaterialDesignDivider}" 
+                                                /-->
+                                                <TextBox Visibility="Collapsed" 
+                                                         Text="{Binding Path=Name, Mode=TwoWay}">
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox">
+                                                            <Setter Property="TextWrapping" Value="Wrap" />
+                                                            <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
+                                                            <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
+                                                        </Style>
+                                                    </TextBox.Style>
+                                                </TextBox>
+                                            </Grid>
                                         </HierarchicalDataTemplate>
                                     </TreeView.ItemTemplate>
                                     <TreeView.ItemContainerStyle>
-                                        <Style TargetType="TreeViewItem"
-                                    BasedOn="{StaticResource MaterialDesignTreeViewItem}">
-                                            <Setter Property="materialDesign:TreeViewAssist.ExpanderSize"
-                                        Value="20" />
-                                            <Setter Property="materialDesign:TreeViewAssist.ShowSelection"
-                                        Value="True" />
-                                            <Setter Property="IsExpanded"
-                                        Value="{Binding IsExpanded,Mode=TwoWay}" />
-                                            <Setter Property="IsSelected"
-                                        Value="{Binding IsSelected, Mode=TwoWay}" />
-                                            <!--EventSetter Event="MouseWheel" Handler="TVI_MouseWheel" /-->
+                                        <Style TargetType="{x:Type TreeViewItem}"
+                                            BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                                                <Setter Property="materialDesign:TreeViewAssist.ExpanderSize"
+                                            Value="20" />
+                                                <Setter Property="materialDesign:TreeViewAssist.ShowSelection"
+                                            Value="True" />
+                                                <Setter Property="IsExpanded"
+                                            Value="{Binding IsExpanded,Mode=TwoWay}" />
+                                                <Setter Property="IsSelected"
+                                            Value="{Binding IsSelected, Mode=TwoWay}" />
+
+                                    <EventSetter Event="MouseLeftButtonUp" 
+                                                         Handler="TreeViewItem_MouseLeftButtonUp" />
+                                    <!--EventSetter Event="MouseWheel" Handler="TVI_MouseWheel" /-->
                                         </Style>
                                     </TreeView.ItemContainerStyle>
                                     <!--TreeViewItem /-->

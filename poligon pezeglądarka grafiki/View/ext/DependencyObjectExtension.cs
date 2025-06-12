@@ -1,6 +1,8 @@
 ﻿
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Diagnostics;
 using System.Windows.Media;
 
 namespace poligon_pezeglądarka_grafiki.View.ext;
@@ -17,6 +19,55 @@ public static class DependencyObjectExtension
         return item as Grid;
     }
 
+    /*
+    public static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+    {
+        if (obj != null)
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                if (child is T)
+                {
+                    return (T)child;
+                }
+
+                T childItem = FindVisualChild<T>(child);
+                if (childItem != null) return childItem;
+            }
+        }
+        return null;
+    }*/
+
+    public static TextBox GetSisTexBox(this DependencyObject item)
+    {
+        //DependencyObject item = block;
+
+        var parent = VisualTreeHelper.GetParent(item);
+        foreach (var child in LogicalTreeHelper.GetChildren(parent))
+        {
+            if (child is TextBox textBox)
+            {
+                return textBox;
+            }
+        }
+        return null;
+    }
+
+
+    public static TextBlock GetSisTextBlock(this DependencyObject item)
+    {
+        //DependencyObject item = block;
+        var parent = VisualTreeHelper.GetParent(item);
+        foreach (var child in LogicalTreeHelper.GetChildren(parent))
+        {
+            if (child is TextBlock textBlock)
+            {
+                return textBlock;
+            }
+        }
+        return null;
+    }
     public static ListBoxItem GetParentAsListBoxItem(this DependencyObject item)
     {
         //DependencyObject item = block;

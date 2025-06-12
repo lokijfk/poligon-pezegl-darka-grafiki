@@ -225,14 +225,46 @@ public partial class MainWindowViewModel : ObservableObject
     }
     public void RenameFile(Photo photo, string newName)
     {
-        string path = photo.Path.Substring(0, photo.Path.LastIndexOf('\\') + 1);
-        bool x = RenameFile(photo.Path, path+newName);
+        newName = photo.Path.Substring(0, photo.Path.LastIndexOf('\\') + 1)+ newName;
+        bool x = RenameFile(photo.Path, newName);
         if (x)
         {
-            photo.rename(path+newName);
+            photo.rename(newName);
         }
     }
 
+    public bool RenameFolder(string oldName, string newName)
+    {
+        //Debug.WriteLine("o: " + oldName + " ,N: " + newName);
+        try
+        {
+            Directory.Move(oldName, newName);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e.Message);
+            return false;
+        }
+        return true;
+    }
+
+    public void RenameFolder(TreeModel treeModel, string newName)
+    {
+        if (treeModel != null)
+        {
+            string newNameX = treeModel.Path.Substring(0, treeModel.Path.LastIndexOf('\\') + 1) + newName;
+            bool x = RenameFolder(treeModel.Path, newNameX);
+            if (x)
+            {
+                //treeModel.rename(newName);
+                treeModel.Name = newName;
+                treeModel.Path = newNameX;
+                //Debug.WriteLine("zmieniono nazwę folderu na: " + newName+" path: "+treeModel.Path);
+                //tu można dodać odświeżenie drzewa
+                //BuildTree();
+            }
+        }
+    }
     #endregion Folders and Files
 
     #region Tree and View
@@ -714,6 +746,12 @@ public partial class MainWindowViewModel : ObservableObject
     {
         get => iniFile.CurMainWindowState;
         set => SetProperty(iniFile.CurMainWindowState, value, iniFile, (u, n) => u.CurMainWindowState = n);
+    }
+
+    public string CurMainWindowStateString
+    {
+        get => iniFile.CurMainWindowState.ToString();
+        set => SetProperty(iniFile.CurMainWindowStateString, value, iniFile, (u, n) => u.CurMainWindowStateString = n);
     }
 
     public double Width
