@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Media;
 
 
+
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
 public partial class MainWindowViewModel : ObservableObject
@@ -24,7 +25,8 @@ public partial class MainWindowViewModel : ObservableObject
     private BrokerIni iniFile = new BrokerIni();
     private ImageSource BlinkIcom { get; set; } = Tools.CreateEmtpyBitmapSource();
 
-    public ObservableCollection<TreeModel>? Tree { get; set; }
+    //private ObservableCollection<TreeModel> _tree = [];
+    public ObservableCollection<TreeModel>? Tree { get; set; } = [];
 
     //to mże usuną i przepisać wszystko na Ptors
     public ObservableCollection<FilesIO> FilesList { get; set; } = [];
@@ -130,7 +132,7 @@ public partial class MainWindowViewModel : ObservableObject
         
         if (CurMainWindowState == WindowState.Minimized)
             CurMainWindowState = WindowState.Normal;
-
+        //Tree.CollectionChanged += CollectionChangedMethod;
         BuildDirParh();
         
         SwitchTglButton = SwitchToggleButton;
@@ -149,7 +151,7 @@ public partial class MainWindowViewModel : ObservableObject
         FileListLoad(SelectedTreePath, cts.Token);
     }
 
-
+ 
     //hmmm nie wiem czy to jest potrzebne, przecież jest TreeModelLBMClickCommand
     public void SetSelectedItem(object parameter)
     {
@@ -161,14 +163,6 @@ public partial class MainWindowViewModel : ObservableObject
         }
         BuildTree();
     }
-
-    //[RelayCommand]
-    //private void SetCounter(object parameter)
-    //{
-    //    VisibleFilesInTree = !VisibleFilesInTree;
-
-    //}
-    
 
     [RelayCommand]
     private void DataGridLDoubleClick(object parameter)
@@ -233,9 +227,12 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+
+
     public bool RenameFolder(string oldName, string newName)
     {
-        //Debug.WriteLine("o: " + oldName + " ,N: " + newName);
+        //dodać wyskakujące okno z komunikatem o będzie
+        Debug.WriteLine("o: " + oldName + " ,N: " + newName);
         try
         {
             Directory.Move(oldName, newName);
@@ -248,23 +245,68 @@ public partial class MainWindowViewModel : ObservableObject
         return true;
     }
 
-    public void RenameFolder(TreeModel treeModel, string newName)
+    public void RenameFolder( TreeModel treeModel, string newName)
     {
+        Debug.WriteLine("RenameFolder: " + treeModel.Path + " newName: " + newName);
         if (treeModel != null)
         {
             string newNameX = treeModel.Path.Substring(0, treeModel.Path.LastIndexOf('\\') + 1) + newName;
-            bool x = RenameFolder(treeModel.Path, newNameX);
-            if (x)
+            Debug.WriteLine("RenameFolder new path: newNameX: " + newNameX);
+            if (cts != null)
             {
-                //treeModel.rename(newName);
-                treeModel.Name = newName;
-                treeModel.Path = newNameX;
-                //Debug.WriteLine("zmieniono nazwę folderu na: " + newName+" path: "+treeModel.Path);
-                //tu można dodać odświeżenie drzewa
-                //BuildTree();
+                cts.Cancel();
+                //cts.Dispose();
+                //cts = null;
+               //cts = new CancellationTokenSource();
             }
+            //Debug.Assert(cts.IsCancellationRequested == true, "cts.IsCancellationRequested == true, cts is not null");
+            //Debug.Assert(counter == true, "counter == true, cts is not null");
+            if (cts == null || ( cts.IsCancellationRequested && !counter))
+            {
+                var xuz = treeModel.GetSelfFromParent();//treeModel.GetSelfFromMainStream();
+                //Debug.WriteLine("RenameFolder: xuz: " + xuz?.Path + " , " + xuz?.Name);
+                bool x = RenameFolder(treeModel.Path, newNameX);
+                if (x)
+                {
+                    xuz.Name = newName;
+                    xuz.Path = newNameX;
+                    xuz.Children.Clear();
+                    xuz.Addchild(ScanPath(newNameX, "").Children);
+                    //Debug.WriteLine("RenameFolder: campare treeModel.xyz.Path: " + xuz.Path + " , " + xuz.Name);
+                }
+            }
+            else
+            {
+                Debug.WriteLine("RenameFolder: Canceled");
+                /*string path = treeModel.Path;
+                treeModel = null;
+                treeModel = ScanPath(path, "");
+                Debug.WriteLine("Model.Path: " + treeModel.Path+ " , "+treeModel.Name);
+                */
+                //Tree = null;
+                //BuildTree();
+
+                //Debug.WriteLine("tree model.path: " + 
+                //Tree.Select((value, i) => (value, i).value.Path == path).First().ToString();
+            }
+            //CollectionViewSource.GetDefaultView(Tree).Refresh();
+            //var parent = treeModel.Parent;
+            /*if (parent != null)
+            {
+                treeModel = ScanPath(parent.Path, treeModel.Path);
+                ReloadFileList(treeModel);
+
+            }*/
         }
+        //else Debug.WriteLine("RenameFolder: treeModel is null, cannot rename folder.");
     }
+
+    [RelayCommand]
+    private void AddFolderToTree(object param)
+    {
+        Debug.WriteLine("dodaj katalog active, obiect type: "+param.GetType().ToString());
+    }
+
     #endregion Folders and Files
 
     #region Tree and View
@@ -309,6 +351,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if (cts != null)
         {
+            //cts.Token.ThrowIfCancellationRequested();
             cts.Cancel();
             cts.Dispose();
             cts = null;
@@ -344,7 +387,7 @@ public partial class MainWindowViewModel : ObservableObject
         FilesList.Clear();
 
         Photos.Clear();
-
+        //Debug.WriteLine("skanowanie z: "+path);
         if (Directory.Exists(path))
         {
             SelectedTreeItem = path;
@@ -357,11 +400,17 @@ public partial class MainWindowViewModel : ObservableObject
             FilesToLoad = imFiles.Count().ToString();
             foreach (var imFile in imFiles.Select((value, i) => (value, i)))
             {
-                if (token.IsCancellationRequested) return;
+                if (token.IsCancellationRequested)
+                {
+                    Debug.WriteLine("FileListLoad: Canceled");
+                    counter = false;
+                    return;
+                }
+                counter = true;
                 FileLoaded = (imFile.i + 1).ToString();
                 ext = System.IO.Path.GetExtension(imFile.value);
                 m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                if (m.Success)
+                if (m.Success && !token.IsCancellationRequested)
                 {
                     name = System.IO.Path.GetFileName(imFile.value);
                     finfo = new FileInfo(imFile.value);
@@ -377,16 +426,17 @@ public partial class MainWindowViewModel : ObservableObject
                         RealSize = finfo.Length.ToString()
                     });
                     //to jakoś zmienić, dać jakiś parametr bool zamiast uzależniać to od ładowanego widoku
-                    if (View.ToLower().Contains("gallery") || View.Contains("FileList2"))
+                    if ((View.ToLower().Contains("gallery") || View.Contains("FileList2"))&&!token.IsCancellationRequested)
                     {
                         //Debug.WriteLine("load file: " + imFile.value);
                         //var p = new Photo(imFile.value, name, false);
                         var p = new Photo(imFile.value);
                         Photos.Add(p);
-                        await p.Load();
+                        await p.Load(token);
                     }
 
                 }
+                counter = false;
             }
 
 
@@ -423,6 +473,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
         BuildDirParh();
         if (Tree == null) Tree = [];
+        //if (_tree == null) _tree = [];
         Tree.Add(ScanPath(folder));
         return true;
     }
@@ -437,7 +488,7 @@ public partial class MainWindowViewModel : ObservableObject
             //.ForEach(path => DirPath.Add(path));
             foreach (var p in ListTreePath)
             {
-                if (p != null)
+                if (!string.IsNullOrEmpty(p))
                 {
                     DirPath.Add(p);
                 }
@@ -451,18 +502,17 @@ public partial class MainWindowViewModel : ObservableObject
     {
        // Debug.WriteLine(folder);
         var x = TreePath.Split(';').ToList();
-        x.Remove(folder);
-        TreePath = string.Join(";", x);
+        x.Remove(folder);// a tu chyba jest tworzony pusty string zamiast usuwać komurkę
+        TreePath = string.Join(";", x);// to chyba dodaje nam pusty string na końcu
         DirPath.Clear();
         TreePath.Split(';').ToList().ForEach(path => DirPath.Add(path));
         foreach (var reTree in Tree)
         {
-            if (reTree.Path == folder)
+            if ((reTree.Path == folder)||string.IsNullOrEmpty(reTree.Path))
             {
                 Tree.Remove(reTree);
                 return;
             }
-
         }
     }
     //public void ReBuildTree() => BuildTree(); //chwilowo nie potrzebne
@@ -492,6 +542,7 @@ public partial class MainWindowViewModel : ObservableObject
     private TreeModel ScanPath(string path,string select = "")
     {
         if (string.IsNullOrWhiteSpace(path)) return null;
+        //Debug.WriteLine("ScanPath: " + path);
         DirectoryInfo di = new(path);
 
         TreeModel tree = new() {Path = path,Name = di.Name,CountFiles = GetCountFiles(path) };

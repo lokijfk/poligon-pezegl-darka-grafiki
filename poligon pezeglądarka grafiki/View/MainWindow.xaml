@@ -216,7 +216,8 @@
                                             ScrollViewer.CanContentScroll="True" 
                                             VirtualizingStackPanel.IsVirtualizing="True"
                                             VirtualizingStackPanel.VirtualizationMode="Recycling"                                           
-                                           
+                                           SelectedItemChanged="routed_SelectedItemChanged"   
+                                           AllowDrop="True" DragEnter="TreeView_DragEnter" Drop="TreeView_Drop"
                                            >
                                             <!--MouseLeftButtonUp="routed_MouseLeftButtonUp" -->
                                     <i:Interaction.Triggers>
@@ -245,21 +246,16 @@
                                                 <TextBlock >
                                                     <TextBlock.Text>
                                                         <MultiBinding Converter="{StaticResource MBConwerterSTS}">
-                                                            <Binding Path="Name"/>
+                                                            <Binding Path="Name" Mode="OneWay" />
                                                             <Binding Path="CountFiles" />
                                                             <Binding RelativeSource="{RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}}"
                                                                 Path="DataContext.VisibleFilesInTree" />
                                                         </MultiBinding>
                                                     </TextBlock.Text>
                                                 </TextBlock>
-                                                <!--TextBox Visibility="Collapsed" 
-                                                         Text="{Binding Path=Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                    Style="{StaticResource MaterialDesignTextBox}" 
-                                                    materialDesign:HintAssist.Hint="Nazwa katalogu" 
-                                                    materialDesign:TextFieldAssist.UnderlineBrush="{DynamicResource MaterialDesignDivider}" 
-                                                /-->
+
                                                 <TextBox Visibility="Collapsed" 
-                                                         Text="{Binding Path=Name, Mode=TwoWay}">
+                                                         Text="{Binding Path=Name, Mode=OneWay}">
                                                     <TextBox.Style>
                                                         <Style TargetType="TextBox">
                                                             <Setter Property="TextWrapping" Value="Wrap" />
@@ -271,6 +267,13 @@
                                             </Grid>
                                         </HierarchicalDataTemplate>
                                     </TreeView.ItemTemplate>
+                                    <TreeView.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="dodaj katalog"  
+                                                      Click="MenuItem_AddDir"/>
+                                            <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
+                                        </ContextMenu>
+                                    </TreeView.ContextMenu>
                                     <TreeView.ItemContainerStyle>
                                         <Style TargetType="{x:Type TreeViewItem}"
                                             BasedOn="{StaticResource MaterialDesignTreeViewItem}">
@@ -283,8 +286,11 @@
                                                 <Setter Property="IsSelected"
                                             Value="{Binding IsSelected, Mode=TwoWay}" />
 
-                                    <EventSetter Event="MouseLeftButtonUp" 
+                                            <EventSetter Event="MouseLeftButtonUp" 
                                                          Handler="TreeViewItem_MouseLeftButtonUp" />
+                                            <EventSetter Event="PreviewMouseRightButtonDown" 
+                                                 Handler="TreeViewItem_PreviewMouseRightButtonDown" />
+
                                     <!--EventSetter Event="MouseWheel" Handler="TVI_MouseWheel" /-->
                                         </Style>
                                     </TreeView.ItemContainerStyle>

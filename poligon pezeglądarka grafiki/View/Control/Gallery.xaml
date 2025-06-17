@@ -12,11 +12,15 @@
              >
     <Grid>
         <ListBox ItemsSource="{Binding Photos}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 MouseDoubleClick="ListBox_MouseDoubleClick" >
+                 MouseDoubleClick="ListBox_MouseDoubleClick" 
+                 MouseMove="ListBox_MouseMove"
+                 >
             <ListBox.Resources>
                 <ContextMenu x:Key="listViewContextMenu" materialDesign:MenuAssist.MenuItemsPresenterMargin="0">
                     <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
                     <MenuItem Header="Wytnij" Click="MenuItem_Click" />
+                    <MenuItem Header="Usuń" Click="MenuItem_Delete" />
+                    <MenuItem Header="Kopiuj" Click="MenuItem_Click" />
                 </ContextMenu>
             </ListBox.Resources>
             <ListBox.ItemsPanel>
@@ -73,6 +77,8 @@
                 <Style TargetType="ListBoxItem" >
                     <Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/>
                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBoxItem_PreviewMouseRightButtonDown" />
+                    
+                    <!--EventSetter Event="MouseMove" Handler="ListBoxItem_MouseMove" /-->
                     <!--EventSetter Event="PreviewMouseRightButtonUp" Handler="ListBoxItem_PreviewMouseRightButtonUp" /-->
                     <!--EventSetter Event="PreviewMouseDown" Handler="ListBoxItem_PreviewMouseDown" /-->
                     <!--EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" /-->

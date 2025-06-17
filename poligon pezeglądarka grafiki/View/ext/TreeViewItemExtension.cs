@@ -7,7 +7,12 @@ namespace poligon_pezeglądarka_grafiki.View.ext;
 
 public static class TreeViewItemExtension
 {
-    public static DependencyObject GetCHTextBox(this DependencyObject item)
+    /// <summary>
+    /// Zwraca pierwszy znaleziony TextBox z child TreeViewItem.
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
+    public static DependencyObject GetCHildTextBox(this DependencyObject item)
     {
 
         if (item != null)
@@ -21,8 +26,8 @@ public static class TreeViewItemExtension
                     return (TextBox)child;
                 }
 
-                DependencyObject childItem = GetCHTextBox(child);
-                if (childItem != null) return childItem;
+                DependencyObject childItem = GetCHildTextBox(child);
+                if (childItem != null) return childItem as TextBox;
             }
         }
         return null;

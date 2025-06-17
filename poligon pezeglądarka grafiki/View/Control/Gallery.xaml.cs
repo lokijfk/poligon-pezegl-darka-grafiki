@@ -22,7 +22,7 @@ public partial class Gallery : UserControl
     private bool edit = false;
     //private TextBox TBed = null;
     private ListBoxItem? selectedItem = null;
-
+    //private ListBoxItem? 
     public Gallery()
     {
         InitializeComponent();
@@ -144,7 +144,7 @@ public partial class Gallery : UserControl
             Debug.WriteLine(" ok m: "+milliseconds+" m-z: "+(milliseconds-znacznik).ToString());
         }
     }//*/
-
+    /*
     private TextBox GetChildrenTB(DependencyObject obj)
     {
         Grid p = obj as Grid;
@@ -157,7 +157,7 @@ public partial class Gallery : UserControl
         }
         return null;
     }
-
+    
 
     private TextBlock GetChildrenTBO(DependencyObject obj)
     {
@@ -171,7 +171,7 @@ public partial class Gallery : UserControl
         }
         return null;
     }
-
+    //*/
     private void TextBox_KeyDown(object sender, KeyEventArgs e)
     {
         Debug.WriteLine(" ok - key down text box");
@@ -181,7 +181,7 @@ public partial class Gallery : UserControl
         {
             TextBox textBox = sender as TextBox;
             textBox.Visibility = System.Windows.Visibility.Collapsed;
-            TextBlock lb = GetChildrenTBO(textBox.GetParentAsGrid());
+            TextBlock lb = textBox.GetSisTextBlock();//GetChildrenTBO(textBox.GetParentAsGrid());
             lb.Visibility = System.Windows.Visibility.Visible;
             edit = false;
 
@@ -196,7 +196,7 @@ public partial class Gallery : UserControl
         {
             TextBox textBox = sender as TextBox;
             textBox.Visibility = System.Windows.Visibility.Collapsed;
-            TextBlock lb = GetChildrenTBO(textBox.GetParentAsGrid());
+            TextBlock lb = textBox.GetSisTextBlock();//GetChildrenTBO(textBox.GetParentAsGrid());
             lb.Visibility = System.Windows.Visibility.Visible;
             edit = false;
         }
@@ -228,8 +228,18 @@ public partial class Gallery : UserControl
                     if (photo == select)
                     {
                         label.Visibility = System.Windows.Visibility.Collapsed;
-                        Grid p = label.GetParentAsGrid();//to jest z DependencyObject                
-                        if (p != null) ShowTextBox(GetChildrenTB(p));
+                        //Grid p = label.GetParentAsGrid();//to jest z DependencyObject                
+                        //if (p != null) ShowTextBox(label.GetSisTexBox());//GetChildrenTB(p));
+                        //ShowTextBox(label.GetSisTexBox());
+                        TextBox tb = label.GetSisTexBox();//GetChildrenTB(p);
+                        tb.Visibility = System.Windows.Visibility.Visible;
+                        //Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
+                        bool test = tb.Focus();
+                        // tu działa ale albo jest całe zaznaczone albo jest karetka
+                        //tego nie zmienimy taka jest specyfika tego pola i tak chyba jest w windows
+                        //tb.CaretIndex = tb.Text.Length;
+                        //tb.SelectAll();
+                        tb.Select(tb.Text.Length, 0);//ustawia karetk na końcu tekstu
                     }
                 }
             }
@@ -243,22 +253,14 @@ public partial class Gallery : UserControl
         }//*/
     }
 
-    private void ShowTextBox(TextBox tb)
-    {
-        //znacznik = 0;
-        tb.Visibility = System.Windows.Visibility.Visible;
-        //Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
-        bool test = tb.Focus();
-        // tu działa ale albo jest całe zaznaczone albo jest karetka
-        //tego nie zmienimy taka jest specyfika tego pola i tak chyba jest w windows
-        //tb.CaretIndex = tb.Text.Length;
-        //tb.SelectAll();
-        tb.Select(tb.Text.Length, 0);//ustawia karetk na końcu tekstu
-    }
     private void MenuItem_Rename(object sender, RoutedEventArgs e)
     {
+        //Debug.WriteLine("klik menu: "+ (selectedItem.DataContext as Photo).Name);
 
-        Debug.WriteLine("klik menu: "+ (selectedItem.DataContext as Photo).Name);
+    }
+
+    private void MenuItem_Delete(object sender, RoutedEventArgs e)
+    {
 
     }
 
@@ -274,4 +276,44 @@ public partial class Gallery : UserControl
         selectedItem = sender as ListBoxItem;
     }
 
+    private void ListBox_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            Debug.WriteLine("przeciąganie elementu listy");
+            ListBox listBox = sender as ListBox;
+            ListBoxItem item = listBox.GetListBoxItem(e.GetPosition(listBox));
+            if (item != null)
+            {
+                Debug.WriteLine("wybrano element: " + (item.DataContext as Photo).Name);
+                //DataObject data = new DataObject();
+                //data.SetText((selectedItem.DataContext as Photo).Path);
+                //data.SetData(DataFormats.StringFormat, (selectedItem.DataContext as Photo).Path);
+                //data.SetData("Photo", selectedItem.DataContext as Photo);//?
+
+                //DragDrop.DoDragDrop(selectedItem, data, DragDropEffects.Copy | DragDropEffects.Move);
+                DragDrop.DoDragDrop(item, (item.DataContext as Photo).Path,
+                    DragDropEffects.Copy | DragDropEffects.Move);
+
+            }
+        }
+    }
+
+    /*
+    private void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        selectedItem = (sender as ListBox).GetListBoxItem(e.GetPosition(sender as ListBox));
+        if (selectedItem != null)
+        {
+            Debug.WriteLine("wybrano element: " + (selectedItem.DataContext as Photo).Name);
+            //DataObject data = new DataObject();
+            //data.SetText((selectedItem.DataContext as Photo).Path);
+            //data.SetData(DataFormats.StringFormat, (selectedItem.DataContext as Photo).Path);
+            //data.SetData("Photo", selectedItem.DataContext as Photo);//?
+
+            //DragDrop.DoDragDrop(selectedItem, data, DragDropEffects.Copy | DragDropEffects.Move);
+            DragDrop.DoDragDrop(selectedItem, (selectedItem.DataContext as Photo).Path, DragDropEffects.Copy | DragDropEffects.Move);
+        }
+
+    }//*/
 }

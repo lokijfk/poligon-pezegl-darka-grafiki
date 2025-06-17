@@ -19,6 +19,16 @@ public static class DependencyObjectExtension
         return item as Grid;
     }
 
+    public static TreeViewItem GetTreeViewItem(this DependencyObject item)
+    {
+        //DependencyObject item = block;
+        while (item != null && !(item is TreeViewItem))
+        {
+            item = VisualTreeHelper.GetParent(item);
+        }
+        return item as TreeViewItem;
+    }
+
     /*
     public static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
     {

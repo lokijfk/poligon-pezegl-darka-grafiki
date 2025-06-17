@@ -1,10 +1,11 @@
-﻿using System.Collections.ObjectModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-public class TreeModel
+public partial class TreeModel :ObservableObject
 {
     /*
     public TreeModel()
@@ -28,9 +29,19 @@ public class TreeModel
     public ObservableCollection<TreeModel> Children { get; set; } = [];
     //[ObservableProperty]
     //private T1? _selectedValue;
-    
-    public string Name { get; set; } = string.Empty;
-    
+    [ObservableProperty]
+    private string _name  = string.Empty;
+    /*
+    public string Name
+    {
+        get => _name;
+        //set => _name = value;
+        set
+        {
+            SetProperty(ref _name, value);
+            //OnPropertyChanged(Name); // Notify that Name has changed
+        }
+    }*/
     public bool IsSelected { get; set; } = false;
     
     public bool IsExpanded { get; set; } = false;
@@ -38,8 +49,20 @@ public class TreeModel
     public bool IsRightSelected { get; set; } = false;
     
     public string View { get; set; } = string.Empty;
-    
-    public string Path { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _path = string.Empty;
+    /*
+    public string Path
+    { 
+        get => _path; 
+        //set => _path = value;
+        
+        set
+        {
+            SetProperty(ref _path, value);
+            //OnPropertyChanged(Path); // Notify that Path has changed
+        }
+    }//*/
     
     public int CountFiles { get; set; } = 0;
 
@@ -57,7 +80,16 @@ public class TreeModel
         child.Parent = this;
         this.Children.Add(child);
     }
-   // public TreeModel GetSelectedItem => Children.FirstOrDefault(i => i.IsSelected);
+
+    public void Addchild(ObservableCollection<TreeModel> treeModels)
+    {
+        foreach (var child in treeModels)
+        {
+            child.Parent = this;
+            this.Children.Add(child);
+        }
+    }
+    // public TreeModel GetSelectedItem => Children.FirstOrDefault(i => i.IsSelected);
     #endregion methods
     // to jest jakieś rozwiązanie nie najlepsze ale innego chwilowo nie mam
     public TreeModel? GetSelectedItem(TreeModel nodes = null)
@@ -92,8 +124,85 @@ public class TreeModel
         return String.Empty;
     }
 
-    public TreeModel? GetParent(TreeModel item) => item.Parent;
+    public TreeModel? GetParent() => this.Parent;
   
+    public TreeModel? GetRootNode(TreeModel item)
+    {
+        TreeModel root = null;
+        while(item.Parent != null)
+        {
+            root = item.Parent;
+            item = root;
+        }
+        return root;
+    }
+
+    public TreeModel? FindChild(string name)
+    {
+        TreeModel root = this;
+        foreach (var child in root.Children)
+        {
+            if (child.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return child;
+            }
+            var foundChild = child.FindChild(name);
+            if (foundChild != null)
+            {
+                return foundChild;
+            }
+        }
+
+
+        return null;
+    }
+
+    public TreeModel? FindChild(TreeModel item)
+    {
+        TreeModel root = this;
+        foreach (var child in root.Children)
+        {
+            if (child.Equals(item))
+            {
+                return child;
+            }
+            var foundChild = child.FindChild(item);
+            if (foundChild != null)
+            {
+                return foundChild;
+            }
+        }
+        return null;
+    }
+    /// <summary>
+    /// zwraca element z głównego drzewa, nie z rodzica, 
+    /// wyszukuje root i z tamtąd szuka identycznego elementu
+    /// </summary>
+    /// <returns></returns>
+    public TreeModel? GetSelfFromMainStream()
+    {
+        //TreeModel item = this;
+        TreeModel? root = GetRootNode(this);
+        if (root != null)
+        {
+            return root.FindChild(this.Name);
+        }
+        return null;
+    }
+    /// <summary>
+    /// to któtsza alternatywa do GetSelfFromMainStream, zwraca element z rodzica
+    /// </summary>
+    /// <returns></returns>
+    public TreeModel? GetSelfFromParent()
+    {
+        //TreeModel item = this;
+        TreeModel? parent = this.Parent;
+        if (parent != null)
+        {
+            return parent.FindChild(this.Name);
+        }
+        return null;
+    }
 
     #region static methods
     // metody statyczne można przenieść do innego obiektu, tu raczej nie mają sensu 

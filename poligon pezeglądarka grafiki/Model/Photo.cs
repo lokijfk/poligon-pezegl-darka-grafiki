@@ -93,4 +93,22 @@ public partial class Photo : ObservableObject
             }
         });        
     }
+
+    public async Task Load(CancellationToken token)
+    {
+        if (token.IsCancellationRequested)
+        {
+            //Debug.WriteLine("Load cancelled");
+            return;
+        }
+        Image = await Task.Run(() =>
+        {
+            using (var fileStream = new FileStream(
+                Path, FileMode.Open, FileAccess.Read))
+            {
+                return BitmapFrame.Create(
+                    fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            }
+        });
+    }
 }
