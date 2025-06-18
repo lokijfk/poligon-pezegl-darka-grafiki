@@ -220,6 +220,12 @@
                                            AllowDrop="True" DragEnter="TreeView_DragEnter" Drop="TreeView_Drop"
                                            >
                                             <!--MouseLeftButtonUp="routed_MouseLeftButtonUp" -->
+                                    <TreeView.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="dodaj katalog" Click="MenuItem_AddDir"/>
+                                            <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
+                                        </ContextMenu>
+                                    </TreeView.ContextMenu>
                                     <i:Interaction.Triggers>
                                         <!-- działą bez dodatkowego kodu-->
                                         <i:EventTrigger EventName="SelectedItemChanged">
@@ -267,13 +273,7 @@
                                             </Grid>
                                         </HierarchicalDataTemplate>
                                     </TreeView.ItemTemplate>
-                                    <TreeView.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="dodaj katalog"  
-                                                      Click="MenuItem_AddDir"/>
-                                            <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
-                                        </ContextMenu>
-                                    </TreeView.ContextMenu>
+                                    
                                     <TreeView.ItemContainerStyle>
                                         <Style TargetType="{x:Type TreeViewItem}"
                                             BasedOn="{StaticResource MaterialDesignTreeViewItem}">

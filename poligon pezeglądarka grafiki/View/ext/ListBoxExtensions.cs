@@ -11,12 +11,21 @@ public static class ListBoxExtensions
 
     public static ListBoxItem GetListBoxItem(this ListBox listBox, System.Windows.Point position)
     {
-        DependencyObject item = VisualTreeHelper.HitTest(listBox, position).VisualHit;
-        while (item != null && !(item is ListBoxItem))
+        try
         {
-            item = VisualTreeHelper.GetParent(item);
+            DependencyObject item = VisualTreeHelper.HitTest(listBox, position).VisualHit;
+            while (item != null && !(item is ListBoxItem))
+            {
+                item = VisualTreeHelper.GetParent(item);
+            }
+            return item as ListBoxItem;
+
+
+        }catch(System.Exception e)
+        {
+            return null;
         }
-        return item as ListBoxItem;
+
     }
     /*
     public static ListBoxItem GetListBoxItem(this ListBox listBox, DependencyObject item)

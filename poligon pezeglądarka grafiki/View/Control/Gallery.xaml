@@ -5,15 +5,23 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
              xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
+             xmlns:converters="clr-namespace:poligon_pezeglądarka_grafiki.View.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:WidthComverter x:Key="WidthConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
-        <ListBox ItemsSource="{Binding Photos}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+        <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
+                 ItemsSource="{Binding Photos}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  MouseDoubleClick="ListBox_MouseDoubleClick" 
                  MouseMove="ListBox_MouseMove"
+                 
                  >
             <ListBox.Resources>
                 <ContextMenu x:Key="listViewContextMenu" materialDesign:MenuAssist.MenuItemsPresenterMargin="0">
@@ -32,10 +40,11 @@
                 <DataTemplate>
                     <StackPanel Orientation="Vertical">
                         <Image Source="{Binding Image,Mode=OneWay}" Height="200"/>
-                        <Grid Width="200">
+                        <Grid Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}">
                             <TextBlock               
                             Text="{Binding Name}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                Width="200" >
+                                Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}" >
+                                <!-- Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}"-->
                                 <TextBlock.Resources>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextWrapping" Value="Wrap" />                                        
@@ -43,11 +52,12 @@
                                     </Style>
                                 </TextBlock.Resources>
                             </TextBlock>
-                            <TextBox Text="{Binding Name,Mode=OneWay}" Width="200" Visibility="Hidden">                                      
+                            <TextBox Text="{Binding Name,Mode=OneWay}" Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}" Visibility="Hidden">                                      
                                 <TextBox.Style>
                                     <Style TargetType="TextBox">
                                         <Setter Property="TextWrapping" Value="Wrap" />
                                         <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
+                                        <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
                                         <!--EventSetter Event="TextChanged" Handler="TextBox_TextChanged" / 
                                         nie urzywać załącza się po usunięciu każej litery i po dodaniu tekstu do pola -->
                                         <!--Style.Triggers>

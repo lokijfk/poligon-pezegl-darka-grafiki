@@ -222,6 +222,7 @@ public partial class MainWindow : Window
         {
             TextBlock textBlock = textBox.GetSisTextBlock();
             if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
+            if (menuSelectedItem == null) menuSelectedItem = routed.SelectedItem as TreeViewItem;
             textBox.Height = menuSelectedItem.ActualHeight;
             textBox.MaxHeight = textBox.FontSize * 1.5;
             textBox.Width = menuSelectedItem.ActualWidth;
@@ -257,7 +258,7 @@ public partial class MainWindow : Window
             }
 
             TextBlock lb = textBox.GetSisTextBlock();
-            lb.UpdateLayout();
+            //lb.UpdateLayout();
         }
         if ((e.Key == Key.Escape) || (e.Key == Key.Enter))
         {
@@ -276,6 +277,7 @@ public partial class MainWindow : Window
             textBox.Visibility = System.Windows.Visibility.Collapsed;
             TextBlock lb = textBox.GetSisTextBlock();
             lb.Visibility = System.Windows.Visibility.Visible;
+            textBox.Text = (textBox.DataContext as TreeModel).Name; // reset nazwy do oryginalnej, jeżeli nie zmieniono
         }
     }
 
@@ -312,59 +314,28 @@ public partial class MainWindow : Window
 
 
     #region Tree DragDrop
-    Point _startPoint;
-    bool _IsDragging = false;
-    private void treeView_PreviewMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+
+    private void TreeView_DragEnter(object sender, DragEventArgs e)
     {
-        _startPoint = e.GetPosition(null);
-        var tree = sender as TreeView;
-        TreeViewItem item = tree.GetItem(e.GetPosition(tree));
-        var DC = item.DataContext as TreeModel;
-        //Debug.WriteLine(DC.Path); // działa !!! EUREKA  
+        if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+        {
+            e.Effects = DragDropEffects.Copy;
+        }
+        else e.Effects = DragDropEffects.Move;
     }
 
-
-    private void treeView_PreviewMouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+    private void TreeView_Drop(object sender, DragEventArgs e)
     {
-        // Debug.WriteLine("PreviewMouseMove");
-
-        if (e.LeftButton == MouseButtonState.Pressed ||
-    e.RightButton == MouseButtonState.Pressed && !_IsDragging)
+        znacznik = 0; // reset znacznik po upuszczeniu pliku
+        TreeView treeView = sender as TreeView;
+        TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
+        if (e.Data.GetDataPresent(DataFormats.StringFormat))
         {
-
-            var tree = sender as TreeView;
-            TreeViewItem item = tree.SelectedItem as TreeViewItem;
-            var DC = item.DataContext as TreeModel;
-            // Debug.WriteLine(DC.Path); // działa !!! EUREKA
-            //var val = tree.selectedvalue;
-            //Debug.WriteLine(tree.SelectedItem.GetType().Name.ToString());
-            Point position = e.GetPosition(null);
-            if (Math.Abs(position.X - _startPoint.X) >
-                    SystemParameters.MinimumHorizontalDragDistance ||
-                Math.Abs(position.Y - _startPoint.Y) >
-                    SystemParameters.MinimumVerticalDragDistance)
-            {
-                // StartDrag(e);//sender to treeView a jak wydobyć item ??
-                /*
-                Debug.WriteLine(sender.GetType().Name);
-                if(sender is TreeViewItem)
-                 {
-                     var tVI = sender as TreeViewItem;
-                     Debug.WriteLine("w drzewie");
-                 }
-                */
-            }
+            string dataString = (string)e.Data.GetData(DataFormats.StringFormat);
+            Debug.WriteLine("TreeView_Drop: " + dataString + " , do: " + (treeViewItem.DataContext as TreeModel).Path);
+            (this.DataContext as MainWindowViewModel).MoveFileToFolder(dataString, (treeViewItem.DataContext as TreeModel).Path);
         }
     }
-
-
-
-
-
-
-
-
-
 
 
     #endregion Tree DragDrop
@@ -393,7 +364,7 @@ public partial class MainWindow : Window
     {
         TextBox textBox = (menuSelectedItem as DependencyObject).GetCHildTextBox() as TextBox;
         if (textBox != null) TextBoxActivate(textBox);
-
+        menuSelectedItem = null; // reset zaznaczenia po aktywacji TextBoxa
         /*
         TextBlock textBlock = textBox.GetSisTextBlock();
         textBlock.Visibility = Visibility.Collapsed;
@@ -408,23 +379,5 @@ public partial class MainWindow : Window
         //*/
     }
 
-    private void TreeView_DragEnter(object sender, DragEventArgs e)
-    {
-        if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
-        {
-            e.Effects = DragDropEffects.Copy;
-        }
-        else e.Effects = DragDropEffects.Move;
-    }
 
-    private void TreeView_Drop(object sender, DragEventArgs e)
-    {
-        TreeView treeView = sender as TreeView;
-        TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
-        if (e.Data.GetDataPresent(DataFormats.StringFormat))
-        {
-            string dataString = (string)e.Data.GetData(DataFormats.StringFormat);
-            Debug.WriteLine("TreeView_Drop: " + dataString+" , do: "+(treeViewItem.DataContext as TreeModel).Path);
-        }
-    }
 }

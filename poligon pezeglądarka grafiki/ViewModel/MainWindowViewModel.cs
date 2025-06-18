@@ -13,7 +13,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
-
+//using Microsoft.VisualBasic;
+using Microsoft.VisualBasic.FileIO;
 
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
@@ -227,8 +228,6 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-
-
     public bool RenameFolder(string oldName, string newName)
     {
         //dodać wyskakujące okno z komunikatem o będzie
@@ -255,18 +254,13 @@ public partial class MainWindowViewModel : ObservableObject
             if (cts != null)
             {
                 cts.Cancel();
-                //cts.Dispose();
-                //cts = null;
-               //cts = new CancellationTokenSource();
             }
-            //Debug.Assert(cts.IsCancellationRequested == true, "cts.IsCancellationRequested == true, cts is not null");
-            //Debug.Assert(counter == true, "counter == true, cts is not null");
             if (cts == null || ( cts.IsCancellationRequested && !counter))
             {
                 var xuz = treeModel.GetSelfFromParent();//treeModel.GetSelfFromMainStream();
                 //Debug.WriteLine("RenameFolder: xuz: " + xuz?.Path + " , " + xuz?.Name);
                 bool x = RenameFolder(treeModel.Path, newNameX);
-                if (x)
+                if (x && xuz != null)
                 {
                     xuz.Name = newName;
                     xuz.Path = newNameX;
@@ -277,29 +271,12 @@ public partial class MainWindowViewModel : ObservableObject
             }
             else
             {
+                //na razie zostawiam do czasu zrobienia komunikatu w oknie
                 Debug.WriteLine("RenameFolder: Canceled");
-                /*string path = treeModel.Path;
-                treeModel = null;
-                treeModel = ScanPath(path, "");
-                Debug.WriteLine("Model.Path: " + treeModel.Path+ " , "+treeModel.Name);
-                */
-                //Tree = null;
-                //BuildTree();
 
-                //Debug.WriteLine("tree model.path: " + 
-                //Tree.Select((value, i) => (value, i).value.Path == path).First().ToString();
             }
-            //CollectionViewSource.GetDefaultView(Tree).Refresh();
-            //var parent = treeModel.Parent;
-            /*if (parent != null)
-            {
-                treeModel = ScanPath(parent.Path, treeModel.Path);
-                ReloadFileList(treeModel);
-
-            }*/
         }
-        //else Debug.WriteLine("RenameFolder: treeModel is null, cannot rename folder.");
-    }
+     }
 
     [RelayCommand]
     private void AddFolderToTree(object param)
@@ -307,7 +284,76 @@ public partial class MainWindowViewModel : ObservableObject
         Debug.WriteLine("dodaj katalog active, obiect type: "+param.GetType().ToString());
     }
 
+    public void DeleteFile(string file)
+    {
+        if (string.IsNullOrEmpty(file)) return;
+        if (!File.Exists(file)) return;
+        try
+        {
+            //File.Delete(file);
+            FileSystem.DeleteFile(file, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+            //Debug.WriteLine("DeleteFile: " + file);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+        ReloadFileList(SelectedItem);
+    }
+
     #endregion Folders and Files
+
+    #region DragDrop
+    /// <summary>
+    /// przenoszenie pliku do innego katalogu
+    /// </summary>
+    /// <param name="path">katalog docelowy</param>
+    /// <param name="file">plik ze ścieżką</param>
+    public void MoveFileToFolder(string file,string path)
+    {
+        //Debug.WriteLine("MoveFileToFolder: " + path + " , " + file);
+        MoveFile(file, path);
+        //tu zrobić odnajdywanie treeviewitem po ścieżce i odświerzenie ilości plików w katalogach
+        // nie ładować na nowo całej listy tylko usunąc przeniesiony plik
+        ReloadFileList(SelectedItem);
+    }
+
+    private bool MoveFile(string file, string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            //Debug.WriteLine("MoveFileToFolder: path is null or empty");
+            return false;
+        }
+        if (file == null)
+        {
+            //Debug.WriteLine("MoveFileToFolder: file is null");
+            return false;
+        }
+        if (!Directory.Exists(path))
+        {
+            //Debug.WriteLine("MoveFileToFolder: path does not exist: " + path);
+            return false;
+        }
+        //Debug.WriteLine("MoveFileToFolder: path: " + path + " , file: " + file);
+        string fileName = System.IO.Path.GetFileName(file);
+        string newPath = System.IO.Path.Combine(path, fileName);
+        //Debug.WriteLine("MoveFileToFolder: newPath: " + newPath);
+        try
+        {
+            File.Move(file, newPath);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            return false;
+        }
+        return true;
+    }
+
+
+    #endregion DragDrop
+
 
     #region Tree and View
 
@@ -356,13 +402,6 @@ public partial class MainWindowViewModel : ObservableObject
             cts.Dispose();
             cts = null;
         }
-        //FilesList.Clear();
-        //Debug.WriteLine("LBM klik, path:" );
-        //MessageBox.Show("kliknięto: ");
-
-        //działa tu zrobić wybór widoku dla klikniętego elementu
-        //tu można dodać pole lokalne LActiveTreeModelItem
-        //MessageBox.Show("kliknięto: " );
         try
         {
 
@@ -446,6 +485,7 @@ public partial class MainWindowViewModel : ObservableObject
 
 
     //do przebudowania, ma dodawać nowe foldery na końcu drzewa
+    // i nazwa do zmiany ta jest myląca
     public bool AddFolder(string folder)
     {
         if (DirPath != null)

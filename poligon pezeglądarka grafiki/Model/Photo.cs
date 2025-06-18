@@ -2,6 +2,8 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.IO;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -18,7 +20,8 @@ public partial class Photo : ObservableObject
     
     [ObservableProperty]
     private ImageSource image;
-    
+    [ObservableProperty]
+    private double _imageWidth = 0;
     public override string ToString() => _source.ToString();
 
     //public ExifMetadata Metadata { get; } tu trzeba zbudować właśną klasę do odczytu metadanych
@@ -76,9 +79,46 @@ public partial class Photo : ObservableObject
         return myBitmapImage;
     }
 
+    private BitmapImage ShortPiec(string path, int height)
+    {
+        //Image xim = new();
+        BitmapImage myBitmapImage = new();
+        //myBitmapImage = new();
+        myBitmapImage.BeginInit();
+
+        myBitmapImage = Image.Clone() as BitmapImage;
+        
+        myBitmapImage.DecodePixelHeight = (int)height;
+        myBitmapImage.EndInit();
+        //xim.Source = myBitmapImage;
+        return myBitmapImage;
+    }
+
     public void CreateShortPic()
     {
         Image = ShortPiec(Path, 200, _source);
+    }
+
+
+    private static BitmapFrame CreateResizedImage(ImageSource source, int width, int height, int margin)
+    {
+        var rect = new Rect(margin, margin, width - margin * 2, height - margin * 2);
+
+        var group = new DrawingGroup();
+        RenderOptions.SetBitmapScalingMode(group, BitmapScalingMode.HighQuality);
+        group.Children.Add(new ImageDrawing(source, rect));
+
+        var drawingVisual = new DrawingVisual();
+        using (var drawingContext = drawingVisual.RenderOpen())
+            drawingContext.DrawDrawing(group);
+
+        var resizedImage = new RenderTargetBitmap(
+            width, height,         // Resized dimensions
+            96, 96,                // Default DPI values
+            PixelFormats.Default); // Default pixel format
+        resizedImage.Render(drawingVisual);
+
+        return BitmapFrame.Create(resizedImage);
     }
 
     public async Task Load()
@@ -94,6 +134,7 @@ public partial class Photo : ObservableObject
         });        
     }
 
+
     public async Task Load(CancellationToken token)
     {
         if (token.IsCancellationRequested)
@@ -106,9 +147,19 @@ public partial class Photo : ObservableObject
             using (var fileStream = new FileStream(
                 Path, FileMode.Open, FileAccess.Read))
             {
-                return BitmapFrame.Create(
-                    fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+                 //Ładuje obrazy w normalnej wielkości ??
+                // jak to zmienić na miniatury ?? żeby nie zawalało to pamięci
+                return Task.FromResult( BitmapFrame.Create(
+                    fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad));
             }
         });
+        
+        //double ImageHeight = Image.Height;
+        //double ImageWidth = Image.Width;
+        //double height = 200;
+        //double width = (height/ImageHeight) * ImageWidth;
+        
+        Image = CreateResizedImage(Image, (int)((200 / Image.Height) * Image.Width), (int)200, 0);
+        ImageWidth = Image.Width;
     }
 }

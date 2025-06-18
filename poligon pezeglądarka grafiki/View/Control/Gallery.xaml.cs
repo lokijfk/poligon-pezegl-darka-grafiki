@@ -2,6 +2,7 @@
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -26,6 +27,11 @@ public partial class Gallery : UserControl
     public Gallery()
     {
         InitializeComponent();
+       // ListBox List1;
+       /*
+        ((INotifyCollectionChanged)Lista.ItemsSource).CollectionChanged +=
+    new NotifyCollectionChangedEventHandler(List1CollectionChanged);
+       */
     }
 
     /*
@@ -69,6 +75,12 @@ public partial class Gallery : UserControl
     }
 
     
+
+    public void List1CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e)
+    {
+        // Your logic here
+        Debug.WriteLine("Collection changed in Gallery");
+    }
 
 
     /*
@@ -174,9 +186,7 @@ public partial class Gallery : UserControl
     //*/
     private void TextBox_KeyDown(object sender, KeyEventArgs e)
     {
-        Debug.WriteLine(" ok - key down text box");
-        
-
+        //Debug.WriteLine(" ok - key down text box");    
         if (e.Key == Key.Enter)
         {
             TextBox textBox = sender as TextBox;
@@ -184,12 +194,6 @@ public partial class Gallery : UserControl
             TextBlock lb = textBox.GetSisTextBlock();//GetChildrenTBO(textBox.GetParentAsGrid());
             lb.Visibility = System.Windows.Visibility.Visible;
             edit = false;
-
-            //string oldName = (textBox.DataContext as Photo).Path;
-            //Debug.WriteLine("path: " + oldName.Substring(0, oldName.LastIndexOf('\\')+1) );
-            //To już powinno być w NM a nie tu !!
-            //Photo photo = textBox.DataContext as Photo;
-            //Debug.WriteLine("T : DC = " +photo.Path+textBox.Text + " : " +photo.Path+photo.Name);
             if((textBox.DataContext as Photo).Name != textBox.Text)
             (DataContext as MainWindowViewModel).RenameFile(textBox.DataContext as Photo, textBox.Text);
         }else if (e.Key == Key.Escape)
@@ -200,14 +204,34 @@ public partial class Gallery : UserControl
             lb.Visibility = System.Windows.Visibility.Visible;
             edit = false;
         }
-        //*/
-        //TextBox tb = sender as TextBox;
-        //tb.IsEnabled = false;
-        //edit = false;
-
     }
 
- 
+
+    private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        TextBox textBox = sender as TextBox;
+        if (textBox.Visibility == Visibility.Visible)//tu zamiast edit sprawdzać czy jest widoczny zamiasr edit, edit wywalić
+        {
+            textBox.Visibility = System.Windows.Visibility.Collapsed;
+            TextBlock lb = textBox.GetSisTextBlock();
+            lb.Visibility = System.Windows.Visibility.Visible;
+            textBox.Text = (textBox.DataContext as Photo).Name; // reset nazwy do oryginalnej, jeżeli nie zmieniono
+        }
+    }
+
+
+    private void TextBoxActivate(TextBox textBox)
+    {
+        if (textBox != null)
+        {
+            TextBlock textBlock = textBox.GetSisTextBlock();
+            if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
+            textBox.Visibility = Visibility.Visible;
+            textBox.Focus();
+            textBox.Select(0, textBox.Text.Length-4); // ustawia kursor na końcu tekstu
+        }
+    }
+
     private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {        
        // Debug.WriteLine(" ok - text blok mouse up 1");
@@ -228,39 +252,37 @@ public partial class Gallery : UserControl
                     if (photo == select)
                     {
                         label.Visibility = System.Windows.Visibility.Collapsed;
-                        //Grid p = label.GetParentAsGrid();//to jest z DependencyObject                
-                        //if (p != null) ShowTextBox(label.GetSisTexBox());//GetChildrenTB(p));
-                        //ShowTextBox(label.GetSisTexBox());
-                        TextBox tb = label.GetSisTexBox();//GetChildrenTB(p);
-                        tb.Visibility = System.Windows.Visibility.Visible;
-                        //Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
-                        bool test = tb.Focus();
-                        // tu działa ale albo jest całe zaznaczone albo jest karetka
-                        //tego nie zmienimy taka jest specyfika tego pola i tak chyba jest w windows
-                        //tb.CaretIndex = tb.Text.Length;
-                        //tb.SelectAll();
-                        tb.Select(tb.Text.Length, 0);//ustawia karetk na końcu tekstu
+                        TextBox tb = label.GetSisTexBox();
+                        TextBoxActivate(tb);
                     }
                 }
             }
-        }
-        
+        }        
         else
         {
-            
-            //Debug.WriteLine(" ok m: " + milliseconds + " m-z: " + (milliseconds - znacznik).ToString());
             znacznik = milliseconds;
-        }//*/
+        }
     }
 
     private void MenuItem_Rename(object sender, RoutedEventArgs e)
     {
         //Debug.WriteLine("klik menu: "+ (selectedItem.DataContext as Photo).Name);
-
+        TextBox textBox = (selectedItem as DependencyObject).GetCHildTextBox() as TextBox;
+        if (textBox != null) TextBoxActivate(textBox);
     }
 
     private void MenuItem_Delete(object sender, RoutedEventArgs e)
     {
+        ListBoxItem listBoxItem = selectedItem as ListBoxItem;
+        if (listBoxItem != null)
+        {
+            Photo photo = listBoxItem.DataContext as Photo;
+            if (photo != null)
+            {
+                //Debug.WriteLine("usuwanie: " + photo.Name);
+                (DataContext as MainWindowViewModel).DeleteFile(photo.Path);
+            }
+        }
 
     }
 
@@ -298,6 +320,8 @@ public partial class Gallery : UserControl
             }
         }
     }
+
+
 
     /*
     private void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
