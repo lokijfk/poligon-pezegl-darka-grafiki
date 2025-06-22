@@ -9,8 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 
 
-
-
 namespace poligon_pezeglądarka_grafiki.View.Control;
 
 /// <summary>
@@ -30,9 +28,11 @@ public partial class Gallery : UserControl
        // ListBox List1;
        /*
         ((INotifyCollectionChanged)Lista.ItemsSource).CollectionChanged +=
-    new NotifyCollectionChangedEventHandler(List1CollectionChanged);
-       */
+        new NotifyCollectionChangedEventHandler(List1CollectionChanged);
+       //*/
     }
+
+
 
     /*
     private void ListBoxItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -56,32 +56,46 @@ public partial class Gallery : UserControl
         {
             ListBox List = sender as ListBox;
             Photo ph = List.SelectedItem as Photo;
-
+            int curentIndex = 0;// = List.SelectedIndex;
             var y = List.GetListBoxItem(e.GetPosition(List));
             //Debug.WriteLine(x.GetType().ToString()+" : "+y.GetType().ToString());
             if ((ph != null) && (y != null) && (ph == y.DataContext))
             {
                 //Photo ph = x as Photo;
+                // jak tu wpleść dyrektywe using tak żeby zwalniał obiekt automatycznie?
                 var index = (this.DataContext as MainWindowViewModel).Photos.IndexOf(ph);
+                //Debug.WriteLine("start index: " + index);
                 //ViewWindow viewWindow = new() { DataContext = new ViewWindowViewModel((y.DataContext as Photo).Path) };
                 ViewWindow viewWindow = new()
                 {
                     DataContext = new ViewWindowViewModel(index,
                     (this.DataContext as MainWindowViewModel).Photos)
                 };
-                viewWindow.Show();
+                //viewWindow.Owner = Window.GetWindow(this); // ustawienie właściciela okna
+                viewWindow.ShowDialog();//Show nie czeka na zamknięcia okna, ShowDialog czeka na zamknięcie okna
+                viewWindow.Activate(); // aktywacja okna
+                curentIndex = (viewWindow.DataContext as ViewWindowViewModel).currentImageIndex;
+                if (curentIndex >= 0)
+                {
+                    //Debug.WriteLine("index: " + curentIndex);
+                    List.SelectedIndex = curentIndex; // ustawienie zaznaczenia na liście
+                    List.ScrollIntoView(List.SelectedItem); // przewinięcie do zaznaczonego elementu
+                }
             }
         }
     }
 
-    
 
+    /*
     public void List1CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e)
     {
         // Your logic here
         Debug.WriteLine("Collection changed in Gallery");
+        // to nie działa
+        Lista.SelectedIndex = 0;
+        Lista.ScrollIntoView(Lista.SelectedIndex);
     }
-
+    */
 
     /*
     private void ListBoxItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)
@@ -319,6 +333,15 @@ public partial class Gallery : UserControl
 
             }
         }
+    }
+
+    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    {
+        /*
+         // to działa ale nie tak jak  jest mi to potrzebne, jest wywoływane przy załadowaniu każdego kolejego obrazka
+        ((INotifyCollectionChanged)Lista.ItemsSource).CollectionChanged +=
+        new NotifyCollectionChangedEventHandler(List1CollectionChanged);
+        */
     }
 
 

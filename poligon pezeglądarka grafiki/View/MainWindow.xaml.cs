@@ -332,7 +332,7 @@ public partial class MainWindow : Window
         if (e.Data.GetDataPresent(DataFormats.StringFormat))
         {
             string dataString = (string)e.Data.GetData(DataFormats.StringFormat);
-            Debug.WriteLine("TreeView_Drop: " + dataString + " , do: " + (treeViewItem.DataContext as TreeModel).Path);
+            //Debug.WriteLine("TreeView_Drop: " + dataString + " , do: " + (treeViewItem.DataContext as TreeModel).Path);
             (this.DataContext as MainWindowViewModel).MoveFileToFolder(dataString, (treeViewItem.DataContext as TreeModel).Path);
         }
     }

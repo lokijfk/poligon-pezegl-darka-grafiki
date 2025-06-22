@@ -13,20 +13,24 @@ public static class ListBoxExtensions
     {
         try
         {
+            // tu jest problem jak jest urzywany suwak z boku to szaleje
             DependencyObject item = VisualTreeHelper.HitTest(listBox, position).VisualHit;
             while (item != null && !(item is ListBoxItem))
             {
                 item = VisualTreeHelper.GetParent(item);
             }
             return item as ListBoxItem;
-
-
-        }catch(System.Exception e)
+        }
+        catch (NullReferenceException e)
         {
             return null;
         }
-
+        catch (Exception e)
+        {
+            return null;
+        }
     }
+
     /*
     public static ListBoxItem GetListBoxItem(this ListBox listBox, DependencyObject item)
     {

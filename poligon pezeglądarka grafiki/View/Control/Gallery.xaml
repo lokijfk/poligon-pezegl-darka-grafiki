@@ -10,6 +10,7 @@
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             Loaded="UserControl_Loaded"
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -40,11 +41,11 @@
                 <DataTemplate>
                     <StackPanel Orientation="Vertical">
                         <Image Source="{Binding Image,Mode=OneWay}" Height="200"/>
-                        <Grid Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}">
+                        <Grid Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}">
                             <TextBlock               
                             Text="{Binding Name}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}" >
-                                <!-- Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}"-->
+                                Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
+                                TextAlignment="Center">                                
                                 <TextBlock.Resources>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextWrapping" Value="Wrap" />                                        
@@ -52,7 +53,7 @@
                                     </Style>
                                 </TextBlock.Resources>
                             </TextBlock>
-                            <TextBox Text="{Binding Name,Mode=OneWay}" Width="{Binding ImageWidth,Converter={StaticResource WidthConverter}}" Visibility="Hidden">                                      
+                            <TextBox Text="{Binding Name,Mode=OneWay}" Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}" Visibility="Hidden">                                      
                                 <TextBox.Style>
                                     <Style TargetType="TextBox">
                                         <Setter Property="TextWrapping" Value="Wrap" />

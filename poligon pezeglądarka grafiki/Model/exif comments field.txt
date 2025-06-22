@@ -1,0 +1,13 @@
+﻿Pliki graficzne PNG nie przechowują danych EXIF w standardowy sposób, jak robią to pliki JPEG. 
+Zamiast tego, PNG używa własnych fragmentów (chunks) do przechowywania metadanych,
+takich jak tEXt, iTXt lub zTXt, do zapisu informacji o obrazie. Te fragmenty mogą zawierać dane o tworzeniu, 
+modyfikacji, a także szczegóły techniczne obrazu. 
+Szczegółowe wyjaśnienie:
+Brak EXIF w PNG:
+PNG nie jest formatem, który natywnie obsługuje EXIF. Zamiast tego, został zaprojektowany
+do przechowywania metadanych w innych formatach. 
+Fragmenty PNG:
+PNG wykorzystuje fragmenty (chunks) do organizacji danych. Najważniejsze fragmenty dla metadanych to:
+tEXt: Przechowuje tekstowe metadane w formacie ASCII. 
+iTXt: Przechowuje tekstowe metadane w formacie Unicode. 
+zTXt: Przechowuje skompresowane tekstowe metadane. 

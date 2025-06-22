@@ -1,9 +1,9 @@
 ﻿
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -20,29 +20,14 @@ public partial class Photo : ObservableObject
     
     [ObservableProperty]
     private ImageSource image;
-    [ObservableProperty]
-    private double _imageWidth = 0;
+
     public override string ToString() => _source.ToString();
 
     //public ExifMetadata Metadata { get; } tu trzeba zbudować właśną klasę do odczytu metadanych
     // test jest po to żeby załadować w odpowiedniej kolejności pliki ale bez grafiki
     // żeby nie było opóźnień a samą grafikę przerobić w osobnym wątku jak się da
     // i do tego służy metoda publiczna
-    public Photo(string path,string name,bool test = true)
-    {
-        //Debug.WriteLine("create Photo");
-        Path = path;
-        //Debug.WriteLine("create Photo-> uri");
-        _source = new Uri(path);
-        Name = name;
-        //Debug.WriteLine("create Photo-> image");
-        if (test) Image = ShortPiec(path, 200, _source);
-        else Image = Tools.GetBitmapImage();
-        //Image = BitmapFrame.Create(_source);
-        //Metadata = new ExifMetadata(_source);
-        // Debug.WriteLine(ToString());
-    }
-
+    
     public Photo(string path)
     {        
         Path = path;        
@@ -50,13 +35,15 @@ public partial class Photo : ObservableObject
         Name = System.IO.Path.GetFileName(path);
         
     }
-    
-    
-    public void rename(string newName)
+
+    /*
+    public Photo(string path,string name,bool test = true)
     {
-        Path = newName;
-        Name = newName.Substring(newName.LastIndexOf("\\")+1);
-        _ = Load();
+        Path = path;
+        _source = new Uri(path);
+        Name = name;
+        if (test) Image = ShortPiec(path, 200, _source);
+        else Image = Tools.GetBitmapImage();
     }
 
     private BitmapImage ShortPiec(string path, int height, Uri uri = null)
@@ -98,6 +85,77 @@ public partial class Photo : ObservableObject
     {
         Image = ShortPiec(Path, 200, _source);
     }
+    
+     
+    public async Task Load()
+    {
+        Image = await Task.Run(() =>
+        {
+            using (var fileStream = new FileStream(
+                Path, FileMode.Open, FileAccess.Read))
+            {
+                return BitmapFrame.Create(
+                    fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            }
+        });        
+    }
+     */
+
+    /// <summary>
+    /// to będzie chyba do usunięcia, urzyteczność znikoma
+    /// </summary>
+    /// <param name="newName"></param>
+    public void rename(string newName)
+    {
+        Path = newName;
+        Name = newName.Substring(newName.LastIndexOf("\\") + 1);
+        _ = Load(new(),false);
+    }
+
+
+
+    /// <summary>
+    /// asynchroniczne łądowanie obrazów do postaci miniatury
+    /// w formacie BitmapFrame do zmiennej Image
+    /// </summary>
+    /// <param name="token">tokem do anulowania ładowania 
+    /// urzywany przy łądowaniu większej ilości obrazów</param>
+    /// <param name="x">umożliwia pominięcie sprawdzania tokena, 
+    /// jednak nalezy go utworzyć</param>
+    /// <returns></returns>
+    public async Task Load(CancellationToken token, bool x = true)
+    {
+        if (token.IsCancellationRequested && x)
+        {
+            //Debug.WriteLine("Load cancelled");
+            return;
+        }
+
+
+            Image = await Task.Run(() =>
+            {
+                using (var fileStream = new FileStream(
+                    Path, FileMode.Open, FileAccess.Read))
+                {
+                    //Ładuje obrazy w normalnej wielkości ??
+                    // jak to zmienić na miniatury ?? żeby nie zawalało to pamięci
+                    try
+                    {
+                        return Task.FromResult(BitmapFrame.Create(
+                            fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error creating BitmapFrame: {ex.Message}");
+                        return null; // Return null if loading fails
+                    }
+                }
+            });
+            //NewWidth= (NewHwight/OldHeight) * OldWidth;
+            Image = CreateResizedImage(Image, (int)((200 / Image.Height) * Image.Width), (int)200, 0);
+            //ImageWidth = Image.Width;
+
+    }
 
 
     private static BitmapFrame CreateResizedImage(ImageSource source, int width, int height, int margin)
@@ -121,45 +179,5 @@ public partial class Photo : ObservableObject
         return BitmapFrame.Create(resizedImage);
     }
 
-    public async Task Load()
-    {
-        Image = await Task.Run(() =>
-        {
-            using (var fileStream = new FileStream(
-                Path, FileMode.Open, FileAccess.Read))
-            {
-                return BitmapFrame.Create(
-                    fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-            }
-        });        
-    }
 
-
-    public async Task Load(CancellationToken token)
-    {
-        if (token.IsCancellationRequested)
-        {
-            //Debug.WriteLine("Load cancelled");
-            return;
-        }
-        Image = await Task.Run(() =>
-        {
-            using (var fileStream = new FileStream(
-                Path, FileMode.Open, FileAccess.Read))
-            {
-                 //Ładuje obrazy w normalnej wielkości ??
-                // jak to zmienić na miniatury ?? żeby nie zawalało to pamięci
-                return Task.FromResult( BitmapFrame.Create(
-                    fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad));
-            }
-        });
-        
-        //double ImageHeight = Image.Height;
-        //double ImageWidth = Image.Width;
-        //double height = 200;
-        //double width = (height/ImageHeight) * ImageWidth;
-        
-        Image = CreateResizedImage(Image, (int)((200 / Image.Height) * Image.Width), (int)200, 0);
-        ImageWidth = Image.Width;
-    }
 }

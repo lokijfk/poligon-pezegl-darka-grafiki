@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using Microsoft.VisualBasic.FileIO;
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
@@ -17,6 +17,7 @@ public partial class ViewWindowViewModel: ObservableObject
 {
     [ObservableProperty]
     private BitmapImage myBitmapImage = new();
+    //private ImageSource myBitmapImage;// = new();
     [ObservableProperty]
     private Color _Bacground_C;
     [ObservableProperty]
@@ -25,7 +26,8 @@ public partial class ViewWindowViewModel: ObservableObject
     private List<string> ImagePaths = new();
 
     public ObservableCollection<Photo> Photos;
-    private int currentImageIndex = 0;
+    
+    public int currentImageIndex = 0;
     public ViewWindowViewModel()
     {
         // Create a new instance of the model
@@ -35,7 +37,7 @@ public partial class ViewWindowViewModel: ObservableObject
     {
         if ((path != null)&& (File.Exists(path)))
         {
-            Debug.WriteLine("Load image and load files");
+            //Debug.WriteLine("Load image and load files");
             LoadImage(path);
             LoadFiles(path);
         }
@@ -46,6 +48,7 @@ public partial class ViewWindowViewModel: ObservableObject
     {
         this.Photos = Photos_X;
        // Debug.WriteLine("load only image");
+       currentImageIndex = index;
         LoadImage(Photos[index].Path);
         Init();
     }
@@ -70,12 +73,19 @@ public partial class ViewWindowViewModel: ObservableObject
 
     private void LoadImage(string path)
     {
-        //Debug.WriteLine("load image:" + path);
+        /*
         MyBitmapImage = new();
         MyBitmapImage.BeginInit();
         MyBitmapImage.UriSource = new Uri(path);
         MyBitmapImage.EndInit();
-        //OnPropertyChanged(nameof(MyBitmapImage));
+        */
+
+        //Uri src = new Uri(path, UriKind.RelativeOrAbsolute);
+        MyBitmapImage = new();
+        MyBitmapImage.BeginInit();
+        MyBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        MyBitmapImage.UriSource = new Uri(path, UriKind.RelativeOrAbsolute); //src;
+        MyBitmapImage.EndInit();
     }
 
 
@@ -172,6 +182,7 @@ public partial class ViewWindowViewModel: ObservableObject
                         //Debug.WriteLine("left - index z listy:" + currentImageIndex + " : "+ ImagePaths[currentImageIndex]);
                     }
                 }
+                //Debug.WriteLine("curentImageIndex: " + currentImageIndex);
             }
             else if (e.Key is Key.Right)
             {
@@ -192,6 +203,7 @@ public partial class ViewWindowViewModel: ObservableObject
                         //Debug.WriteLine("right - index z listy:" + currentImageIndex + " : " + ImagePaths[currentImageIndex]);
                     }
                 }
+                //Debug.WriteLine("curentImageIndex: " + currentImageIndex);
             }
             else if (e.Key is Key.Enter)
             {
@@ -209,7 +221,7 @@ public partial class ViewWindowViewModel: ObservableObject
                     main.Show();
                     view.Owner = main;
                 }
-                view.Close();
+                view.Close();// jak przekazać index obrazu który jest wyświetlany w tym oknie?
 
                 /*
                 foreach (Window item in Application.Current.Windows)
@@ -224,7 +236,44 @@ public partial class ViewWindowViewModel: ObservableObject
                     }
                 }
                 */
-  
+
+            }
+            else if (e.Key is Key.Delete)
+            {
+                //Debug.WriteLine("usuwanie pliku");
+                // dodać obsługę przenoszeniao do kosza
+                string FileToDele = Photos[currentImageIndex].Path;
+                if (File.Exists(FileToDele))
+                {
+                    try
+                    {
+                        //to blokuje wątek przeglądania i blokuje program !!!
+                        //wyskoczenia dodatkowego okna powoduje że to okno przestaje być aktywne 
+                        FileSystem.DeleteFile(FileToDele, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        //Debug.WriteLine("plik usunięty: " + FileToDele);
+                        Photos.RemoveAt(currentImageIndex);
+                        if (Photos.Count == 0)
+                        {
+                            GetWindow().Close();//?
+                        }
+                        else if (currentImageIndex < Photos.Count)
+                        {
+                            //currentImageIndex++;//Photos.Count - 1;
+                            LoadImage(Photos[currentImageIndex].Path);
+                        }
+                        /*
+                        else
+                        {
+                            LoadImage(Photos[currentImageIndex].Path);
+                        }//*/
+                    }
+                    catch (Exception ex)
+                    {
+                        //Debug.WriteLine("Błąd przy usuwaniu pliku: " + ex.Message);
+                        GetWindow().Activate();// aktywuje okno, żeby można było zamknąć komunikat
+                    }
+                }
+
             }
         }
     }

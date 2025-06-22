@@ -1,6 +1,4 @@
-﻿
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using poligon_pezeglądarka_grafiki.Model;
@@ -13,7 +11,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
-//using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.FileIO;
 
 
@@ -311,11 +308,22 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="file">plik ze ścieżką</param>
     public void MoveFileToFolder(string file,string path)
     {
-        //Debug.WriteLine("MoveFileToFolder: " + path + " , " + file);
         MoveFile(file, path);
-        //tu zrobić odnajdywanie treeviewitem po ścieżce i odświerzenie ilości plików w katalogach
-        // nie ładować na nowo całej listy tylko usunąc przeniesiony plik
-        ReloadFileList(SelectedItem);
+        string pathFile = System.IO.Path.GetDirectoryName(file);
+        foreach (var treeItem in Tree)
+        {
+            TreeModel? item = treeItem.GetElementByPath(path);
+            if (item != null)item.CountFiles = GetCountFiles(item.Path);//dodaje liczbę plików w katalogu
+            item = treeItem.GetElementByPath(pathFile);
+            if (item != null)item.CountFiles = GetCountFiles(item.Path);//odejmuje liczbę plików w katalogu
+        }
+
+        Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
+        if ((FilesList != null)&& (FilesList.Count > 0))
+        {   
+            if(FilesList.Any(i => i.Path == file) )
+            FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
+        }
     }
 
     private bool MoveFile(string file, string path)

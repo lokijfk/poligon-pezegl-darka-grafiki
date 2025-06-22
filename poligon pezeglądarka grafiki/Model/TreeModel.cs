@@ -64,7 +64,8 @@ public partial class TreeModel :ObservableObject
         }
     }//*/
     
-    public int CountFiles { get; set; } = 0;
+    [ObservableProperty]
+    private int _CountFiles  = 0;
 
     #endregion properties
 
@@ -152,8 +153,25 @@ public partial class TreeModel :ObservableObject
                 return foundChild;
             }
         }
+        return null;
+    }
+     
 
-
+    public TreeModel? FindChildByPath(string path)
+    {
+        TreeModel root = this;
+        foreach (var child in root.Children)
+        {
+            if (child.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+            {
+                return child;
+            }
+            var foundChild = child.FindChildByPath(path);
+            if (foundChild != null)
+            {
+                return foundChild;
+            }
+        }
         return null;
     }
 
@@ -203,6 +221,25 @@ public partial class TreeModel :ObservableObject
         }
         return null;
     }
+
+    public TreeModel? GetElementByPath(string path)
+    {
+        // to jest do poprawy, nie działa jak powinno
+        // nie szuka w drzewie tylko w ścieżce
+        TreeModel? root = this;
+        if(root.Parent != null)
+        {
+            root = GetRootNode(this);
+        }
+        //TreeModel? root = GetRootNode(this);
+        //Debug.WriteLine("GetElementByPath,root: " + root.Name+" , "+root.Path+" , path: "+ path);
+        if (root != null)
+        {
+            return root.FindChildByPath(path);
+        }
+        return null;
+    }
+
 
     #region static methods
     // metody statyczne można przenieść do innego obiektu, tu raczej nie mają sensu 
