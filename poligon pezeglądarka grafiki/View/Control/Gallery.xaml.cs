@@ -1,8 +1,9 @@
 ﻿
+//using GongSolutions.Wpf.DragDrop;
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
-using System.Collections.Specialized;
+
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,14 +19,12 @@ public partial class Gallery : UserControl
 {
 
     private decimal znacznik = 0;
-    private bool edit = false;
-    //private TextBox TBed = null;
+    private bool edit = false;    
     private ListBoxItem? selectedItem = null;
-    //private ListBoxItem? 
+    
     public Gallery()
     {
-        InitializeComponent();
-       // ListBox List1;
+        InitializeComponent();       
        /*
         ((INotifyCollectionChanged)Lista.ItemsSource).CollectionChanged +=
         new NotifyCollectionChangedEventHandler(List1CollectionChanged);
@@ -51,21 +50,18 @@ public partial class Gallery : UserControl
 
     private void ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        //znacznik = 0; //znacznik do zmiany nazwy powoduje problemy
+        
         if (!edit)
         {
             ListBox List = sender as ListBox;
             Photo ph = List.SelectedItem as Photo;
-            int curentIndex = 0;// = List.SelectedIndex;
-            var y = List.GetListBoxItem(e.GetPosition(List));
-            //Debug.WriteLine(x.GetType().ToString()+" : "+y.GetType().ToString());
+            int curentIndex = 0;
+            var y = List.GetListBoxItem(e.GetPosition(List));            
             if ((ph != null) && (y != null) && (ph == y.DataContext))
-            {
-                //Photo ph = x as Photo;
+            {                
                 // jak tu wpleść dyrektywe using tak żeby zwalniał obiekt automatycznie?
+                //musi mieć interfejs idisposable
                 var index = (this.DataContext as MainWindowViewModel).Photos.IndexOf(ph);
-                //Debug.WriteLine("start index: " + index);
-                //ViewWindow viewWindow = new() { DataContext = new ViewWindowViewModel((y.DataContext as Photo).Path) };
                 ViewWindow viewWindow = new()
                 {
                     DataContext = new ViewWindowViewModel(index,
@@ -86,120 +82,9 @@ public partial class Gallery : UserControl
     }
 
 
-    /*
-    public void List1CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e)
-    {
-        // Your logic here
-        Debug.WriteLine("Collection changed in Gallery");
-        // to nie działa
-        Lista.SelectedIndex = 0;
-        Lista.ScrollIntoView(Lista.SelectedIndex);
-    }
-    */
-
-    /*
-    private void ListBoxItem_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-    {
-        //dzia\\la ale jest wywoływane za każdym razem przed double klick
-        // więc nie może być wykozystane
-        Debug.WriteLine("mouse down z");
-        ListBoxItem listBoxItem = sender as ListBoxItem;
-        Photo photo = listBoxItem.DataContext as Photo;
-        string path = photo.Path;
-        ListBox listBox = listBoxItem.GetListBox(listBoxItem);
-        Photo select = listBox.SelectedItem as Photo;
-        if ((select != null) && (photo != null) && (photo == select))
-            Debug.WriteLine("jest zgodność !!");
-        Debug.WriteLine($"{path}");
-    }//*/
-
-    /*
-    private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        //var timestamp = DateTimeOffset.Now.ToString("yyyyMMddHHmmssffff");
-        Debug.WriteLine(" ok - text blok mouse down 1");
-        decimal milliseconds = DateTime.Now.Ticks / (decimal)TimeSpan.TicksPerMillisecond;
-        if ((znacznik > 0) && (milliseconds - znacznik >= 1000) && (milliseconds - znacznik <= 3500))
-        {   
-            edit = true;
-            Debug.WriteLine(" ok - text blok mouse down 2");
-            TextBlock label = sender as TextBlock;
-            ListBoxItem lbi = label.GetParentAsListBoxItem();
-            ListBox LB = lbi.GetParentAsListBox();
-            if ((lbi != null) && (LB != null))
-            {
-                Photo photo = lbi.DataContext as Photo;
-                Photo select = LB.SelectedItem as Photo;
-                if (photo == select)
-                {
-                    label.Visibility = System.Windows.Visibility.Collapsed;
-                    Grid p = label.GetParentAsGrid();//to jest z DependencyObject                
-                    if (p != null)
-                    {
-                        lastIndex = LB.SelectedIndex;
-                        LB.SelectedIndex = -1; // to nic nie zmienia
-                        //LB.Items[lastIndex].
-
-                        TextBox tb = GetChildrenTB(p);
-                        //LB.ClearSelectedItems();
-                        tb.Visibility = System.Windows.Visibility.Visible;
-                        // tu prawdopodobnie focus jest "kradziony" przez listboxa
-                        // jeszcze nie wiem jak to rozwiązać,
-                        // może zamiast zmiany na textbox tywoływać coś w rodzaju małego okna z tezboxem i je obcłużyć ??
-                        bool test = tb.Focus();
-                        Debug.WriteLine("foccus: "+test.ToString());
-                        //tb.Select(tb.Text.Length, 0);
-                        
-                        //tb.CaretIndex = tb.Text.Length;
-                        //tb.ScrollToEnd();
-                        //tb.Focusable = true;
-                        //tb.Focus();
-                        //tb.Select(tb.Text.Length,0);
-                        //tb.Select(0,tb.Text.Length);
-                        
-                        tb.SelectAll();
-
-                    }
-
-                }
-            }
-        }
-        else
-        {
-            znacznik = milliseconds;
-            Debug.WriteLine(" ok m: "+milliseconds+" m-z: "+(milliseconds-znacznik).ToString());
-        }
-    }//*/
-    /*
-    private TextBox GetChildrenTB(DependencyObject obj)
-    {
-        Grid p = obj as Grid;
-        foreach (var x in p.Children)
-        {
-            if (x is TextBox)
-            {
-                return x as TextBox;
-            }
-        }
-        return null;
-    }
-    
-
-    private TextBlock GetChildrenTBO(DependencyObject obj)
-    {
-        Grid p = obj as Grid;
-        foreach (var x in p.Children)
-        {
-            if (x is TextBlock)
-            {
-                return x as TextBlock;
-            }
-        }
-        return null;
-    }
-    //*/
+   
     private void TextBox_KeyDown(object sender, KeyEventArgs e)
-    {
+    {        
         //Debug.WriteLine(" ok - key down text box");    
         if (e.Key == Key.Enter)
         {
@@ -223,6 +108,7 @@ public partial class Gallery : UserControl
 
     private void TextBox_LostFocus(object sender, RoutedEventArgs e)
     {
+        //Debug.WriteLine(" ok - text box lost focus");
         TextBox textBox = sender as TextBox;
         if (textBox.Visibility == Visibility.Visible)//tu zamiast edit sprawdzać czy jest widoczny zamiasr edit, edit wywalić
         {
@@ -236,6 +122,7 @@ public partial class Gallery : UserControl
 
     private void TextBoxActivate(TextBox textBox)
     {
+        //Debug.WriteLine(" ok - text box activate");
         if (textBox != null)
         {
             TextBlock textBlock = textBox.GetSisTextBlock();
@@ -314,20 +201,14 @@ public partial class Gallery : UserControl
 
     private void ListBox_MouseMove(object sender, MouseEventArgs e)
     {
-        if (e.LeftButton == MouseButtonState.Pressed)
+        if (e.LeftButton == MouseButtonState.Pressed && !edit)
         {
             Debug.WriteLine("przeciąganie elementu listy");
             ListBox listBox = sender as ListBox;
             ListBoxItem item = listBox.GetListBoxItem(e.GetPosition(listBox));
             if (item != null)
             {
-                Debug.WriteLine("wybrano element: " + (item.DataContext as Photo).Name);
-                //DataObject data = new DataObject();
-                //data.SetText((selectedItem.DataContext as Photo).Path);
-                //data.SetData(DataFormats.StringFormat, (selectedItem.DataContext as Photo).Path);
-                //data.SetData("Photo", selectedItem.DataContext as Photo);//?
-
-                //DragDrop.DoDragDrop(selectedItem, data, DragDropEffects.Copy | DragDropEffects.Move);
+                //Debug.WriteLine("wybrano element: " + (item.DataContext as Photo).Name);
                 DragDrop.DoDragDrop(item, (item.DataContext as Photo).Path,
                     DragDropEffects.Copy | DragDropEffects.Move);
 
@@ -335,32 +216,17 @@ public partial class Gallery : UserControl
         }
     }
 
-    private void UserControl_Loaded(object sender, RoutedEventArgs e)
+    private void Lista_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        /*
-         // to działa ale nie tak jak  jest mi to potrzebne, jest wywoływane przy załadowaniu każdego kolejego obrazka
-        ((INotifyCollectionChanged)Lista.ItemsSource).CollectionChanged +=
-        new NotifyCollectionChangedEventHandler(List1CollectionChanged);
-        */
+        // Check if Modifiers for Selection modes are pressed
+        if (Keyboard.Modifiers != ModifierKeys.Control && Keyboard.Modifiers != ModifierKeys.Shift)
+        {
+            ListBox parent = (ListBox)sender;
+ 
+        }
     }
 
 
 
-    /*
-    private void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        selectedItem = (sender as ListBox).GetListBoxItem(e.GetPosition(sender as ListBox));
-        if (selectedItem != null)
-        {
-            Debug.WriteLine("wybrano element: " + (selectedItem.DataContext as Photo).Name);
-            //DataObject data = new DataObject();
-            //data.SetText((selectedItem.DataContext as Photo).Path);
-            //data.SetData(DataFormats.StringFormat, (selectedItem.DataContext as Photo).Path);
-            //data.SetData("Photo", selectedItem.DataContext as Photo);//?
 
-            //DragDrop.DoDragDrop(selectedItem, data, DragDropEffects.Copy | DragDropEffects.Move);
-            DragDrop.DoDragDrop(selectedItem, (selectedItem.DataContext as Photo).Path, DragDropEffects.Copy | DragDropEffects.Move);
-        }
-
-    }//*/
 }

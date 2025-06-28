@@ -222,7 +222,8 @@
                                             <!--MouseLeftButtonUp="routed_MouseLeftButtonUp" -->
                                     <TreeView.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="dodaj katalog" Click="MenuItem_AddDir"/>
+                                            <MenuItem Header="Dodaj katalog" Click="MenuItem_AddDir"/>
+                                            <MenuItem Header="Usuń katalog" Click="MenuItem_Delete" />
                                             <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
                                         </ContextMenu>
                                     </TreeView.ContextMenu>

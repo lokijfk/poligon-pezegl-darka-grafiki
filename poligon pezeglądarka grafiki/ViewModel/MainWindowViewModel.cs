@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Microsoft.VisualBasic.FileIO;
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View;
 using poligon_pezeglądarka_grafiki.View.Control;
@@ -11,7 +12,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
-using Microsoft.VisualBasic.FileIO;
+//using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
@@ -275,12 +276,68 @@ public partial class MainWindowViewModel : ObservableObject
         }
      }
 
-    [RelayCommand]
-    private void AddFolderToTree(object param)
+    
+    public void AddFolderToTree(TreeModel treeModel, string newName)
     {
-        Debug.WriteLine("dodaj katalog active, obiect type: "+param.GetType().ToString());
+        //Debug.WriteLine("dodaj katalog active, obiect type: "+param.GetType().ToString());
+        //Debug.WriteLine("AddFolderToTree: " + treeModel.Path + " newName: " + newName);
+        string newPath = System.IO.Path.Combine(treeModel.Path, newName);
+        //Debug.WriteLine("AddFolderToTree new path: " + newPath);
+        try { 
+            Directory.CreateDirectory(newPath);
+            treeModel.AddChild(ScanPath(newPath, SelectedTreePath));
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            return;
+        }
     }
 
+    public void DeleteFolderFromTree(TreeModel treeModel)
+    {
+        if (treeModel == null) return;
+        if (string.IsNullOrEmpty(treeModel.Path)) return;
+        if (!Directory.Exists(treeModel.Path)) return;
+
+        System.IO.DirectoryInfo dir = new System.IO.DirectoryInfo(treeModel.Path);
+
+        if (dir.Exists)
+        {
+            setAttributesNormal(dir);
+            try
+            {
+                FileSystem.DeleteDirectory(treeModel.Path, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                
+                if(dir.Exists)
+                {
+                    //dir.Delete(true);
+                   // Directory.Delete(treeModel.Path, true);
+                }
+                
+                TreeModel parent = treeModel.Parent;
+                parent.Children.Remove(treeModel);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+        }
+    }
+
+    private void setAttributesNormal(DirectoryInfo dir)
+    {
+        foreach (var subDir in dir.GetDirectories())
+            setAttributesNormal(subDir);
+        foreach (var file in dir.GetFiles())
+        {
+            file.Attributes = FileAttributes.Normal;
+        }
+        foreach (var file in dir.GetFiles())
+        {
+            file.Attributes = FileAttributes.Normal;
+        }
+    }
     public void DeleteFile(string file)
     {
         if (string.IsNullOrEmpty(file)) return;
@@ -288,6 +345,7 @@ public partial class MainWindowViewModel : ObservableObject
         try
         {
             //File.Delete(file);
+            //usuwa ale nie rekurencyjnie
             FileSystem.DeleteFile(file, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
             //Debug.WriteLine("DeleteFile: " + file);
         }
@@ -326,6 +384,19 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    public void CopyFileToFolder(string file, string path)
+    {
+        CopyFile(file, path);
+        string pathFile = System.IO.Path.GetDirectoryName(file);
+        foreach (var treeItem in Tree)
+        {
+            TreeModel? item = treeItem.GetElementByPath(path);
+            if (item != null)item.CountFiles = GetCountFiles(item.Path);//dodaje liczbę plików w katalogu
+            //item = treeItem.GetElementByPath(pathFile);
+            //if (item != null)item.CountFiles = GetCountFiles(item.Path);//odejmuje liczbę plików w katalogu
+        }
+    }
+
     private bool MoveFile(string file, string path)
     {
         if (string.IsNullOrEmpty(path))
@@ -359,6 +430,36 @@ public partial class MainWindowViewModel : ObservableObject
         return true;
     }
 
+    private bool CopyFile(string file, string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            //Debug.WriteLine("CopyFileToFolder: path is null or empty");
+            return false;
+        }
+        if (file == null)
+        {
+            //Debug.WriteLine("CopyFileToFolder: file is null");
+            return false;
+        }
+        if (!Directory.Exists(path))
+        {
+            //Debug.WriteLine("CopyFileToFolder: path does not exist: " + path);
+            return false;
+        }
+        string fileName = System.IO.Path.GetFileName(file);
+        string newPath = System.IO.Path.Combine(path, fileName);
+        try
+        {
+            File.Copy(file, newPath);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            return false;
+        }
+        return true;
+    }
 
     #endregion DragDrop
 

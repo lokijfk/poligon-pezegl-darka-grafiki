@@ -333,7 +333,17 @@ public partial class MainWindow : Window
         {
             string dataString = (string)e.Data.GetData(DataFormats.StringFormat);
             //Debug.WriteLine("TreeView_Drop: " + dataString + " , do: " + (treeViewItem.DataContext as TreeModel).Path);
-            (this.DataContext as MainWindowViewModel).MoveFileToFolder(dataString, (treeViewItem.DataContext as TreeModel).Path);
+            if(e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+            {
+                //Debug.WriteLine("TreeView_Drop: Copy");
+                (this.DataContext as MainWindowViewModel).CopyFileToFolder(dataString, (treeViewItem.DataContext as TreeModel).Path);
+            }
+            else
+            {
+                (this.DataContext as MainWindowViewModel).MoveFileToFolder(dataString, (treeViewItem.DataContext as TreeModel).Path);
+                //Debug.WriteLine("TreeView_Drop: Move");
+            }
+            
         }
     }
 
@@ -343,14 +353,6 @@ public partial class MainWindow : Window
     private void routed_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
         znacznik = 0; // reset znacznik po zmianie zaznaczenia
-    }
-
-    private void MenuItem_AddDir(object sender, RoutedEventArgs e)
-    {
-        //(DataContext as MainWindowViewModel).AddFolderToTreeCommand.Execute(sender);
-        Debug.WriteLine("MenuItem_Click: " + (sender as MenuItem).DataContext.ToString() + " , " + e.Source.ToString());
-        Debug.WriteLine(menuSelectedItem.ToString());
-        //e.Source.ToString();
     }
 
     private void TreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -379,5 +381,20 @@ public partial class MainWindow : Window
         //*/
     }
 
+    private void MenuItem_AddDir(object sender, RoutedEventArgs e)
+    {
+        //(DataContext as MainWindowViewModel).AddFolderToTreeCommand.Execute(sender);
+        //Debug.WriteLine("MenuItem_Click: " + (sender as MenuItem).DataContext.ToString() + " , " + e.Source.ToString());
+        //Debug.WriteLine(menuSelectedItem.ToString());
+        TreeModel treeModel = menuSelectedItem.DataContext as TreeModel;
+        //Debug.WriteLine("MenuItem_AddDir: " + treeModel.Name + " , " + treeModel.Path);
+        (this.DataContext as MainWindowViewModel).AddFolderToTree(treeModel,"aaaa"); 
+        //e.Source.ToString();
+    }
 
+    private void MenuItem_Delete(object sender, RoutedEventArgs e)
+    {
+        TreeModel treeModel = menuSelectedItem.DataContext as TreeModel;
+        (this.DataContext as MainWindowViewModel).DeleteFolderFromTree(treeModel);
+    }
 }
