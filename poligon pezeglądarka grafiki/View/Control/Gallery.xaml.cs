@@ -1,9 +1,7 @@
 ﻿
-//using GongSolutions.Wpf.DragDrop;
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
-
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,7 +16,7 @@ namespace poligon_pezeglądarka_grafiki.View.Control;
 public partial class Gallery : UserControl
 {
 
-    private decimal znacznik = 0;
+    //private decimal znacznik = 0;
     private bool edit = false;    
     private ListBoxItem? selectedItem = null;
     
@@ -82,7 +80,7 @@ public partial class Gallery : UserControl
     }
 
 
-   
+   /*
     private void TextBox_KeyDown(object sender, KeyEventArgs e)
     {        
         //Debug.WriteLine(" ok - key down text box");    
@@ -93,8 +91,8 @@ public partial class Gallery : UserControl
             TextBlock lb = textBox.GetSisTextBlock();//GetChildrenTBO(textBox.GetParentAsGrid());
             lb.Visibility = System.Windows.Visibility.Visible;
             edit = false;
-            if((textBox.DataContext as Photo).Name != textBox.Text)
-            (DataContext as MainWindowViewModel).RenameFile(textBox.DataContext as Photo, textBox.Text);
+            //if((textBox.DataContext as Photo).Name != textBox.Text)
+            //(DataContext as MainWindowViewModel).RenameFile(textBox.DataContext as Photo, textBox.Text);
         }else if (e.Key == Key.Escape)
         {
             TextBox textBox = sender as TextBox;
@@ -104,7 +102,7 @@ public partial class Gallery : UserControl
             edit = false;
         }
     }
-
+   
 
     private void TextBox_LostFocus(object sender, RoutedEventArgs e)
     {
@@ -118,20 +116,9 @@ public partial class Gallery : UserControl
             textBox.Text = (textBox.DataContext as Photo).Name; // reset nazwy do oryginalnej, jeżeli nie zmieniono
         }
     }
+   
 
 
-    private void TextBoxActivate(TextBox textBox)
-    {
-        //Debug.WriteLine(" ok - text box activate");
-        if (textBox != null)
-        {
-            TextBlock textBlock = textBox.GetSisTextBlock();
-            if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
-            textBox.Visibility = Visibility.Visible;
-            textBox.Focus();
-            textBox.Select(0, textBox.Text.Length-4); // ustawia kursor na końcu tekstu
-        }
-    }
 
     private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {        
@@ -164,6 +151,20 @@ public partial class Gallery : UserControl
             znacznik = milliseconds;
         }
     }
+   */
+    private void TextBoxActivate(TextBox textBox)
+    {
+        //Debug.WriteLine(" ok - text box activate");
+        if (textBox != null)
+        {
+            TextBlock textBlock = textBox.GetSisTextBlock();
+            if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
+            textBox.Visibility = Visibility.Visible;
+            textBox.Focus();
+            textBox.Select(0, textBox.Text.Length-4); // ustawia kursor na końcu tekstu
+        }
+    }
+
 
     private void MenuItem_Rename(object sender, RoutedEventArgs e)
     {
@@ -200,8 +201,10 @@ public partial class Gallery : UserControl
     }
 
     private void ListBox_MouseMove(object sender, MouseEventArgs e)
-    {
-        if (e.LeftButton == MouseButtonState.Pressed && !edit)
+    {   
+        bool EditMode = (DataContext as MainWindowViewModel).EditMode;
+        //Debug.WriteLine("EditMode: " + EditMode);
+        if (e.LeftButton == MouseButtonState.Pressed && !edit && !EditMode)
         {
             Debug.WriteLine("przeciąganie elementu listy");
             ListBox listBox = sender as ListBox;

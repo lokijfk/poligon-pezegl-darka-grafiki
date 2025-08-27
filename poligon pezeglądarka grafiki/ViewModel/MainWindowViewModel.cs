@@ -6,6 +6,7 @@ using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View;
 using poligon_pezeglądarka_grafiki.View.Control;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -36,8 +37,12 @@ public partial class MainWindowViewModel : ObservableObject
     //public List<string> Tryb { get; set; } = ["Hello", "FDataGrid", "FList","Gallery", "SettingdFolder"];
     #endregion Collection
 
+    //do czego to było brane ??
     [ObservableProperty]
     private string _SelectedTreeItem = string.Empty;
+    
+    [ObservableProperty]
+    private bool _EditMode = false;
 
     private TreeModel selectedItem;
     public TreeModel SelectedItem
@@ -216,6 +221,8 @@ public partial class MainWindowViewModel : ObservableObject
         }
         return true;
     }
+
+    
     public void RenameFile(Photo photo, string newName)
     {
         newName = photo.Path.Substring(0, photo.Path.LastIndexOf('\\') + 1)+ newName;
@@ -226,7 +233,27 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    public bool RenameFolder(string oldName, string newName)
+
+    [RelayCommand]
+    private void RenameFile(object[] param)
+    {
+        //działa, przetestowane !!! :)
+        if((param == null)||(param.Count()<2)) return;
+        Photo photo = param[0] as Photo;
+        if ((photo == null)&&(photo is not Photo)) return;
+        string NewName = param[1] as string;
+        if ((NewName == null) || (NewName is not string)) return;
+               
+        if (string.IsNullOrEmpty(photo.Path)) return;
+        if (!File.Exists(photo.Path)) return;
+        string newName = photo.Path.Substring(0, photo.Path.LastIndexOf('\\') + 1) + NewName;
+        
+        if (RenameFile(photo.Path, newName))
+        {
+            photo.rename(newName);
+        }
+    }
+    private bool RenameFolder(string oldName, string newName)
     {
         //dodać wyskakujące okno z komunikatem o będzie
         Debug.WriteLine("o: " + oldName + " ,N: " + newName);
@@ -276,7 +303,18 @@ public partial class MainWindowViewModel : ObservableObject
         }
      }
 
-    
+    [RelayCommand]
+    private void RenameFolder(object[] param)
+    {
+        //Debug.WriteLine("RenameFolder: " + param.GetType().ToString());
+        if ((param == null) || (param.Count() < 2)) return;
+        TreeModel treeModel = param[0] as TreeModel;
+        if ((treeModel == null) || (treeModel is not TreeModel)) return;
+        string newName = param[1] as string;
+        if ((newName == null) || (newName is not string)) return;
+        RenameFolder(treeModel, newName);
+    }
+
     public void AddFolderToTree(TreeModel treeModel, string newName)
     {
         //Debug.WriteLine("dodaj katalog active, obiect type: "+param.GetType().ToString());
@@ -468,10 +506,16 @@ public partial class MainWindowViewModel : ObservableObject
 
     [RelayCommand]
     private void TreeModelLBMClick(TreeModel parameter)
-    {
+    {   
+
         if (parameter != null) ReloadFileList(parameter as TreeModel);
     }
 
+    [RelayCommand]
+    private void TreeModelRBMUP(object sender)
+    {
+        Debug.WriteLine("MWVM TreeModelRBMUP: " + sender?.GetType().Name);
+    }
     private int GetCountFiles(string path)
     {
         /*files = System.IO.Directory.GetFiles(yourFolder).OrderBy(

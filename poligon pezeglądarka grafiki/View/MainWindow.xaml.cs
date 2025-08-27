@@ -179,10 +179,22 @@ public partial class MainWindow : Window
         }
     }
 
+    public void TreeViewItem_MouseLeftButtonUpp(object sender, MouseButtonEventArgs e)
+    {
+        Debug.WriteLine("MainWindow TreeViewItem_MouseLeftButtonUp: " + sender.GetType().ToString());
+        Debug.WriteLine("MainWindow TreeViewItem_MouseLeftButtonUp: " + (sender as TreeView).SelectedItem.GetType().Name);
+        TreeView treeView = sender as TreeView;
+        Debug.WriteLine("MainWindow TreeViewItem_MouseLeftButtonUp: " +
+            (treeView.GetItem(e.GetPosition(treeView)).DataContext as TreeModel).Name);
 
+        TreeViewItem treeViewItem = (sender as TreeView).SelectedItem as TreeViewItem;// tu jest błąd
+        if (treeViewItem == null) return;
+        TreeViewItem_MouseLeftButtonUp(treeViewItem, e);
+    }
     private void TreeViewItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
-        if ((sender as TreeViewItem).DataContext != routed.SelectedItem) return;
+        Debug.WriteLine("TreeViewItem_MouseLeftButtonUp: " + sender.GetType().ToString());
+        if ((sender as TreeViewItem).DataContext != TreeGlalleryPoligon.SelectedItem) return;
         //e.Handled = false;// to nic nie daje
         decimal milliseconds = DateTime.Now.Ticks / (decimal)TimeSpan.TicksPerMillisecond;
         if ((znacznik > 0) && (milliseconds - znacznik >= 1000) && (milliseconds - znacznik <= 3500))
@@ -222,19 +234,23 @@ public partial class MainWindow : Window
         {
             TextBlock textBlock = textBox.GetSisTextBlock();
             if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
-            if (menuSelectedItem == null) menuSelectedItem = routed.SelectedItem as TreeViewItem;
-            textBox.Height = menuSelectedItem.ActualHeight;
+            if (menuSelectedItem == null) menuSelectedItem = textBox.GetTreeViewItem();//TreeGlalleryPoligon.SelectedItem as TreeViewItem;
+            if (menuSelectedItem != null)
+            {
+                //textBox.Height = menuSelectedItem.ActualHeight;                
+                //textBox.Width = menuSelectedItem.ActualWidth;
+            }
             textBox.MaxHeight = textBox.FontSize * 1.5;
-            textBox.Width = menuSelectedItem.ActualWidth;
-            textBox.Margin = new Thickness(0, 0, 0, 0);
-            textBox.Padding = new Thickness(0, 0, 0, 0);
-            textBox.BorderThickness = new Thickness(0);//obramowanie jest z treViewItem i na razie nie mam na to wpływu
-            textBox.Visibility = Visibility.Visible;
-            textBox.Focus();
-            textBox.Select(TabIndex, textBox.Text.Length); // ustawia kursor na końcu tekstu
+                textBox.Margin = new Thickness(0, 0, 0, 0);
+                textBox.Padding = new Thickness(0, 0, 0, 0);
+                textBox.BorderThickness = new Thickness(0);//obramowanie jest z treViewItem i na razie nie mam na to wpływu
+                textBox.Visibility = Visibility.Visible;
+                textBox.Focus();
+                textBox.Select(TabIndex, textBox.Text.Length); // ustawia kursor na końcu tekstu            
         }
     }
 
+    //*
     private void TextBox_KeyDown(object sender, KeyEventArgs e)
     {
         //Debug.WriteLine(" ok - key down text box");
@@ -242,11 +258,11 @@ public partial class MainWindow : Window
         if (e.Key == Key.Enter)
         {
             Debug.WriteLine(" ok - key down text box - enter");
-            /*
-             textBox.Visibility = System.Windows.Visibility.Collapsed;
-             TextBlock lb = textBox.GetSisTextBlock();
-             lb.Visibility = System.Windows.Visibility.Visible;
-            */
+            
+             //textBox.Visibility = System.Windows.Visibility.Collapsed;
+             //TextBlock lb = textBox.GetSisTextBlock();
+             //lb.Visibility = System.Windows.Visibility.Visible;
+            
             // ma odbierać info z MainWindowViewModel i jak jest błąd to go wyświetlić w oknie
             // jeżeli zwróci true to ok a okno wyświetlać po stonie MainWindowViewModel
 
@@ -281,6 +297,7 @@ public partial class MainWindow : Window
         }
     }
 
+    //*/
     #endregion zdarzenia
 
     #region Widoki
@@ -350,10 +367,7 @@ public partial class MainWindow : Window
 
     #endregion Tree DragDrop
 
-    private void routed_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-    {
-        znacznik = 0; // reset znacznik po zmianie zaznaczenia
-    }
+    
 
     private void TreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -396,5 +410,18 @@ public partial class MainWindow : Window
     {
         TreeModel treeModel = menuSelectedItem.DataContext as TreeModel;
         (this.DataContext as MainWindowViewModel).DeleteFolderFromTree(treeModel);
+    }
+
+    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        TreeModel element = e.NewValue as TreeModel;
+        znacznik = 0; // reset znacznik po zmianie zaznaczenia
+        Debug.WriteLine("TreeView_SelectedItemChanged 2: " + element.Name);
+        (this.DataContext as MainWindowViewModel)?.TreeModelLBMClickCommand.Execute(element);
+    }
+
+    private void MainWindowPoligon_StateChanged(object sender, EventArgs e)
+    {
+        (this.DataContext as MainWindowViewModel)?.ButtonRefreshCommand.Execute(this);
     }
 }
