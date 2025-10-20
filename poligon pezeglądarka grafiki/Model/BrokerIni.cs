@@ -29,6 +29,7 @@ class BrokerIni
         {
             ini = new IniFile(Tools.GetUserAppDataPath + "\\" + inis);
         }
+        //Debug.WriteLine(Tools.GetUserAppDataPath);
         return ini;
     }
 

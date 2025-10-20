@@ -6,11 +6,12 @@
              xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
              xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
              xmlns:converters="clr-namespace:poligon_pezeglądarka_grafiki.View.Converters"
+             xmlns:ext="clr-namespace:poligon_pezeglądarka_grafiki.View.ext"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             Loaded="UserControl_Loaded"
+             
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -19,13 +20,20 @@
     </UserControl.Resources>
     <Grid>
         <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
-                 ItemsSource="{Binding Photos}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ItemsSource="{Binding Photos}" 
+                 
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  MouseDoubleClick="ListBox_MouseDoubleClick" 
                  MouseMove="ListBox_MouseMove"
+                 PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"
+                 PreviewMouseLeftButtonUp="ListBox_PreviewMouseLeftButtonUp"
+                 MouseLeftButtonDown="ListBox_MouseLeftButtonDown"
+                 KeyDown="ListBox_KeyDown"
                  
                  >
             <ListBox.Resources>
                 <ContextMenu x:Key="listViewContextMenu" materialDesign:MenuAssist.MenuItemsPresenterMargin="0">
+                    <!--materialDesign:MenuAssist.MenuItemsPresenterMargin="0"-->
                     <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
                     <MenuItem Header="Wytnij" Click="MenuItem_Click" />
                     <MenuItem Header="Usuń" Click="MenuItem_Delete" />
@@ -45,38 +53,21 @@
                             <TextBlock               
                             Text="{Binding Name}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                 Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
-                                TextAlignment="Center">                                
-                                <TextBlock.Resources>
+                                TextAlignment="Center">
+                                <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="TextWrapping" Value="Wrap" />                                        
-                                        <EventSetter Event="MouseLeftButtonUp" Handler="TextBlock_MouseLeftButtonUp" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />               
                                     </Style>
-                                </TextBlock.Resources>
+                                </TextBlock.Style>
                             </TextBlock>
-                            <TextBox Text="{Binding Name,Mode=OneWay}" Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}" Visibility="Hidden">                                      
+                            <TextBox Text="{Binding Name,Mode=OneWay}" 
+                                     Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}" 
+                                     Visibility="Hidden">                                      
                                 <TextBox.Style>
                                     <Style TargetType="TextBox">
                                         <Setter Property="TextWrapping" Value="Wrap" />
                                         <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
                                         <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
-                                        <!--EventSetter Event="TextChanged" Handler="TextBox_TextChanged" / 
-                                        nie urzywać załącza się po usunięciu każej litery i po dodaniu tekstu do pola -->
-                                        <!--Style.Triggers>
-                                            <Trigger Property="IsEnabled" Value="False">
-
-                                                <Setter Property="Background" Value="Transparent" />
-                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                                <Setter Property="BorderBrush" Value="Transparent" />
-                                            </Trigger>
-                                            <Trigger Property="IsEnabled" Value="True">
-
-                                                <Setter Property="Background" Value="White" />
-                                                <Setter Property="Foreground" Value="Black" />
-                                            </Trigger>
-
-
-                                        
-                                    </Style.Triggers-->
                                     </Style>                                    
                                 </TextBox.Style>
                             </TextBox>
@@ -88,7 +79,10 @@
                 <Style TargetType="ListBoxItem" >
                     <Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/>
                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBoxItem_PreviewMouseRightButtonDown" />
+                    <EventSetter Event="MouseLeftButtonDown" Handler="ListBoxItem_MouseLeftButtonDown" />
+                    <!--EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_PreviewMouseLeftButtonDown" /-->
                     
+                    <!--EventSetter Event="MouseDown" Handler="ListBoxItem_MouseDown" /-->
                     <!--EventSetter Event="MouseMove" Handler="ListBoxItem_MouseMove" /-->
                     <!--EventSetter Event="PreviewMouseRightButtonUp" Handler="ListBoxItem_PreviewMouseRightButtonUp" /-->
                     <!--EventSetter Event="PreviewMouseDown" Handler="ListBoxItem_PreviewMouseDown" /-->

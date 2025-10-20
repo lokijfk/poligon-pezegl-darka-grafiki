@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+using Microsoft.VisualBasic.FileIO;
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View;
 using poligon_pezeglądarka_grafiki.View.Control;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -11,7 +13,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
-using Microsoft.VisualBasic.FileIO;
+using System.Windows.Shapes;
 
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
@@ -30,6 +32,7 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<FilesIO> FilesList { get; set; } = [];
     public ObservableCollection<string> DirPath { get; private set; } = [];
     public ObservableCollection<Photo> Photos { get; set; } = [];
+    //public ObservableCollection<Photo> SelectedPhoto { get; set; } = [];
     //private readonly object _collectionOfObjectsSync = new object();  
 
     //public List<string> Tryb { get; set; } = ["Hello", "FDataGrid", "FList","Gallery", "SettingdFolder"];
@@ -38,23 +41,29 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _SelectedTreeItem = string.Empty;
 
+    [ObservableProperty]
     private TreeModel selectedItem;
+
+    /*
     public TreeModel SelectedItem
     {
         get => selectedItem;
         set
         {
             //selectedItem = value;
+            //Debug.WriteLine("SelectedItem set: " + value?.Path);
             if (SetProperty(ref selectedItem, value)) 
             {
-                TreeModelLBMClick(value);
+                //Debug.WriteLine("SelectedItem zmieniony: " + value?.Path);
+                //TreeModelLBMClick(value);//kiedy to jest potrzebne?
+                selectedItem = value;
             }
             
         }
-    }    
+    } */   
 
     [ObservableProperty]    
-    private string _SelectedView = string.Empty;
+    private string _SelectedView = string.Empty;//do wywołania zmiany widoku
 
     [ObservableProperty]
     private object _selectedViewModel = new();
@@ -151,16 +160,17 @@ public partial class MainWindowViewModel : ObservableObject
 
  
     //hmmm nie wiem czy to jest potrzebne, przecież jest TreeModelLBMClickCommand
+    /*
     public void SetSelectedItem(object parameter)
     {
         
         if ((parameter is TreeModel) && (parameter != null))
         {
-
+            Debug.WriteLine("SetSelectedItem: " + (parameter as TreeModel).Path);
             ReloadFileList(parameter as TreeModel);
         }
         BuildTree();
-    }
+    }*/
 
     [RelayCommand]
     private void DataGridLDoubleClick(object parameter)
@@ -301,15 +311,28 @@ public partial class MainWindowViewModel : ObservableObject
     #endregion Folders and Files
 
     #region DragDrop
+
+    public void MoveFileToFolder()
+    {
+        MoveFileToFolder(String.Empty, String.Empty);
+    }
+
     /// <summary>
     /// przenoszenie pliku do innego katalogu
     /// </summary>
     /// <param name="path">katalog docelowy</param>
     /// <param name="file">plik ze ścieżką</param>
-    public void MoveFileToFolder(string file,string path)
+    public void MoveFileToFolder(string file,string path,bool copy = false)
     {
-        MoveFile(file, path);
+        if ((file == String.Empty) && (path == String.Empty) && !copy)
+        {
+            //czyszczenie kolekcji po przeniesieniu pliku do np explorera plików
+            RefreshFileList();
+            return;
+        }
+        FileMove(file, path,copy);
         string pathFile = System.IO.Path.GetDirectoryName(file);
+        //to dlatego że Tree jest tablicą kilku drzew
         foreach (var treeItem in Tree)
         {
             TreeModel? item = treeItem.GetElementByPath(path);
@@ -317,17 +340,25 @@ public partial class MainWindowViewModel : ObservableObject
             item = treeItem.GetElementByPath(pathFile);
             if (item != null)item.CountFiles = GetCountFiles(item.Path);//odejmuje liczbę plików w katalogu
         }
-
+        if(!copy) 
         Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
         if ((FilesList != null)&& (FilesList.Count > 0))
         {   
             if(FilesList.Any(i => i.Path == file) )
             FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
         }
+
+        if (SelectedTreePath == path)
+        {
+            Debug.WriteLine("MoveFileToFolder:"+SelectedTreePath+" ReloadFileList: " + path+ " selecteditem:"+SelectedItem.Path);
+            ReloadFileList(SelectedItem);// tu selec ctedItem nie został wcześniej zmieniony na aktualny i to jest problemem
+
+        }        
     }
 
-    private bool MoveFile(string file, string path)
+    private bool FileMove(string file, string path,bool copy = false)
     {
+        //wystarczy dodać parametr który będzie decydował czy przenieść czy skopiować
         if (string.IsNullOrEmpty(path))
         {
             //Debug.WriteLine("MoveFileToFolder: path is null or empty");
@@ -349,7 +380,8 @@ public partial class MainWindowViewModel : ObservableObject
         //Debug.WriteLine("MoveFileToFolder: newPath: " + newPath);
         try
         {
-            File.Move(file, newPath);
+            if (copy) File.Copy(file, newPath);
+            else File.Move(file, newPath);
         }
         catch (Exception ex)
         {
@@ -359,6 +391,22 @@ public partial class MainWindowViewModel : ObservableObject
         return true;
     }
 
+    /**
+     * odświeżenie listy plików w aktualnie przeglądanym katalogu
+     * wykożystywane w dragdrop przy przenoszeniu plików
+     */
+    private void RefreshFileList()
+    {
+ 
+            ReloadFileList(SelectedItem);
+            //to dlatego że Tree jest tablicą kilku drzew
+            foreach (var treeItem in Tree)
+            {
+                TreeModel? item = treeItem.GetElementByPath(SelectedItem.Path);
+                if (item != null) item.CountFiles = GetCountFiles(item.Path);//odejmuje liczbę plików w katalogu
+            }
+        
+    }
 
     #endregion DragDrop
 
@@ -366,9 +414,17 @@ public partial class MainWindowViewModel : ObservableObject
     #region Tree and View
 
     [RelayCommand]
+    /**
+     * wywoływane przy kliknięciu LBM na drzewie - zmiana przeglądanego katalogu
+     * 
+     */
     private void TreeModelLBMClick(TreeModel parameter)
     {
-        if (parameter != null) ReloadFileList(parameter as TreeModel);
+        if (parameter != null)
+        {
+            SelectedItem = parameter;
+            ReloadFileList(parameter);
+        }
     }
 
     private int GetCountFiles(string path)
@@ -383,8 +439,8 @@ public partial class MainWindowViewModel : ObservableObject
         {
             SelectedTreeItem = path;
             var imFiles = Directory.EnumerateFiles(path);
-            FileInfo finfo;
-            string ext, name;
+            //FileInfo finfo;
+            string ext;//, name;
             string pattern = @"\.(jpg|bmp|png|webp)";
             Match m;
             int i = 0;
@@ -416,7 +472,7 @@ public partial class MainWindowViewModel : ObservableObject
             if (treeModel != null)
             {
                 string path = treeModel.Path;
-                // Debug.WriteLine("LBM klik, path:"+path);
+                 Debug.WriteLine("LBM klik - ReloadFileList, path:" + path);
                 SelectedTreePath = path;
                 if (cts == null) cts = new CancellationTokenSource();
                 FileListLoad(path, cts.Token);
@@ -434,6 +490,7 @@ public partial class MainWindowViewModel : ObservableObject
         FilesList.Clear();
 
         Photos.Clear();
+
         //Debug.WriteLine("skanowanie z: "+path);
         if (Directory.Exists(path))
         {
@@ -602,7 +659,7 @@ public partial class MainWindowViewModel : ObservableObject
                 if (select == path)
                 {
                     tree.IsSelected = true;
-                    selectedItem = tree;
+                    SelectedItem = tree;
                 }
             }
         }
@@ -686,7 +743,7 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedViewWindow = SelectedView;//zapis do ini
         
         SelectedViewModel = CallMethod(SelectedView);
-        if (SelectedViewWindow == "Gallery") ReloadFileList(selectedItem);
+        if (SelectedViewWindow == "Gallery") ReloadFileList(SelectedItem);
     }
 
 

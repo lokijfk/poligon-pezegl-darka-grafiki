@@ -10,7 +10,7 @@ using System.Windows.Media.Imaging;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-public partial class Photo : ObservableObject
+public partial class Photo : ObservableObject 
 {
     private readonly Uri _source;
     public string Path { get; private set; }
