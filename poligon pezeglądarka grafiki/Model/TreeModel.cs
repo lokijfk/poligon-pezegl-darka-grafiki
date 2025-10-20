@@ -240,6 +240,23 @@ public partial class TreeModel :ObservableObject
         return null;
     }
 
+    /**
+     * metoda testowa, zwraca pełną ścieżkę do katalogu który jest reprezentowany przez ten obiekt
+     * 
+     */
+    public string GetFullPath()
+    {
+        TreeModel? current = this;
+        //string fullPath = current.Name;
+        if (current.Parent != null)
+        {
+            return current.Parent.GetFullPath() + "\\" + current.Name;
+        }
+        else
+        {
+            return current.Path;
+        }
+    }
 
     #region static methods
     // metody statyczne można przenieść do innego obiektu, tu raczej nie mają sensu 
@@ -294,7 +311,7 @@ public partial class TreeModel :ObservableObject
         }
     }
     */
-    #endregion static methods
+#endregion static methods
 
 }
 /*

@@ -6,13 +6,12 @@
              xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
              xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
              xmlns:converters="clr-namespace:poligon_pezeglądarka_grafiki.View.Converters"
-             xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:PloiBox="clr-namespace:poligon_pezeglądarka_grafiki.View.Behaviors"
+             xmlns:ext="clr-namespace:poligon_pezeglądarka_grafiki.View.ext"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             x:Name="GalleryPoligon"             
+             
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -21,13 +20,20 @@
     </UserControl.Resources>
     <Grid>
         <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
-                 ItemsSource="{Binding Photos}" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ItemsSource="{Binding Photos}" 
+                 
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  MouseDoubleClick="ListBox_MouseDoubleClick" 
-                 MouseMove="ListBox_MouseMove" SelectionMode="Extended"
-                 PreviewMouseLeftButtonDown="Lista_PreviewMouseLeftButtonDown"
+                 MouseMove="ListBox_MouseMove"
+                 PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"
+                 PreviewMouseLeftButtonUp="ListBox_PreviewMouseLeftButtonUp"
+                 MouseLeftButtonDown="ListBox_MouseLeftButtonDown"
+                 KeyDown="ListBox_KeyDown"
+                 
                  >
             <ListBox.Resources>
                 <ContextMenu x:Key="listViewContextMenu" materialDesign:MenuAssist.MenuItemsPresenterMargin="0">
+                    <!--materialDesign:MenuAssist.MenuItemsPresenterMargin="0"-->
                     <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
                     <MenuItem Header="Wytnij" Click="MenuItem_Click" />
                     <MenuItem Header="Usuń" Click="MenuItem_Delete" />
@@ -44,55 +50,27 @@
                     <StackPanel Orientation="Vertical">
                         <Image Source="{Binding Image,Mode=OneWay}" Height="200"/>
                         <Grid Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}">
+                            <TextBlock               
+                            Text="{Binding Name}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                                Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
+                                TextAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextWrapping" Value="Wrap" />               
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <TextBox Text="{Binding Name,Mode=OneWay}" 
                                      Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}" 
                                      Visibility="Hidden">                                      
                                 <TextBox.Style>
                                     <Style TargetType="TextBox">
                                         <Setter Property="TextWrapping" Value="Wrap" />
-                                        <!--EventSetter Event="KeyDown" Handler="TextBox_KeyDown" /-->
-                                        <!--EventSetter Event="LostFocus" Handler="TextBox_LostFocus" /-->
-                                        
-                                        <!--Style.Triggers>
-                                            <Trigger Property="IsEnabled" Value="False">
-
-                                                <Setter Property="Background" Value="Transparent" />
-                                                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
-                                                <Setter Property="BorderBrush" Value="Transparent" />
-                                            </Trigger>
-                                            <Trigger Property="IsEnabled" Value="True">
-
-                                                <Setter Property="Background" Value="White" />
-                                                <Setter Property="Foreground" Value="Black" />
-                                            </Trigger>
-
-
-                                        
-                                    </Style.Triggers-->
+                                        <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
+                                        <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
                                     </Style>                                    
                                 </TextBox.Style>
-
-                                <Behaviors:Interaction.Behaviors>
-                                    <PloiBox:SwitchTextBlockToBox EditMode="{Binding ElementName=GalleryPoligon, Path=DataContext.EditMode, Mode=TwoWay}"
-                                                                  Command="{Binding ElementName=GalleryPoligon, Path=DataContext.RenameFileCommand}" />
-                                </Behaviors:Interaction.Behaviors>
                             </TextBox>
-                            <TextBlock               
-                                Text="{Binding Name}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
-                                TextAlignment="Center">                                
-                                <TextBlock.Resources>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="TextWrapping" Value="Wrap" />                                        
-                                        <!--EventSetter Event="MouseLeftButtonUp" Handler="TextBlock_MouseLeftButtonUp" /-->
-                                    </Style>
-                                </TextBlock.Resources>
-                                <Behaviors:Interaction.Behaviors>
-                                            <PloiBox:SwitchTextBlockToBox EditMode="{Binding ElementName=GalleryPoligon, Path=DataContext.EditMode, Mode=TwoWay}"/>                                            
-                                </Behaviors:Interaction.Behaviors>
-                                
-                            </TextBlock>
-                            
                         </Grid>
                     </StackPanel>
                 </DataTemplate>
@@ -101,7 +79,10 @@
                 <Style TargetType="ListBoxItem" >
                     <Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/>
                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBoxItem_PreviewMouseRightButtonDown" />
+                    <EventSetter Event="MouseLeftButtonDown" Handler="ListBoxItem_MouseLeftButtonDown" />
+                    <!--EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_PreviewMouseLeftButtonDown" /-->
                     
+                    <!--EventSetter Event="MouseDown" Handler="ListBoxItem_MouseDown" /-->
                     <!--EventSetter Event="MouseMove" Handler="ListBoxItem_MouseMove" /-->
                     <!--EventSetter Event="PreviewMouseRightButtonUp" Handler="ListBoxItem_PreviewMouseRightButtonUp" /-->
                     <!--EventSetter Event="PreviewMouseDown" Handler="ListBoxItem_PreviewMouseDown" /-->

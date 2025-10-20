@@ -1,14 +1,13 @@
-﻿<Window x:Name="MainWindowPoligon" x:Class="poligon_pezeglądarka_grafiki.MainWindow"
+﻿<Window x:Name="load" x:Class="poligon_pezeglądarka_grafiki.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:Behaviors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki"
         xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
         xmlns:model ="clr-namespace:poligon_pezeglądarka_grafiki.Model"        
         xmlns:converters="clr-namespace:poligon_pezeglądarka_grafiki.View.Converters"
-        xmlns:PloiBox="clr-namespace:poligon_pezeglądarka_grafiki.View.Behaviors"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
         Title="Poligon - przeglądarka"
@@ -17,12 +16,12 @@
         Height="{Binding Height, Mode=TwoWay}" Width="{Binding Width, Mode=TwoWay}"
         Top="{Binding Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         WindowState="{Binding CurMainWindowState, Mode=TwoWay}"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+        xmlns:control="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
         Style="{StaticResource MaterialDesignWindow }" WindowStyle="None"    
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
         Background="{DynamicResource MaterialDesign.Brush.Background}" 
         Icon="/img/73042biohazard_109537(1).ico"  
-        StateChanged="MainWindowPoligon_StateChanged"
         >
 
     <WindowChrome.WindowChrome>
@@ -37,7 +36,7 @@
             <converters:MulitConverterStringToString x:Key="MBConwerterSTS" />
         </ResourceDictionary>
     </Window.Resources>
-    <!--Behaviors:Interaction.Triggers-->
+    <i:Interaction.Triggers>
         <!-- zmieniłem podejście jest autozapis pozmianie, ale zostawiam na przyszłość-->
         <!--i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding onLoadedCommand}" />
@@ -45,10 +44,10 @@
         <!--i:EventTrigger EventName="Closed">
             <i:InvokeCommandAction Command="{Binding onClosedCommand}" />
         </i:EventTrigger-->
-        <!--Behaviors:EventTrigger EventName="StateChanged">
-            <Behaviors:InvokeCommandAction Command="{Binding ButtonRefreshCommand,Mode=OneWay}" />
-        </Behaviors:EventTrigger-->
-    <!--/Behaviors:Interaction.Triggers-->
+        <i:EventTrigger EventName="StateChanged">
+            <i:InvokeCommandAction Command="{Binding ButtonRefreshCommand,Mode=OneWay}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
 
     <Border CornerRadius="5" BorderBrush="Indigo" BorderThickness="2" Padding="6" Background="Transparent">
         <materialDesign:DialogHost x:Name="DialogHostSettings">
@@ -58,106 +57,7 @@
                         <RowDefinition /><!-- body -->                        
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0"><!-- pasek tytułowy -->
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Image Grid.Column="0" Width="22" Height="22" Margin="4" Source="/img/73042biohazard_109537(1).ico"/>
-                        <TextBlock Grid.Column="1" Margin="4 0 0 0" VerticalAlignment="Center" FontSize="14" Text="{Binding WindowTitle}">
-                        <!--TextBlock.Style>
-                            <Style TargetType="TextBlock">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
-                                        <Setter Property="Foreground" Value="Gray" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style-->
-                        </TextBlock>
-
-                        
-                        <Button Grid.Column="2" Style="{StaticResource MaterialDesignTitleBarButtonStyle}"
-                               Width="46" Height="32"
-                               >
-                            <materialDesign:PackIcon Kind="CogOutline" />
-                            <Behaviors:Interaction.Triggers>
-                                <Behaviors:EventTrigger EventName="Click" >
-                                    <Behaviors:InvokeCommandAction 
-                                             Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
-                                             AncestorType={x:Type Window}}, Path=DataContext.SelectionChangedCommand}"
-                                             CommandParameter="SettingdFolder"
-                                                                />
-                                </Behaviors:EventTrigger>
-                            </Behaviors:Interaction.Triggers>
-                        </Button>
-                        
-
-                        <Viewbox Grid.Column="3" Height="20">
-                            <ToggleButton  Style="{StaticResource MaterialDesignSwitchToggleButton}" 
-                                       WindowChrome.IsHitTestVisibleInChrome ="True" 
-                                       IsChecked="{Binding SwitchTglButton}" 
-                                       Command="{Binding SwitchThemeModeCommand}"
-                                       >
-                                <materialDesign:PackIcon Kind="WhiteBalanceSunny" />
-                                <materialDesign:ToggleButtonAssist.OnContent>
-                                    <materialDesign:PackIcon Kind="MoonWaxingCrescent" />
-                                </materialDesign:ToggleButtonAssist.OnContent>
-                            </ToggleButton>
-                        </Viewbox>
-
-                        <Button Grid.Column="4"  RenderOptions.EdgeMode="Aliased"
-                            Style="{StaticResource MaterialDesignTitleBarButtonStyle}"  Width="46" Height="32"
-                            Command="{Binding onCmdMinCommand, Mode=OneWay}">
-
-                            <Path
-			                Width="46" Height="32"
-			                Data="M 18,15 H 28"
-			                Stroke="{Binding Path=Foreground,RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-			                StrokeThickness="1" />
-                        </Button>
-
-
-
-                        <!-- przycisk do maksymalizacji i przywrócenia -->
-                        <Button Name="maximizeButton" Grid.Column="5"  Style="{StaticResource MaterialDesignTitleBarButtonStyle}" 
-                            Visibility="{Binding MaximizeButton, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding onCmdMaxCommand, Mode=OneWay}" >
-                            <Path Width="46" Height="32" Data="M 18.5,10.5 H 27.5 V 19.5 H 18.5 Z" Stroke="{Binding Path=Foreground,
-							     RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeThickness="1" />
-                        </Button>
-                        <Button Name="restoreButton" Grid.Column="5"  Style="{StaticResource MaterialDesignTitleBarButtonStyle}"
-                            Visibility="{Binding RestoreButton, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Command="{Binding onCmdMaxCommand, Mode=OneWay}"         
-                            >
-                            <Path
-			            Width="46" Height="32"
-			            Data="M 18.5,12.5 H 25.5 V 19.5 H 18.5 Z M 20.5,12.5 V 10.5 H 27.5 V 17.5 H 25.5"
-			            Stroke="{Binding Path=Foreground,RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-			            StrokeThickness="1" />
-                        </Button>
-
-
-                        <!-- end -->
-                        <Button Grid.Column="6"  Style="{StaticResource MaterialDesignTitleBarButtonStyle}"  Width="46" Height="32">
-                            <Path
-			                Width="46"
-			                Height="32"
-			                Data="M 18,11 27,20 M 18,20 27,11"
-			                Stroke="{Binding Path=Foreground,RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-			                StrokeThickness="1" />
-                            <Behaviors:Interaction.Triggers>
-                                <Behaviors:EventTrigger EventName="Click">
-                                    <Behaviors:CallMethodAction MethodName="Close"
-                                TargetObject="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}" />
-                                </Behaviors:EventTrigger>
-                            </Behaviors:Interaction.Triggers>
-                        </Button>
+                        <control:TitleBar /><!-- działa :) to tylko żeby tu było mniej kodu i większy porządek-->
                     </Grid>
                     <Grid Grid.Row="1"><!-- body -->
                         <Grid.RowDefinitions>
@@ -213,70 +113,33 @@
                                 <ColumnDefinition  Width="5"/>
                                 <ColumnDefinition  Width="*"/>
                             </Grid.ColumnDefinitions>
-                                
-                                <TreeView  x:Name="TreeGlalleryPoligon" MinWidth="220" ItemsSource="{Binding Tree}" 
+
+                        <TreeView  x:Name="TreeViewX" MinWidth="220" ItemsSource="{Binding Tree}" 
                                             ScrollViewer.CanContentScroll="True" 
                                             VirtualizingStackPanel.IsVirtualizing="True"
                                             VirtualizingStackPanel.VirtualizationMode="Recycling"                                           
-                                             
+                                           SelectedItemChanged="TreeViewX_SelectedItemChanged"   
                                            AllowDrop="True" DragEnter="TreeView_DragEnter" Drop="TreeView_Drop"
                                            >
                                             <!--MouseLeftButtonUp="routed_MouseLeftButtonUp" -->
                                     <TreeView.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="Dodaj katalog" Click="MenuItem_AddDir"/>
-                                            <MenuItem Header="Usuń katalog" Click="MenuItem_Delete" />
+                                            <MenuItem Header="dodaj katalog" Click="MenuItem_AddDir"/>
                                             <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
                                         </ContextMenu>
                                     </TreeView.ContextMenu>
-                                    <!--<Behaviors:Interaction.Triggers>
-                                        --><!-- działa bez dodatkowego kodu--><!--
-                                        <Behaviors:EventTrigger EventName="SelectedItemChanged">
-                                            <Behaviors:InvokeCommandAction Command="{Binding TreeModelLBMClickCommand}"
-                                            CommandParameter="{Binding ElementName=TreeGlalleryPoligon ,Path=SelectedItem}"
-                                             />
-                                            --><!--CommandParameter="{Binding SelectedItem, ElementName=treeView}"/--> 
-                                            <!--CommandParameter="{Binding ElementName=TreeGlalleryPoligon ,Path=SelectedItem}"/-->
-                                            <!--i:EventTrigger EventName="SelectedItemChanged">
-                                                <i:InvokeCommandAction Command="{Binding TreeModelLBMClickCommand}">
-                                                <i:InvokeCommandAction.CommandParameter>
-                                            <MultiBinding Converter="{StaticResource MBConwerterSTS}">
-                                                <Binding ElementName="TreeGlalleryPoligon" Path="SelectedItem" />
-                                                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}"
-                                                         Path="DataContext.VisibleFilesInTree" />
-                                                <Binding ElementName="TreeGlalleryPoligon" Path="SelectedItem" />
-                                            </MultiBinding>
-                                            </i:InvokeCommandAction.CommandParameter>
-                                         </i:InvokeCommandAction--><!--
-
-                                         </Behaviors:EventTrigger>
-                                        --><!-- ten nie działa !!! i nie wiem dlaczego  :(-->
-                                        <!--i:EventTrigger EventName="MouseLeftButtonUp" SourceName="{Binding Source={x:Type TreeViewItem}}"-->
-                                            <!--i:CallMethodAction TargetObject="{Binding}" 
-                                                                MethodName="TreeViewItem_MouseLeftButtonUp" /--><!--
-                                        <Behaviors:EventTrigger EventName="MouseLeftButtonUp" >
-                                            <Behaviors:InvokeCommandAction Command="{Binding TreeModelRBMUPCommand}"
-                                                           CommandParameter="{Binding ElementName=TreeGlalleryPoligon, Path=SelectedItem}"/>
-                                            --><!-- teraz działa, ale musialem ustawić tąmetodę jako publiczną
-                                                nadal jest to problem bo zwraca TreeView a nie TreeViewItem
-                                                i trzeba by coś z tym zrobić
-                                            --><!--
-                                            <Behaviors:CallMethodAction TargetObject="{x:Reference Name=MainWindowPoligon}" 
-                                                                MethodName="TreeViewItem_MouseLeftButtonUpp" />
-                                        </Behaviors:EventTrigger>
-
-
-                                    </Behaviors:Interaction.Triggers>-->
-                                                                        
-                                    <!--i:Interaction.Behaviors>
-                                        <PloiBox:TreeViewItemButtonUp 
-                                            EditMode="True" 
-                                            SelectedItem="{Binding Source={x:Type TreeViewItem}}"
-                                            TargetO="{Binding}"
-                                            />
-                                
-                                    </i:Interaction.Behaviors-->
-                                    
+                                    <i:Interaction.Triggers>
+                                        <!-- działą bez dodatkowego kodu-->
+                                        <i:EventTrigger EventName="SelectedItemChanged">
+                                            <i:InvokeCommandAction Command="{Binding TreeModelLBMClickCommand}"
+                                            CommandParameter="{Binding ElementName=TreeViewX ,Path=SelectedItem}"/>
+                                        </i:EventTrigger>
+                                        
+                                        <!--i:EventTrigger EventName="MouseLeftButtonUp" SourceName="{Binding Source={x:Type TreeViewItem}}">
+                                            <i:CallMethodAction TargetObject="{Binding}" 
+                                                                MethodName="TreeViewItem_MouseLeftButtonUp" />
+                                        </i:EventTrigger-->   
+                                    </i:Interaction.Triggers>
                                     <TreeView.ItemTemplate>
                                         <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children, Mode=OneTime}" >
                                             <Grid>
@@ -304,22 +167,21 @@
                                                     <TextBox.Style>
                                                         <Style TargetType="TextBox">
                                                             <Setter Property="TextWrapping" Value="Wrap" />
-                                                            <!--EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
-                                                            <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" /-->
+                                                            <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
+                                                            <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
                                                         </Style>
                                                     </TextBox.Style>
-                                                    <!--i:Interaction.Behaviors>
-                                                        <PloiBox:SwitchTextBlockToBox EditMode="{Binding ElementName=MainWindowPoligon, Path=DataContext.EditMode, Mode=TwoWay}"
-                                                            Command="{Binding ElementName=MainWindowPoligon, Path=DataContext.RenameFolderCommand}" />
-                                                        <PloiBox:TextBoxWidthToTreeItemWidth 
-                                                                VisiblityProperty="{Binding RelativeSource={RelativeSource AncestorType=TextBox,
-                                                                                    Mode=FindAncestor},Path=Visibility}"/>
-                                                    </i:Interaction.Behaviors-->
-                                                </TextBox>
+                                                    <!--nie wiem czy działą nie testowałem, tu mi jest potrzebny kod BC -->
+                                                    <!-- bo są manipulacje w interfejsie a doiero wynik końcowy jest wysyłąny do VM-->
+                                                    <!--i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="KeyDown">
+                                                            <i:InvokeCommandAction Command="{Binding StartEditCommand}" />
+                                                            
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers-->
+                                        </TextBox>
                                             </Grid>
                                         </HierarchicalDataTemplate>
-                                        
-                                    
                                     </TreeView.ItemTemplate>
                                     
                                     <TreeView.ItemContainerStyle>
@@ -333,23 +195,16 @@
                                             Value="{Binding IsExpanded,Mode=TwoWay}" />
                                                 <Setter Property="IsSelected"
                                             Value="{Binding IsSelected, Mode=TwoWay}" />
-                                        <!-- ten dziala a ten w beh nie -->
-                                    <!--EventSetter Event="MouseLeftButtonUp" 
-                                                         Handler="TreeViewItem_MouseLeftButtonUp" /-->
-                                    <EventSetter Event="PreviewMouseRightButtonDown" 
+
+                                            <EventSetter Event="MouseLeftButtonUp" 
+                                                         Handler="TreeViewItem_MouseLeftButtonUp" />
+                                            <EventSetter Event="PreviewMouseRightButtonDown" 
                                                  Handler="TreeViewItem_PreviewMouseRightButtonDown" />
+
                                     <!--EventSetter Event="MouseWheel" Handler="TVI_MouseWheel" /-->
                                         </Style>
                                     </TreeView.ItemContainerStyle>
                                     <!--TreeViewItem /-->
-                            <TreeView.Style>
-                                <Style TargetType="{x:Type TreeView}" BasedOn="{StaticResource MaterialDesignTreeView}">
-                                    <Setter Property="materialDesign:TreeViewAssist.ExpanderSize" Value="20" />
-                                    <Setter Property="materialDesign:TreeViewAssist.ShowSelection" Value="True" />
-                                    <EventSetter Event="SelectedItemChanged"
-                                                 Handler="TreeView_SelectedItemChanged" />
-                                </Style>
-                            </TreeView.Style>
                                 </TreeView>
                             
                                 <Button HorizontalAlignment="Left"  VerticalAlignment="Bottom"                             

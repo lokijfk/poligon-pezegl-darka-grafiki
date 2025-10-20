@@ -18,11 +18,7 @@ public static class DependencyObjectExtension
         }
         return item as Grid;
     }
-    /// <summary>
-    /// zwraca rodzica jako TreeViewItem
-    /// </summary>
-    /// <param name="item"></param>
-    /// <returns></returns>
+
     public static TreeViewItem GetTreeViewItem(this DependencyObject item)
     {
         //DependencyObject item = block;

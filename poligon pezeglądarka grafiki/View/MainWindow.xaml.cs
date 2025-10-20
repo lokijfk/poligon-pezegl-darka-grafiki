@@ -29,7 +29,10 @@ public partial class MainWindow : Window
     }
 
     #region Window
-    protected override void OnSourceInitialized(EventArgs e)
+    protected override void OnSourceInitialized(EventArgs e)// override OnSourceInitialized - występuje tylko w oknie
+                                                            // i jest wywoływane po utworzeniu okna, ale przed jego pokazaniem
+                                                            //tylko tu da się ją wywołać
+                                                            // opcjonalnie można zrobić własne okno dziedziczące po Window
     {
         base.OnSourceInitialized(e);
         ((HwndSource)PresentationSource.FromVisual(this)).AddHook(HookProc);
@@ -167,6 +170,9 @@ public partial class MainWindow : Window
             //(this.DataContext as MainWindowViewModel)?.SetSelectedItem(e.NewValue);
         }
     */
+    /**
+     * Dodawanie folderu do obserwowanych
+     */
     private void Button_AddFolder(object sender, RoutedEventArgs e)
     {
         var ofd = new OpenFolderDialog();
@@ -179,22 +185,12 @@ public partial class MainWindow : Window
         }
     }
 
-    public void TreeViewItem_MouseLeftButtonUpp(object sender, MouseButtonEventArgs e)
-    {
-        Debug.WriteLine("MainWindow TreeViewItem_MouseLeftButtonUp: " + sender.GetType().ToString());
-        Debug.WriteLine("MainWindow TreeViewItem_MouseLeftButtonUp: " + (sender as TreeView).SelectedItem.GetType().Name);
-        TreeView treeView = sender as TreeView;
-        Debug.WriteLine("MainWindow TreeViewItem_MouseLeftButtonUp: " +
-            (treeView.GetItem(e.GetPosition(treeView)).DataContext as TreeModel).Name);
-
-        TreeViewItem treeViewItem = (sender as TreeView).SelectedItem as TreeViewItem;// tu jest błąd
-        if (treeViewItem == null) return;
-        TreeViewItem_MouseLeftButtonUp(treeViewItem, e);
-    }
+    /**
+     * uruchamia proces zmiany nazwy folderu w drzewie
+     */
     private void TreeViewItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        Debug.WriteLine("TreeViewItem_MouseLeftButtonUp: " + sender.GetType().ToString());
-        if ((sender as TreeViewItem).DataContext != TreeGlalleryPoligon.SelectedItem) return;
+    {   //TreeViewX - to nazwa drzewa w xaml
+        if ((sender as TreeViewItem).DataContext != TreeViewX.SelectedItem) return;
         //e.Handled = false;// to nic nie daje
         decimal milliseconds = DateTime.Now.Ticks / (decimal)TimeSpan.TicksPerMillisecond;
         if ((znacznik > 0) && (milliseconds - znacznik >= 1000) && (milliseconds - znacznik <= 3500))
@@ -234,23 +230,19 @@ public partial class MainWindow : Window
         {
             TextBlock textBlock = textBox.GetSisTextBlock();
             if (textBlock != null) textBlock.Visibility = Visibility.Collapsed;
-            if (menuSelectedItem == null) menuSelectedItem = textBox.GetTreeViewItem();//TreeGlalleryPoligon.SelectedItem as TreeViewItem;
-            if (menuSelectedItem != null)
-            {
-                //textBox.Height = menuSelectedItem.ActualHeight;                
-                //textBox.Width = menuSelectedItem.ActualWidth;
-            }
+            if (menuSelectedItem == null) menuSelectedItem = TreeViewX.SelectedItem as TreeViewItem;
+            textBox.Height = menuSelectedItem.ActualHeight;//a jak to idzie z double click?
             textBox.MaxHeight = textBox.FontSize * 1.5;
-                textBox.Margin = new Thickness(0, 0, 0, 0);
-                textBox.Padding = new Thickness(0, 0, 0, 0);
-                textBox.BorderThickness = new Thickness(0);//obramowanie jest z treViewItem i na razie nie mam na to wpływu
-                textBox.Visibility = Visibility.Visible;
-                textBox.Focus();
-                textBox.Select(TabIndex, textBox.Text.Length); // ustawia kursor na końcu tekstu            
+            textBox.Width = menuSelectedItem.ActualWidth;
+            textBox.Margin = new Thickness(0, 0, 0, 0);
+            textBox.Padding = new Thickness(0, 0, 0, 0);
+            textBox.BorderThickness = new Thickness(0);//obramowanie jest z treViewItem i na razie nie mam na to wpływu
+            textBox.Visibility = Visibility.Visible;
+            textBox.Focus();
+            textBox.Select(TabIndex, textBox.Text.Length); // ustawia kursor na końcu tekstu
         }
     }
 
-    //*
     private void TextBox_KeyDown(object sender, KeyEventArgs e)
     {
         //Debug.WriteLine(" ok - key down text box");
@@ -258,11 +250,11 @@ public partial class MainWindow : Window
         if (e.Key == Key.Enter)
         {
             Debug.WriteLine(" ok - key down text box - enter");
-            
-             //textBox.Visibility = System.Windows.Visibility.Collapsed;
-             //TextBlock lb = textBox.GetSisTextBlock();
-             //lb.Visibility = System.Windows.Visibility.Visible;
-            
+            /*
+             textBox.Visibility = System.Windows.Visibility.Collapsed;
+             TextBlock lb = textBox.GetSisTextBlock();
+             lb.Visibility = System.Windows.Visibility.Visible;
+            */
             // ma odbierać info z MainWindowViewModel i jak jest błąd to go wyświetlić w oknie
             // jeżeli zwróci true to ok a okno wyświetlać po stonie MainWindowViewModel
 
@@ -297,7 +289,6 @@ public partial class MainWindow : Window
         }
     }
 
-    //*/
     #endregion zdarzenia
 
     #region Widoki
@@ -331,43 +322,93 @@ public partial class MainWindow : Window
 
 
     #region Tree DragDrop
-
+    /** to tylko pokazuje czy element jest przeciągany czy też kopiowany ale nie spełnia tego
+     * 
+     */
     private void TreeView_DragEnter(object sender, DragEventArgs e)
     {
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            
+            if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+            {
+                e.Effects = DragDropEffects.Copy;
+            }
+            else e.Effects = DragDropEffects.Move;
+        }
+        else
+        {
+            e.Effects = DragDropEffects.None;
+        }
+        /*
         if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
         {
             e.Effects = DragDropEffects.Copy;
         }
         else e.Effects = DragDropEffects.Move;
+        */
     }
 
+    /** to jest po upuszczeniu elementu w drzewie
+     * metoda wykonawcza znajduje się w MainWindowViewModel
+     */
     private void TreeView_Drop(object sender, DragEventArgs e)
     {
         znacznik = 0; // reset znacznik po upuszczeniu pliku
-        TreeView treeView = sender as TreeView;
+        TreeView treeView = (TreeView)sender;
         TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
-        if (e.Data.GetDataPresent(DataFormats.StringFormat))
+        /*
+        if(treeViewItem.DataContext == treeView.SelectedItem) 
+            Debug.WriteLine("TreeView_Drop: " + (treeViewItem.DataContext as TreeModel).Path);
+        else
         {
-            string dataString = (string)e.Data.GetData(DataFormats.StringFormat);
+            Debug.WriteLine("TreeView_Drop: brak zaznaczenia lub inny element zaznaczony");
+            //return;
+        }*/
+        //if (e.Data.GetDataPresent(DataFormats.StringFormat))
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
             //Debug.WriteLine("TreeView_Drop: " + dataString + " , do: " + (treeViewItem.DataContext as TreeModel).Path);
-            if(e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+            Debug.WriteLine("TreeView_Drop: "+dataStrings.Length);
+            if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
             {
-                //Debug.WriteLine("TreeView_Drop: Copy");
-                (this.DataContext as MainWindowViewModel).CopyFileToFolder(dataString, (treeViewItem.DataContext as TreeModel).Path);
+                Debug.WriteLine("TreeView_Drop Copy: ");
+                foreach (var dataString in dataStrings)
+                {
+                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path, true);
+                }
+                //((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path,true);
             }
             else
             {
-                (this.DataContext as MainWindowViewModel).MoveFileToFolder(dataString, (treeViewItem.DataContext as TreeModel).Path);
-                //Debug.WriteLine("TreeView_Drop: Move");
+                Debug.WriteLine("TreeView_Drop Move: ");
+                foreach (var dataString in dataStrings)
+                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path);
             }
-            
+            //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
         }
+
     }
 
 
     #endregion Tree DragDrop
 
-    
+    private void TreeViewX_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        znacznik = 0; // reset znacznik po zmianie zaznaczenia
+    }
+
+    private void MenuItem_AddDir(object sender, RoutedEventArgs e)
+    {
+
+        //(DataContext as MainWindowViewModel).AddFolderToTreeCommand.Execute(sender);
+#pragma warning disable CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
+        Debug.WriteLine("MenuItem_Click: " + (sender as MenuItem).DataContext.ToString() + " , " + e.Source.ToString());
+        Debug.WriteLine(menuSelectedItem.ToString());
+#pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
+                              //e.Source.ToString();
+    }
 
     private void TreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
@@ -378,8 +419,14 @@ public partial class MainWindow : Window
 
     private void MenuItem_Rename(object sender, RoutedEventArgs e)
     {
-        TextBox textBox = (menuSelectedItem as DependencyObject).GetCHildTextBox() as TextBox;
-        if (textBox != null) TextBoxActivate(textBox);
+        var t = menuSelectedItem.GetCHildTextBox();
+        TextBox textBox;// = (menuSelectedItem as DependencyObject).GetCHildTextBox() as TextBox;
+        #pragma warning disable IDE0019
+        if (t is TextBox x) {
+            textBox = x; 
+            TextBoxActivate(textBox);
+        }
+        #pragma warning restore IDE0019
         menuSelectedItem = null; // reset zaznaczenia po aktywacji TextBoxa
         /*
         TextBlock textBlock = textBox.GetSisTextBlock();
@@ -395,33 +442,5 @@ public partial class MainWindow : Window
         //*/
     }
 
-    private void MenuItem_AddDir(object sender, RoutedEventArgs e)
-    {
-        //(DataContext as MainWindowViewModel).AddFolderToTreeCommand.Execute(sender);
-        //Debug.WriteLine("MenuItem_Click: " + (sender as MenuItem).DataContext.ToString() + " , " + e.Source.ToString());
-        //Debug.WriteLine(menuSelectedItem.ToString());
-        TreeModel treeModel = menuSelectedItem.DataContext as TreeModel;
-        //Debug.WriteLine("MenuItem_AddDir: " + treeModel.Name + " , " + treeModel.Path);
-        (this.DataContext as MainWindowViewModel).AddFolderToTree(treeModel,"aaaa"); 
-        //e.Source.ToString();
-    }
 
-    private void MenuItem_Delete(object sender, RoutedEventArgs e)
-    {
-        TreeModel treeModel = menuSelectedItem.DataContext as TreeModel;
-        (this.DataContext as MainWindowViewModel).DeleteFolderFromTree(treeModel);
-    }
-
-    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-    {
-        TreeModel element = e.NewValue as TreeModel;
-        znacznik = 0; // reset znacznik po zmianie zaznaczenia
-        Debug.WriteLine("TreeView_SelectedItemChanged 2: " + element.Name);
-        (this.DataContext as MainWindowViewModel)?.TreeModelLBMClickCommand.Execute(element);
-    }
-
-    private void MainWindowPoligon_StateChanged(object sender, EventArgs e)
-    {
-        (this.DataContext as MainWindowViewModel)?.ButtonRefreshCommand.Execute(this);
-    }
 }
