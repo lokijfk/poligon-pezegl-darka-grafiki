@@ -131,7 +131,7 @@ public partial class Photo : ObservableObject
             return;
         }
 
-
+        try { 
             Image = await Task.Run(() =>
             {
                 using (var fileStream = new FileStream(
@@ -144,6 +144,11 @@ public partial class Photo : ObservableObject
                         return Task.FromResult(BitmapFrame.Create(
                             fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad));
                     }
+                    catch(FileFormatException ex)
+                    {
+                        Debug.WriteLine($"błąd formatu pliku: {ex.Message}");
+                        return null; // Return null if loading fails
+                    }
                     catch (Exception ex)
                     {
                         Debug.WriteLine($"Error creating BitmapFrame: {ex.Message}");
@@ -151,9 +156,18 @@ public partial class Photo : ObservableObject
                     }
                 }
             });
+
             //NewWidth= (NewHwight/OldHeight) * OldWidth;
+            //dodać łądowanie obrazka zastępczego
             Image = CreateResizedImage(Image, (int)((200 / Image.Height) * Image.Width), (int)200, 0);
             //ImageWidth = Image.Width;
+        }
+        catch (OperationCanceledException ex)
+        {
+            Debug.WriteLine($"zadanie wstrzymane (Task): {ex.Message}");
+            //return null; // Return null if loading fails
+        }
+            
 
     }
 

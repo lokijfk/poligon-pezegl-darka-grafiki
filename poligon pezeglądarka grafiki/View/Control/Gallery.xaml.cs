@@ -2,7 +2,6 @@
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,25 +15,14 @@ namespace poligon_pezeglądarka_grafiki.View.Control;
 /// </summary>
 public partial class Gallery : UserControl
 {
-
-    private decimal znacznik = 0;
-    private bool edit = false;
-    //private TextBox TBed = null;
+    private bool edit = false;    
     private ListBoxItem? selectedItem = null;
-    private bool isSelected = false;
-    //private ListBoxItem? 
+        
     public Gallery()
     {
         InitializeComponent();
-       // ListBox List1;
-       /*
-        ((INotifyCollectionChanged)Lista.ItemsSource).CollectionChanged +=
-        new NotifyCollectionChangedEventHandler(List1CollectionChanged);
-       //*/
     }
-
-
-    
+      
 
     #region Old code
 
@@ -241,108 +229,7 @@ public partial class Gallery : UserControl
         }
     }
 
-    /*
-    private void TextBlock_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {        
-
-        
-       // Debug.WriteLine(" ok - text blok mouse up 1");
-        decimal milliseconds = DateTime.Now.Ticks / (decimal)TimeSpan.TicksPerMillisecond;
-        if ((znacznik > 0) && (milliseconds - znacznik >= 1000) && (milliseconds - znacznik <= 3500))
-        {
-            if ((sender != null) && (sender is TextBlock) && (edit == false))
-            {
-                edit = true;
-               // Debug.WriteLine(" ok - text blok mouse up 2");
-                TextBlock label = sender as TextBlock;
-                ListBoxItem lbi = label.GetParentAsListBoxItem();
-                ListBox LB = lbi.GetParentAsListBox();
-                if ((lbi != null) && (LB != null))
-                {
-                    Photo photo = lbi.DataContext as Photo;
-                    Photo select = LB.SelectedItem as Photo;
-                    if (photo == select)
-                    {
-                        label.Visibility = System.Windows.Visibility.Collapsed;
-                        TextBox tb = label.GetSisTexBox();
-                        TextBoxActivate(tb);
-                    }
-                }
-            }
-        }        
-        else
-        {
-            znacznik = milliseconds;
-        }
-    }
-
-
-    private void TextBlock_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        //Debug.WriteLine("preview mouse down text block");
-        TextBlock textBlock = sender as TextBlock;
-        ListBoxItem item = textBlock.GetParentAsListBoxItem();
-        if (item != null)
-        {
-            ListBox listBox = item.GetParentAsListBox();
-            if (listBox != null)
-            {
-                if (listBox.SelectionMode == SelectionMode.Single)
-                {                    
-                    isSelected = true;                    
-                }
-                else
-                {
-                    isSelected = false;                    
-                }
-            }
-        }
-    }
-
-    private void TextBlock_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        //Debug.WriteLine("mouse down text block");
-
-        if (isSelected == true)
-        {
-          //  Debug.WriteLine("isSelected == true");
-            if ((sender != null) && (sender is TextBlock) && (edit == false))
-            {
-                //    Debug.WriteLine("(sender != null) && (sender is TextBlock) && (edit == false)");
-
-                // Debug.WriteLine(" ok - text blok mouse up 2");
-                //if (selectedItem != null)
-                //{
-
-                //tu ze wszystkim ma problem i nie wiem czemu, czy to nie jest kolizja z innymi eventami?
-                // np double click w liście?
-                edit = true;
-                    
-                    //if ((selectedItem != null) && (selectedItem is ListBoxItem))
-                    //{
-                        //Debug.WriteLine("selectedItem != null && selectedItem is ListBoxItem: "
-                        //+(selectedItem.DataContext as Photo).Name);
-                        
-                        //TextBox textBox = (Lista.SelectedItem as DependencyObject).GetCHildTextBox() as TextBox;
-                        TextBlock label = sender as TextBlock;
-                        Debug.WriteLine("label: " + label.Text);
-                    TextBox textBox = ((sender as TextBlock).GetSisTexBox()) as TextBox;
-                    if (textBox != null) TextBoxActivate(textBox);
-
-                    //}
-                //}
-            }
-            
-            /*
-            else
-            {
-                Debug.WriteLine("(sender != null) && (sender is TextBlock) && (edit == false)");
-                Debug.WriteLine("sender: " + (sender != null) + " sender is TextBlock: " + (sender is TextBlock)
-                        + " edit == false: " + (edit == false) + " edit : " + edit
-                    );
-            }
-        }
-    }*/
+    
     #endregion TextBox events
 
     #region menuitems
@@ -383,52 +270,37 @@ public partial class Gallery : UserControl
     #region ListBox & ListBoxItem events
 
     private void ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-    {
-        //znacznik = 0; //znacznik do zmiany nazwy powoduje problemy
-        //tu można dodać jescze Keyboard.IsKeyDown żeby sprawdzić czy ctrl nie jest wciśnięty
-        //Debug.WriteLine("double click w liście, edit: "+edit.ToString()+ " Lista.SelectionMode: "+ Lista.SelectionMode.ToString());
+    {        
         if ((!edit) && (Lista.SelectionMode == SelectionMode.Single))
         {
-            //Debug.WriteLine("double click po teście 1");
-            //e.Handled = true;
             ListBox List = sender as ListBox;
             Photo ph = List.SelectedItem as Photo;
-            int curentIndex = 0;// = List.SelectedIndex;
-            var listitem = List.GetListBoxItem(e.GetPosition(List));
-            //Debug.WriteLine(x.GetType().ToString()+" : "+y.GetType().ToString());
+            int curentIndex = 0;
+            var listitem = List.GetListBoxItem(e.GetPosition(List));            
             if ((ph != null) && (listitem != null) && (ph == listitem.DataContext))
             {
-
-                    //to działa
                 TextBox textBox = listitem.GetTexBox(e.GetPosition(listitem));
                 if (textBox != null)
-                {
-                    //Debug.WriteLine("TextBox: " + textBox.Text);
+                { 
                     edit = true;
                     TextBoxActivate(textBox);
                 }
                 else
                 {
-                    //Debug.WriteLine("TextBox is NULL");
-
-                var index = (DataContext as MainWindowViewModel).Photos.IndexOf(ph);
-                //Debug.WriteLine("start index: " + index);
-                //ViewWindow viewWindow = new() { DataContext = new ViewWindowViewModel((y.DataContext as Photo).Path) };
-                ViewWindow viewWindow = new()
-                {
-                    DataContext = new ViewWindowViewModel(index,
-                    (this.DataContext as MainWindowViewModel).Photos)
-                };
-                //viewWindow.Owner = Window.GetWindow(this); // ustawienie właściciela okna
-                viewWindow.ShowDialog();//Show nie czeka na zamknięcia okna, ShowDialog czeka na zamknięcie okna
-                viewWindow.Activate(); // aktywacja okna
-                curentIndex = (viewWindow.DataContext as ViewWindowViewModel).currentImageIndex;
-                if (curentIndex >= 0)
-                {
-                    //Debug.WriteLine("index: " + curentIndex);
-                    List.SelectedIndex = curentIndex; // ustawienie zaznaczenia na liście
-                    List.ScrollIntoView(List.SelectedItem); // przewinięcie do zaznaczonego elementu
-                }
+                    var index = (DataContext as MainWindowViewModel).Photos.IndexOf(ph);
+                    ViewWindow viewWindow = new()
+                    {
+                        DataContext = new ViewWindowViewModel(index,
+                        (this.DataContext as MainWindowViewModel).Photos)
+                    };                
+                    viewWindow.ShowDialog();//Show nie czeka na zamknięcia okna, ShowDialog czeka na zamknięcie okna
+                    viewWindow.Activate(); // aktywacja okna
+                    curentIndex = (viewWindow.DataContext as ViewWindowViewModel).currentImageIndex;
+                    if (curentIndex >= 0)
+                    {
+                        List.SelectedIndex = curentIndex; // ustawienie zaznaczenia na liście
+                        List.ScrollIntoView(List.SelectedItem); // przewinięcie do zaznaczonego elementu
+                    }
                 }
             }
         }
@@ -436,8 +308,6 @@ public partial class Gallery : UserControl
 
     private void ListBoxItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
-        //to chyba nie będzie potrzebne lista automatycznie zaznacza element
-        // i mozna go uzyskać jako selecteditem?
         selectedItem = sender as ListBoxItem;
     }
 
@@ -445,23 +315,21 @@ public partial class Gallery : UserControl
     {
         if (e.LeftButton == MouseButtonState.Pressed)
         {
-            //Debug.WriteLine("przeciąganie elementu listy");
             ListBox listBox = sender as ListBox;
             ListBoxItem item = listBox.GetListBoxItem(e.GetPosition(listBox));
             string[] paths; 
             if (item != null)
             {
-                //if (Lista.SelectionMode == SelectionMode.Single)
                 if(listBox.SelectedItems.Count == 0)
                 {
-                    Debug.WriteLine("przeciąganie pojedyńczego elementu listy, Selecteditems: "+Lista.SelectedItems.Count);
+                    //Debug.WriteLine("przeciąganie pojedyńczego elementu listy, Selecteditems: "+Lista.SelectedItems.Count);
                     paths = [((Photo)item.DataContext).Path];
                 }
                 else
                 {
-                    Debug.WriteLine("przeciąganie wielu elementów listy, Selecteditems: " + Lista.SelectedItems.Count);
+                    //Debug.WriteLine("przeciąganie wielu elementów listy, Selecteditems: " + Lista.SelectedItems.Count);
                     var selectedPhotos = Lista.SelectedItems.Cast<Photo>().ToList();
-                    Debug.WriteLine("Liczba zaznaczonych elementów: " + selectedPhotos.Count);
+                    //Debug.WriteLine("Liczba zaznaczonych elementów: " + selectedPhotos.Count);
                     paths = selectedPhotos.Select(p => p.Path).ToArray();
                 }
                 //jak zrobię zaznaczanie kilku elementów to trzeba będzie tu dodać dodawanie ich do tablicy
@@ -491,56 +359,19 @@ public partial class Gallery : UserControl
         }
     }
 
-    /*
-    private void ListBoxItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        //to nie jest wywoływane, możliwe że zostało przejęte przez inne eventy
-        //Debug.WriteLine("kliknięto element listy");
-
-        //e.Handled = true;//przejęcie obsługi zdarzenia - nie działa
-        ListBoxItem item = sender as ListBoxItem;
-        ListBox listBox = item.GetParentAsListBox();
-        Debug.Assert(item == null, "item == null");
-        Debug.Assert(item.IsSelected != false, " item zaznaczony");
-        Debug.Assert(listBox.SelectionMode == SelectionMode.Single, "tryb single");
-        Debug.Assert(Lista.SelectionMode == SelectionMode.Multiple, "tryb multiple Lista");
-        Debug.WriteLine("listboxitem");
-
-        if (e.ClickCount >= 1)
-        {
-            
-            Debug.WriteLine("klik - pomijam");
-            e.Handled = true; //przejęcie obsługi zdarzenia
-            //Debug.WriteLine("double click - pomijam");
-            return; //pomijanie podwójnego kliknięcia
-        }
-    }
-
     private void ListBoxItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         //Debug.WriteLine("preview kliknięto element listy");
 
         selectedItem = sender as ListBoxItem;
-        /*
-        ListBoxItem item = sender as ListBoxItem;
-        if (item != null)
-        {
-
-            ListBox listBox = item.GetParentAsListBox();
-            Debug.WriteLine("previewMLBD: "+(item.DataContext as Photo).Name);
-            //if (item.IsSealed == true) item.IsSealed = false;
-        }
-        //Debug.Assert(item == null, "item == null");
-        //Debug.Assert(item.IsSelected != false, " item zaznaczony");
-        //Debug.Assert(listBox.SelectionMode == SelectionMode.Single, "tryb single");
-        //Debug.Assert(Lista.SelectionMode == SelectionMode.Multiple, "tryb multiple Lista");
         Debug.WriteLine("listboxitem preview");
         
-    }*/
+    }
 
     private void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         //trzeba to zmienić bo generuje problemy i błędy
+        //Debug.WriteLine("preview mouse left button down");
         if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))) 
             //&& ((Lista.SelectionMode != SelectionMode.Single)||(Lista.SelectionMode != SelectionMode.Extended)))
         {
@@ -561,6 +392,11 @@ public partial class Gallery : UserControl
             Lista.SelectionMode = SelectionMode.Single;
         }
     }
+    /// <summary>
+    /// uruchamiane się jak klikamy poza elementami listy ale na liście
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void ListBox_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         //uruchamia się jak klikamy poza elementami listy ale na liście
@@ -572,6 +408,11 @@ public partial class Gallery : UserControl
         
         Lista.SelectionMode = SelectionMode.Single;
         Lista.SelectedItem = null;
+        if (edit)
+        {
+            edit = false;
+            Lista.Focus();
+        }
         //Debug.WriteLine("lista");
     }
 
@@ -590,25 +431,10 @@ public partial class Gallery : UserControl
     }
 
 
+
+
+
     #endregion ListBox & ListBoxItem events
 
-
-
-    /*
-    private void ListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        selectedItem = (sender as ListBox).GetListBoxItem(e.GetPosition(sender as ListBox));
-        if (selectedItem != null)
-        {
-            Debug.WriteLine("wybrano element: " + (selectedItem.DataContext as Photo).Name);
-            //DataObject data = new DataObject();
-            //data.SetText((selectedItem.DataContext as Photo).Path);
-            //data.SetData(DataFormats.StringFormat, (selectedItem.DataContext as Photo).Path);
-            //data.SetData("Photo", selectedItem.DataContext as Photo);//?
-
-            //DragDrop.DoDragDrop(selectedItem, data, DragDropEffects.Copy | DragDropEffects.Move);
-            DragDrop.DoDragDrop(selectedItem, (selectedItem.DataContext as Photo).Path, DragDropEffects.Copy | DragDropEffects.Move);
-        }
-
-    }//*/
+    
 }

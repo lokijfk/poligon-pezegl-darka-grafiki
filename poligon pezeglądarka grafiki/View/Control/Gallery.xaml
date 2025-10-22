@@ -21,7 +21,7 @@
     <Grid>
         <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
                  ItemsSource="{Binding Photos}" 
-                 
+                 ext:SelectorBehavior.ShouldSelectItemOnMouseUp="True"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  MouseDoubleClick="ListBox_MouseDoubleClick" 
                  MouseMove="ListBox_MouseMove"

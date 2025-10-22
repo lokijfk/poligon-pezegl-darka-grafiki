@@ -399,22 +399,30 @@ public partial class MainWindow : Window
         znacznik = 0; // reset znacznik po zmianie zaznaczenia
     }
 
-    private void MenuItem_AddDir(object sender, RoutedEventArgs e)
-    {
 
-        //(DataContext as MainWindowViewModel).AddFolderToTreeCommand.Execute(sender);
-#pragma warning disable CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
-        Debug.WriteLine("MenuItem_Click: " + (sender as MenuItem).DataContext.ToString() + " , " + e.Source.ToString());
-        Debug.WriteLine(menuSelectedItem.ToString());
-#pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
-                              //e.Source.ToString();
-    }
 
     private void TreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
         menuSelectedItem = (sender as DependencyObject).GetTreeViewItem();
         //Debug.WriteLine("TreeViewItem_PreviewMouseLeftButtonDown: " + menuSelectedItem.DataContext.ToString());
         //Debug.WriteLine("prviwe button down source: " + e.Source.ToString() + " , sender: " + sender.ToString());
+    }
+
+    #region Menu Context
+    /// <summary>
+    /// jeszcze nie dokończone
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void MenuItem_AddDir(object sender, RoutedEventArgs e)
+    {
+
+        //(DataContext as MainWindowViewModel).AddFolderToTreeCommand.Execute(sender);
+        #pragma warning disable CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
+        Debug.WriteLine("MenuItem_Click: " + (sender as MenuItem).DataContext.ToString() + " , Source: " + e.Source.ToString());
+        Debug.WriteLine("Menu Selected  item: "+menuSelectedItem.ToString());
+        #pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
+        //e.Source.ToString();
     }
 
     private void MenuItem_Rename(object sender, RoutedEventArgs e)
@@ -441,6 +449,6 @@ public partial class MainWindow : Window
         textBox.Select(TabIndex, textBox.Text.Length); // ustawia kursor na końcu tekstu
         //*/
     }
-
+    #endregion Menu Context
 
 }

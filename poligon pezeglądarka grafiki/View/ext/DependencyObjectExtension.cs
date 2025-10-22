@@ -1,8 +1,6 @@
 ﻿
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Diagnostics;
 using System.Windows.Media;
 
 namespace poligon_pezeglądarka_grafiki.View.ext;
