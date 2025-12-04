@@ -1,4 +1,4 @@
-﻿<Window x:Name="load" x:Class="poligon_pezeglądarka_grafiki.MainWindow"
+﻿<Window x:Name="MainWindowPoligon" x:Class="poligon_pezeglądarka_grafiki.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -22,6 +22,7 @@
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
         Background="{DynamicResource MaterialDesign.Brush.Background}" 
         Icon="/img/73042biohazard_109537(1).ico"  
+        
         >
 
     <WindowChrome.WindowChrome>
@@ -36,6 +37,13 @@
             <converters:MulitConverterStringToString x:Key="MBConwerterSTS" />
         </ResourceDictionary>
     </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding ButtonRefreshCommand,Mode=OneWay}" />
+        <KeyBinding Key="v" Modifiers="Ctrl" Command="{Binding MenuPasteCommand,Mode=OneWay}" />
+        <KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding TestCommand,Mode=OneWay}" />
+    </Window.InputBindings>
+
     <i:Interaction.Triggers>
         <!-- zmieniłem podejście jest autozapis pozmianie, ale zostawiam na przyszłość-->
         <!--i:EventTrigger EventName="Loaded">
@@ -76,18 +84,26 @@
                             <Button Click="Button_Click_ViewList" ToolTip="widok listy">
                                 <materialDesign:PackIcon Kind="ViewList" />
                             </Button>
-                            <!--<Button Command="{Binding SetCounterCommand}">
-                                <materialDesign:PackIcon Kind="Variable" />
-                                
-                            </Button>-->
                             <ToggleButton
                                   x:Name="VieWFiles"
-                                  Content="{materialDesign:PackIcon Kind=Variable,                                                         Size=21}"
+                                materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=Variable}"
+                                  Content="{materialDesign:PackIcon Kind=VariableBox,                                                         Size=21}"
                                   IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"
-                                  Style="{StaticResource MaterialDesignFlatPrimaryToggleButton}"
+                                  
+                                    Style="{StaticResource MaterialDesignActionToggleButton}"
                                   ToolTip="Pokaż ilkość plików w katalogu"
                               />
-                            <!--Viewbox  Height="20">
+
+                            <ToggleButton
+                                Margin="10,0,0,0"
+                                  materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=EyeOutline}"
+                                  Content="{materialDesign:PackIcon Kind=EyeOff}"
+                                  Style="{StaticResource MaterialDesignActionToggleButton}"
+                                  IsChecked="{Binding Writings, Mode=TwoWay}"
+                                  ToolTip="pokaż/ukryj napisy"
+                            />
+
+                        <!--Viewbox  Height="20">
                                 <ToggleButton  Style="{StaticResource MaterialDesignSwitchToggleButton}" 
                                            WindowChrome.IsHitTestVisibleInChrome ="True" 
                                            IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"                                      
@@ -106,7 +122,25 @@
                                     Click="Button_AddFolder" >                        
                                 <materialDesign:PackIcon Kind="PlusCircleOutline" />
                             </Button>
-                        </ToolBar>
+                            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                            <Button Click="Button_Click_ViewList2" ToolTip="widok listy">
+                                <materialDesign:PackIcon Kind="ViewList" />
+                            </Button>
+                            <Button Click="Button_Click_FDataGrid" ToolTip="widok listy">
+                                <materialDesign:PackIcon Kind="ViewList" />
+                            </Button>
+                            <Viewbox Width="20">
+                                <Button  Click="Button_Click_Welcome" ToolTip="About"                                  
+                                      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" 
+                                         Background="#6598fa"
+                                         >
+                                    <materialDesign:PackIcon                            
+                                        Kind="HelpCircleOutline"
+                                        />
+                                </Button>
+                            </Viewbox>
+                            
+                    </ToolBar>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition  Width="auto"/>
@@ -115,17 +149,38 @@
                             </Grid.ColumnDefinitions>
 
                         <TreeView  x:Name="TreeViewX" MinWidth="220" ItemsSource="{Binding Tree}" 
-                                            ScrollViewer.CanContentScroll="True" 
-                                            VirtualizingStackPanel.IsVirtualizing="True"
-                                            VirtualizingStackPanel.VirtualizationMode="Recycling"                                           
-                                           SelectedItemChanged="TreeViewX_SelectedItemChanged"   
+                                            ScrollViewer.CanContentScroll="True"                                        
                                            AllowDrop="True" DragEnter="TreeView_DragEnter" Drop="TreeView_Drop"
-                                           >
-                                            <!--MouseLeftButtonUp="routed_MouseLeftButtonUp" -->
+                                            MouseMove="TreeView_MouseMove" DragOver="TreeView_DragOver"                                           
+                                           >                            
+                                            <!--
+                                                SelectedItemChanged="TreeViewX_SelectedItemChanged"
+                                                MouseLeftButtonUp="routed_MouseLeftButtonUp" 
+                                                VirtualizingStackPanel.IsVirtualizing="True" 
+                                                VirtualizingStackPanel.VirtualizationMode="Recycling"                            
+                                            -->
                                     <TreeView.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="dodaj katalog" Click="MenuItem_AddDir"/>
-                                            <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
+                                            <MenuItem Header="Dodaj katalog" Click="MenuItem_AddDir">
+                                                <MenuItem.Icon>
+                                                    <materialDesign:PackIcon Kind="FolderPlusOutline" />
+                                                </MenuItem.Icon>                                            
+                                            </MenuItem>
+                                            <MenuItem Header="Usuń katalog" Click="MenuItem_DeleteDir">
+                                                <MenuItem.Icon>
+                                                    <materialDesign:PackIcon Kind="DeleteRestore" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename">
+                                                <MenuItem.Icon>
+                                                    <materialDesign:PackIcon Kind="RenameOutline" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Odśwież" Click="MenuItem_Refresh" IsEnabled="False">
+                                                <MenuItem.Icon>
+                                                    <materialDesign:PackIcon Kind="Refresh" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
                                         </ContextMenu>
                                     </TreeView.ContextMenu>
                                     <i:Interaction.Triggers>
@@ -142,15 +197,15 @@
                                     </i:Interaction.Triggers>
                                     <TreeView.ItemTemplate>
                                         <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children, Mode=OneTime}" >
-                                            <Grid>
-                                                <!-- tu zamiast tych dwuch text boxów i wrap
-                                                dać multi binding i konwerter-->
-                                                <!--WrapPanel>
+                                            <!-- tu dać wrap panel ikonę do katalogu 
+                                            i dalej grid do tekstu-->
+                                            <!--WrapPanel>
                                                     <TextBlock  Text="{Binding Name, Mode=OneTime}" />
                                                     <TextBlock Text="{Binding CountFiles, StringFormat={} ({0})}"
                                                     Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}},
                                                     Path=DataContext.VisibleFilesInTree,Converter={StaticResource BooleanToVisibilityConverter}}" />
                                                 </WrapPanel-->
+                                            <Grid>                                                
                                                 <TextBlock >
                                                     <TextBlock.Text>
                                                         <MultiBinding Converter="{StaticResource MBConwerterSTS}">
@@ -195,13 +250,15 @@
                                             Value="{Binding IsExpanded,Mode=TwoWay}" />
                                                 <Setter Property="IsSelected"
                                             Value="{Binding IsSelected, Mode=TwoWay}" />
-
-                                            <EventSetter Event="MouseLeftButtonUp" 
-                                                         Handler="TreeViewItem_MouseLeftButtonUp" />
+                                            <!--EventSetter Event="MouseLeftButtonUp" 
+                                                         Handler="TreeViewItem_MouseLeftButtonUp" /-->
                                             <EventSetter Event="PreviewMouseRightButtonDown" 
-                                                 Handler="TreeViewItem_PreviewMouseRightButtonDown" />
-
-                                    <!--EventSetter Event="MouseWheel" Handler="TVI_MouseWheel" /-->
+                                                 Handler="TreeViewItem_PreviewMouseRightButtonDown" />                                            
+                                            <!--EventSetter Event="PreviewMouseLeftButtonDown"
+                                                         Handler="TreeViewItem_PreviewMouseLeftButtonDown" /-->
+                                            <EventSetter Event="MouseDoubleClick" Handler="TreeViewItem_MouseDoubleClick" />
+                                            <!--EventSetter  Event="MouseDown" Handler="TreeViewItem_MouseDown" to nie jest wywoływane ??/-->
+                                            <!--EventSetter Event="MouseWheel" Handler="TVI_MouseWheel" /-->
                                         </Style>
                                     </TreeView.ItemContainerStyle>
                                     <!--TreeViewItem /-->
@@ -217,21 +274,73 @@
                                     <materialDesign:PackIcon Kind="PlusCircleOutline" />
                                 </Button>
                             
-                        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Cursor="SizeWE"  />
+                            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Cursor="SizeWE"  />
                             <ContentControl Grid.Column="2" x:Name="Pages"  Content="{Binding SelectedViewModel}"/>
                         </Grid>
                         <!-- czy wogóle dawać status bar , nie ma stylu dla niego
                     i chyba bym musiałcoś sam kombinować-->
                         <StatusBar Grid.Row="2" Background="{DynamicResource MaterialDesignToolBarBackground}"
-                                   Visibility="{Binding VisibleStatusBar, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                                   Visibility="{Binding VisibleStatusBar, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                     >
                             <StatusBarItem >
-                                <StackPanel Orientation="Horizontal">
-                                    <Label  x:Name="FileLoad" Content="{Binding FilesToLoad}"/>
-                                    <Label> \ </Label>
-                                    <Label Content="{Binding FileLoaded}"/>
+                            <Grid Width="{Binding ElementName=MainWindowPoligon, Path=ActualWidth}"> 
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition Width="auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid Grid.Column="0" HorizontalAlignment="Left" Margin="10,0,0,0">
+                                    <ProgressBar Value="{Binding FileLoaded}" Minimum="0" Maximum="{Binding FilesToLoad}" Width="90" Height="Auto"/>
+                                    <StackPanel  Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <Label  x:Name="FileLoad" Content="{Binding FilesToLoad}"/>
+                                        <Label> \ </Label>
+                                        <Label Content="{Binding FileLoaded}"/>
+                                    </StackPanel> 
+                                </Grid>
+                                
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0" HorizontalAlignment="Center">
+                                    <Label  Content="Wybrane: "/>
+                                    <Label Content="{Binding Path=SelectedItem.Path, Mode=OneWay}">
+                                        <Label.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Kopiuj ścieżkę" />
+                                                <!-- dodać komendę click i metodędo jej obsługi
+                                                i poprawić tak żeby wyświetlał to co jest aktualnie wybrane-->
+                                            </ContextMenu>
+                                        </Label.ContextMenu>
+                                    </Label>
                                 </StackPanel>
+                                <Label Grid.Column="2" Content="{Binding ThumbnailHeight}" ToolTip="wysokość miniatur, potrzebne tylko chwilowo"/>
+                                <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
+                                    <Button   
+                                        Style="{StaticResource MaterialDesignTitleBarButtonStyle}"  Width="46" Height="25"
+                                        Command="{Binding ThumbnailHeightMinusCommand}"
+                                        >
+                                        <Path
+                                        Width="46" Height="35"
+                                        Data="M 18,12 H 28"
+                                        Stroke="{Binding Path=Foreground,RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                        StrokeThickness="1" />
+                                    </Button>
 
-                            </StatusBarItem>
+                                    <Slider Margin="10,0,0,0"   Maximum="400" Minimum="100" 
+                                        Value="{Binding ThumbnailHeight,Mode=TwoWay}" 
+                                        Width="200" Height="auto" ToolTip="zmiana bierzącej wielkości miniatur" />
+                                    <Button   
+                                        Style="{StaticResource MaterialDesignTitleBarButtonStyle}"  Width="46" Height="25"
+                                        Margin="0,0,30,0" Command="{Binding ThumbnailHeightPlusCommand}">
+                                        <Path
+                                        Width="46" Height="35"
+                                        Data="M 18 12 H 28 M 23 7 V 17"
+                                        Stroke="{Binding Path=Foreground,RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+                                        StrokeThickness="1" />
+                                    </Button>
+                                    
+                                </StackPanel>
+                            </Grid>
+
+                        </StatusBarItem>
                             <!--StatusBarItem>
                                 <TextBlock Style="{StaticResource MaterialDesignButtonTextBlock}"
                                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"

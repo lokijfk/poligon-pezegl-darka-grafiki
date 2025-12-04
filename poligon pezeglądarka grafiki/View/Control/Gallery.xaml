@@ -10,36 +10,124 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"  
+             x:Name="ThumbinailView"
              >
     <UserControl.Resources>
         <ResourceDictionary>
-            <converters:WidthComverter x:Key="WidthConverter" />
+            <converters:WidthConverter x:Key="WidthConverter" />
+            <converters:BooleanToVisibilityConverter x:Key="VisiblityConverter" />
+            <converters:ListConverter x:Key="ListConverter" />
         </ResourceDictionary>
     </UserControl.Resources>
+    <UserControl.CommandBindings>
+        <CommandBinding Command="Delete" Executed="DeleteCommand_Executed" CanExecute="Command_CanExecute"/>
+        <CommandBinding Command="{x:Static local:Gallery.DeleteStrong}" Executed="DeleteStrong_Executed" CanExecute="Command_CanExecute"/>
+        <CommandBinding Command="Open" Executed="OpenCommand_Executed"  CanExecute="Command_CanExecute"/>
+        <!--CommandBinding Command="Rename" Executed="RenameCommand_Executed" CanExecute="Command_CanExecute"/-->
+        <!--CommandBinding Command="SelectAll" Executed="SelectAllCommand_Executed"  CanExecute="NSCommand_CanExecute"/-->
+
+        
+    </UserControl.CommandBindings>
+
+    <!-- czym to zastąpić ??-->
+    <UserControl.InputBindings >
+        <!-- ctrl + A jest gdzieś zabrany, ale gdzie?-->
+        <KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=DataContext.SelectAllCommand}"/>
+        <KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                AncestorType={x:Type UserControl}}, Path=DataContext.SelectAllCommand}"/>
+        <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=DataContext.MenuCopyCommand}"/>
+        <KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=DataContext.MenuPasteCommand}"/>
+        <KeyBinding Key="X" Modifiers="Ctrl" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=DataContext.MenuCutCommand}"/>
+
+        <KeyBinding Key="Delete" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=DataContext.DeleteThumbnailsCommand}" />
+        <KeyBinding Key="Enter" Command="Open" />
+        <KeyBinding Key="Delete" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=DataContext.DeleteThumbnailsCommand}"  />
+    </UserControl.InputBindings>
+
+
     <Grid>
         <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
-                 ItemsSource="{Binding Photos}" 
-                 ext:SelectorBehavior.ShouldSelectItemOnMouseUp="True"
+                 ItemsSource="{Binding Photos}"                  
+                 ext:ListBoxBehavior.ScrollToTopOnItemsSourceChange="True"
+                 ext:ListBoxBehavior.SelectItemOnMouseUp="True"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 MouseDoubleClick="ListBox_MouseDoubleClick" 
-                 MouseMove="ListBox_MouseMove"
+                 MouseDoubleClick="ListBox_MouseDoubleClick"                 
                  PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"
                  PreviewMouseLeftButtonUp="ListBox_PreviewMouseLeftButtonUp"
                  MouseLeftButtonDown="ListBox_MouseLeftButtonDown"
-                 KeyDown="ListBox_KeyDown"
                  
+                 MouseMove="ListBox_MouseMove" AllowDrop="True"
+                 DragEnter="ListBox_DragEnter" Drop="ListBox_Drop"
+                 DragOver="ListBox_DragOver"  
+                 SelectionMode="{Binding CurSelectionMode,Mode=TwoWay}"
+                 Focusable="True"
                  >
-            <ListBox.Resources>
-                <ContextMenu x:Key="listViewContextMenu" materialDesign:MenuAssist.MenuItemsPresenterMargin="0">
-                    <!--materialDesign:MenuAssist.MenuItemsPresenterMargin="0"-->
-                    <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename"/>
-                    <MenuItem Header="Wytnij" Click="MenuItem_Click" />
-                    <MenuItem Header="Usuń" Click="MenuItem_Delete" />
-                    <MenuItem Header="Kopiuj" Click="MenuItem_Click" />
+            <ListBox.ContextMenu>
+                <ContextMenu  materialDesign:MenuAssist.MenuItemsPresenterMargin="0"
+                             DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">
+                    
+                    <!-- jak tu dodać jakieś zachowanie?? tak żeby uniknąć kodu BC-->              
+                    <MenuItem Header="zaznacz wszystko" 
+                              Command="{Binding Path=DataContext.SelectAllCommand}"
+                              CommandParameter="{Binding Path=SelectedItems}"
+                              >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="SelectAll" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <!-- "otwórz" to menu testowe, bedzie do usunięcia-->
+                    <MenuItem Header="Otwórz" Command="{Binding Path=DataContext.TestMethodCommand}" 
+                              CommandParameter="{Binding Path=SelectedItems}" 
+                              >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="OpenInNew" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="RenameOutline" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="Usuń" 
+                              Command="{Binding Path=DataContext.DeleteThumbnailsCommand}" 
+                              CommandParameter="{Binding Path=SelectedItems}">                        
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="DeleteRestore" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Wytnij" Command="{Binding Path=DataContext.MenuCutCommand}" 
+                                            CommandParameter="{Binding Path=SelectedItems}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentCut" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Kopiuj" 
+                              Command="{Binding Path=DataContext.MenuCopyCommand}" 
+                                CommandParameter="{Binding Path=SelectedItems}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentCopy" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Wlkej" Command="{Binding Path=DataContext.MenuPasteCommand}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentPaste" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Odśwież" Command="{Binding Path=DataContext.MenuRefreshCommand}" >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Refresh" />
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
-            </ListBox.Resources>
+            </ListBox.ContextMenu>
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel IsItemsHost="True" />
@@ -47,9 +135,17 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Vertical">
-                        <Image Source="{Binding Image,Mode=OneWay}" Height="200"/>
-                        <Grid Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}">
+                    <StackPanel x:Name="SP" Orientation="Vertical" >
+                        <Image Source="{Binding Image,Mode=OneWay}" 
+                               Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type Window}}, Path=DataContext.ThumbnailHeight}"/>
+                        <Grid Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
+                              Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type Window}}, Path=DataContext.Writings,
+                                        Converter={StaticResource BooleanToVisibilityConverter}}"
+                              >
+                        <!--Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type StackPanel}} }"-->
                             <TextBlock               
                             Text="{Binding Name}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                 Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
@@ -77,9 +173,10 @@
             </ListBox.ItemTemplate>
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem" >
-                    <Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/>
+                    <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBoxItem_PreviewMouseRightButtonDown" />
-                    <EventSetter Event="MouseLeftButtonDown" Handler="ListBoxItem_MouseLeftButtonDown" />
+                    <!--EventSetter Event="MouseLeftButtonDown" Handler="ListBoxItem_MouseLeftButtonDown" / mie działa -->
                     <!--EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_PreviewMouseLeftButtonDown" /-->
                     
                     <!--EventSetter Event="MouseDown" Handler="ListBoxItem_MouseDown" /-->
@@ -89,6 +186,15 @@
                     <!--EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" /-->
                 </Style>
             </ListBox.ItemContainerStyle>
+            <ListBox.Style>
+                <Style TargetType="ListBox">
+                    <Setter Property="BorderThickness" Value="0"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
+                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBox_PreviewMouseRightButtonDown" />
+                </Style>
+            </ListBox.Style>
+            
 
         </ListBox>
     </Grid>

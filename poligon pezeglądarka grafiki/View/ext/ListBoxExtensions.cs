@@ -1,4 +1,5 @@
 ﻿
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -16,13 +17,31 @@ public static class ListBoxExtensions
     /// <returns></returns>
     public static ListBoxItem GetListBoxItem(this ListBox listBox, System.Windows.Point position)
     {
-            // tu jest problem jak jest urzywany suwak z boku to szaleje
-            DependencyObject item = VisualTreeHelper.HitTest(listBox, position).VisualHit;
-            while (item != null && !(item is ListBoxItem))
+        // tu jest problem jak jest urzywany suwak z boku to szaleje
+        try
+        {
+            if (listBox != null)
             {
-                item = VisualTreeHelper.GetParent(item);
+                HitTestResult resultHit = VisualTreeHelper.HitTest(listBox, position);
+                if (resultHit != null) {
+                    DependencyObject item = resultHit.VisualHit as DependencyObject;
+                    if (item != null)
+                        {
+                            while (item != null && !(item is ListBoxItem))
+                            {
+                                item = VisualTreeHelper.GetParent(item);
+                            }
+                        }
+                        return item as ListBoxItem;
+                    }
             }
-            return item as ListBoxItem;
+            
+        }
+        catch (System.Exception ex)
+        {
+            Debug.WriteLine(ex);
+        }
+        return null;
     }
 
 }

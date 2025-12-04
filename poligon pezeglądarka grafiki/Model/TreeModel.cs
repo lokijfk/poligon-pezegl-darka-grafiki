@@ -1,48 +1,26 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
 public partial class TreeModel :ObservableObject
 {
-    /*
-    public TreeModel()
-    {
-        this.IsSelected = false;
-        Children = [];
-        Name = string.Empty;
-    }
-    */
+ 
     #region properties
 
     //dodać pole "ukryty" i zaimplementować w drzewie, dodać przycisk pokazyjący okno z ukrytymi i możliwością odkrycia
     //usunąć zbędna, obiekt przystosowany do bazy danych a nie do systemu katalogów !!
-  /*  [ObservableProperty]
-    private int _Id = -1;
-    [ObservableProperty]
-    public int _ParentID = -1;*/
     
     public TreeModel? Parent { get; set; } = null;// zostawiam może ułatwi nawigowanie
     
     public ObservableCollection<TreeModel> Children { get; set; } = [];
-    //[ObservableProperty]
-    //private T1? _selectedValue;
+
     [ObservableProperty]
     private string _name  = string.Empty;
-    /*
-    public string Name
-    {
-        get => _name;
-        //set => _name = value;
-        set
-        {
-            SetProperty(ref _name, value);
-            //OnPropertyChanged(Name); // Notify that Name has changed
-        }
-    }*/
-    public bool IsSelected { get; set; } = false;
+     public bool IsSelected { get; set; } = false;
     
     public bool IsExpanded { get; set; } = false;
     
@@ -51,18 +29,6 @@ public partial class TreeModel :ObservableObject
     public string View { get; set; } = string.Empty;
     [ObservableProperty]
     private string _path = string.Empty;
-    /*
-    public string Path
-    { 
-        get => _path; 
-        //set => _path = value;
-        
-        set
-        {
-            SetProperty(ref _path, value);
-            //OnPropertyChanged(Path); // Notify that Path has changed
-        }
-    }//*/
     
     [ObservableProperty]
     private int _CountFiles  = 0;
@@ -90,7 +56,7 @@ public partial class TreeModel :ObservableObject
             this.Children.Add(child);
         }
     }
-    // public TreeModel GetSelectedItem => Children.FirstOrDefault(i => i.IsSelected);
+    
     #endregion methods
     // to jest jakieś rozwiązanie nie najlepsze ale innego chwilowo nie mam
     public TreeModel? GetSelectedItem(TreeModel nodes = null)
@@ -102,7 +68,7 @@ public partial class TreeModel :ObservableObject
         {
             if (node.IsSelected)
             {
-                Debug.WriteLine(GetPathSelecetedNode());
+                //Debug.WriteLine(GetPathSelecetedNode());
                 return node;
 
             }
@@ -126,7 +92,12 @@ public partial class TreeModel :ObservableObject
     }
 
     public TreeModel? GetParent() => this.Parent;
-  
+
+    /// <summary>
+    /// zwraca korzeń drzewa dla podanego elementu
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
     public TreeModel? GetRootNode(TreeModel item)
     {
         TreeModel root = null;
@@ -138,6 +109,11 @@ public partial class TreeModel :ObservableObject
         return root;
     }
 
+    /// <summary>
+    /// znajduje dziecko o podanej nazwie w drzewie
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
     public TreeModel? FindChild(string name)
     {
         TreeModel root = this;
@@ -155,26 +131,40 @@ public partial class TreeModel :ObservableObject
         }
         return null;
     }
-     
 
+    /// <summary>
+    /// znajduje dziecko o podanej ścieżce w drzewie
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public TreeModel? FindChildByPath(string path)
     {
+        //Debug.WriteLine("FindChildByPath, searching for: " + path);
         TreeModel root = this;
+        if(root.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) return root;
         foreach (var child in root.Children)
         {
             if (child.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
-            {
+            { 
+                //Debug.WriteLine("FindChildByPath 1, found direct: " + path);
                 return child;
             }
             var foundChild = child.FindChildByPath(path);
             if (foundChild != null)
             {
+                //Debug.WriteLine("FindChildByPath 2, found recursive: " + path);
                 return foundChild;
             }
         }
+        //Debug.WriteLine("FindChildByPath, not found: " + path);
         return null;
     }
 
+    /// <summary>
+    /// znajduje dziecko o podanym obiekcie w drzewie
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
     public TreeModel? FindChild(TreeModel item)
     {
         TreeModel root = this;
@@ -209,6 +199,7 @@ public partial class TreeModel :ObservableObject
     }
     /// <summary>
     /// to któtsza alternatywa do GetSelfFromMainStream, zwraca element z rodzica
+    /// wymagane do edycji danych w drzewie
     /// </summary>
     /// <returns></returns>
     public TreeModel? GetSelfFromParent()
@@ -222,6 +213,12 @@ public partial class TreeModel :ObservableObject
         return null;
     }
 
+    /// <summary>
+    /// zwraca element o podanej ścieżce z głównego drzewa
+    /// alternatywa do FindChildByPath
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public TreeModel? GetElementByPath(string path)
     {
         // to jest do poprawy, nie działa jak powinno
@@ -233,17 +230,24 @@ public partial class TreeModel :ObservableObject
         }
         //TreeModel? root = GetRootNode(this);
         //Debug.WriteLine("GetElementByPath,root: " + root.Name+" , "+root.Path+" , path: "+ path);
+        TreeModel? result = null;
         if (root != null)
         {
-            return root.FindChildByPath(path);
+            result = root.FindChildByPath(path);
+            if (result != null)
+            {
+                //Debug.WriteLine("GetElementByPath, found: " + result.Name + ", path: " + result.Path);
+                return result;  //root.FindChildByPath(path);
+            }
         }
         return null;
     }
 
-    /**
-     * metoda testowa, zwraca pełną ścieżkę do katalogu który jest reprezentowany przez ten obiekt
-     * 
-     */
+    /// <summary>
+    /// zwraca pełną ścieżkę do elementu
+    /// metoda testowa do budowy ścieżki w oprciu o drzewo
+    /// </summary>
+    /// <returns></returns>
     public string GetFullPath()
     {
         TreeModel? current = this;

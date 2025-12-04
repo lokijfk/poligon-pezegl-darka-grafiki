@@ -51,7 +51,7 @@ internal class IniFile: IDisposable
     //ma określać czy klucze i sekcje będą sprawdzane dokładnie czy też wpisywane tak jak je pamięta wprowadzający
     //private bool restriction = false;
     // ta konstrukcja w przybliżeniu odzwierciedla wygląd pliku ini
-    private readonly Dictionary<string, Dictionary<string, string>> ListAdw = new();
+    private readonly Dictionary<string, Dictionary<string, string>> ListAdw = [];
 
     /// <summary>
     /// załadowanie danych z pliku do struktury
@@ -70,7 +70,7 @@ internal class IniFile: IDisposable
                 {
                     found = temp.IndexOf("[");
                     header = temp[(found + 1)..].Remove(temp.IndexOf("]", found) - 1);
-                    ListAdw[header] = new Dictionary<string, string>();
+                    ListAdw[header] = [];
                 }
                 else
                 {
@@ -90,7 +90,7 @@ internal class IniFile: IDisposable
             //tu zrobić inną obsługę katalogu, objekt powinien sięgać do pliku i nie przejmować sie katalogiem
             // co najwyżej utworzyć nowy plik w podanym katalogu o ile istnieje jak nie ma katalogu to 
             // powinien wywalić odpowiedni błąd
-            Directory.CreateDirectory(dir);
+            _ = Directory.CreateDirectory(dir);
         }
         return false;
     }
@@ -110,9 +110,9 @@ internal class IniFile: IDisposable
         {
             foreach (KeyValuePair<string, string> kvp in ListAdw[item.Key])
             {
-                ListAdw[item.Key].Remove(kvp.Key);
+                _ = ListAdw[item.Key].Remove(kvp.Key);
             }
-            ListAdw.Remove(item.Key);
+            _ = ListAdw.Remove(item.Key);
         }
     }
 
@@ -125,7 +125,7 @@ internal class IniFile: IDisposable
     {
         if (ListAdw.Count > 0)
         {
-            List<string> lista = new();
+            List<string> lista = [];
             foreach (KeyValuePair<string, Dictionary<string, string>> item in ListAdw)
             {
                 lista.Add("[" + item.Key + "]");
@@ -134,7 +134,7 @@ internal class IniFile: IDisposable
                     lista.Add(kvp.Key + "=" + kvp.Value);
                 }
             }
-            return lista.ToArray();
+            return [.. lista];
         }
         return Array.Empty<string>();
     }
@@ -377,7 +377,7 @@ internal class IniFile: IDisposable
     /// <returns></returns>
     public string[] GetSectionList()
     {
-        return ListAdw.Keys.ToArray();
+        return [.. ListAdw.Keys];
         // return Array.Empty<string>();
     }
 
@@ -388,7 +388,7 @@ internal class IniFile: IDisposable
     /// <returns></returns>
     public string[] GetKeysList(string Section)
     {
-        return ListAdw[Section].Keys.ToArray();
+        return [.. ListAdw[Section].Keys];
     }
 
     /// <summary>
@@ -402,7 +402,7 @@ internal class IniFile: IDisposable
         var keys = new ArrayList();
         foreach (var sec in section)
         {
-            keys.Add(ListAdw[sec].Keys.ToArray());
+            _ = keys.Add(ListAdw[sec].Keys.ToArray());
         }
         if (keys.Count > 0) return (string[])keys.ToArray();
         return Array.Empty<string>();
@@ -447,7 +447,7 @@ internal class IniFile: IDisposable
         iniPath = path;
         if ((this.iniPath != "") && (this.iniPath != String.Empty))
         {
-            LoadIni();
+            _ = LoadIni();
         }
     }
 
@@ -465,7 +465,7 @@ internal class IniFile: IDisposable
         }
         this.iniPath = path;
         //ListAdw.Clear();
-        LoadIni();
+        _ = LoadIni();
     }
 
     //---- reading data from ini keys
@@ -535,7 +535,7 @@ internal class IniFile: IDisposable
     {
         if (!ListAdw.ContainsKey(section))
         {
-            ListAdw[section] = new Dictionary<string, string>();
+            ListAdw[section] = [];
         }
         foreach (KeyValuePair<string, string> kvp in KeyVal)
         {
@@ -556,7 +556,7 @@ internal class IniFile: IDisposable
     {
         if (ListAdw.ContainsKey(section))
         {
-            ListAdw.Remove(section);
+            _ = ListAdw.Remove(section);
             SaveIni();
         }
 
@@ -571,7 +571,7 @@ internal class IniFile: IDisposable
     {
         if (ListAdw.ContainsKey(section) && ListAdw[section].ContainsKey(key))
         {
-            ListAdw[section].Remove(key);
+            _ = ListAdw[section].Remove(key);
             SaveIni();
         }
     }

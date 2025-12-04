@@ -27,13 +27,13 @@ class BrokerIni
         }
         else
         {
-            ini = new IniFile(Tools.GetUserAppDataPath + "\\" + inis);
+            ini = new IniFile(BrokerFile.GetUserAppDataPath + "\\" + inis);
         }
         //Debug.WriteLine(Tools.GetUserAppDataPath);
         return ini;
     }
 
-    public static IniFile LoadIniProject() => LoadIni(Tools.GetProjectName + ".ini");
+    public static IniFile LoadIniProject() => LoadIni(BrokerFile.GetProjectName + ".ini");
     private IniFile GetIni()
     {
         if (iniFile == null)
@@ -174,7 +174,7 @@ class BrokerIni
 
     public WindowState CurMainWindowState
     {
-        get => GetStringValue(GetCurrentMethod(), "Window") == string.Empty ? WindowState.Normal : (WindowState)Enum.Parse(typeof(WindowState), GetStringValue(GetCurrentMethod(), "Window"), true);
+        get => GetStringValue(GetCurrentMethod(), "Window") == string.Empty ? WindowState.Normal : Enum.Parse<WindowState>(GetStringValue(GetCurrentMethod(), "Window"), true);
         /*get {
             if (GetStringValue(GetCurrentMethod(), "Window") != string.Empty)
            return (WindowState)Enum.Parse(typeof(WindowState), GetStringValue(GetCurrentMethod(), "Window"), true);

@@ -15,11 +15,11 @@ public class MulitConverterStringToString : IMultiValueConverter
             //Debug.WriteLine("3: " + values[2].ToString());
             if(values[1] != null && values[1].ToString() != "")
             {
-                name = $"{values[0]} ({values[1]})";
+                name = $"{values[0]} [{values[1]}]";
             }
             else
             {
-                name = $"{values[0]} (0)";
+                name = $"{values[0]} [0]";
             }
         }
         else

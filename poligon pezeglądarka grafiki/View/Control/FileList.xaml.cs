@@ -27,6 +27,11 @@ public partial class FileList : UserControl
     private void ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         var index = (e.Source as ListBox).SelectedIndex;
+        if (index < 0)
+        {
+            Debug.WriteLine("MouseDoubleClick: invalid index");
+            return;
+        }
         var FList = (this.DataContext as MainWindowViewModel)?.FilesList;
         var p = FList[index].Path+"\\"+ FList[index].Name;
         ViewWindow viewWindow = new ViewWindow { DataContext = new ViewWindowViewModel(p) };

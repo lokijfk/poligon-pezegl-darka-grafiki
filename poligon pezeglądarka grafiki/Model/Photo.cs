@@ -10,9 +10,10 @@ using System.Windows.Media.Imaging;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-public partial class Photo : ObservableObject 
+public partial class Photo : ObservableObject//,IDisposable
 {
-    private readonly Uri _source;
+    //private readonly Uri _source;
+    //private readonly Stream _streamSource;
     public string Path { get; private set; }
 
     [ObservableProperty]
@@ -21,19 +22,62 @@ public partial class Photo : ObservableObject
     [ObservableProperty]
     private ImageSource image;
 
-    public override string ToString() => _source.ToString();
+    [ObservableProperty]
+    private bool isSelected = false;
 
+    //public override string ToString() => _source.ToString();
+    public override string ToString() => Path;
+    private CancellationToken ctoken;
+    //private bool isLoaded = false;
     //public ExifMetadata Metadata { get; } tu trzeba zbudować właśną klasę do odczytu metadanych
     // test jest po to żeby załadować w odpowiedniej kolejności pliki ale bez grafiki
     // żeby nie było opóźnień a samą grafikę przerobić w osobnym wątku jak się da
     // i do tego służy metoda publiczna
-    
+
     public Photo(string path)
     {        
-        Path = path;        
-        _source = new Uri(path);       
+        Path = path;    
+        //_streamSource = new FileStream(path, FileMode.Open, FileAccess.Read);
+        //_source = new Uri(path);       
         Name = System.IO.Path.GetFileName(path);
-        
+        Image = CreateEmtpyBitmapSource();
+    }
+
+    public static BitmapSource CreateEmtpyBitmapSource()
+    {
+        return BitmapImage.Create(16, 16, 96, 96, PixelFormats.Indexed1,
+                    new BitmapPalette([Colors.Transparent]), new byte[32], 2);
+    }
+
+    /// <summary>
+    /// zwraca przeroczystą bitmapę o wymarach 16x16
+    /// przerobić tak żeby wymary trzeba było podać
+    /// </summary>
+    /// <returns></returns>
+    public static BitmapImage GetBitmapImage()
+    {
+        // before encoding/decoding, check if bitmapSource is already a BitmapImage
+        BitmapSource bitmapSource = CreateEmtpyBitmapSource();
+        if (!(bitmapSource is BitmapImage bitmapImage))
+        {
+            bitmapImage = new BitmapImage();
+
+            BmpBitmapEncoder encoder = new BmpBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                encoder.Save(memoryStream);
+                memoryStream.Position = 0;
+
+                bitmapImage.BeginInit();
+                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                bitmapImage.StreamSource = memoryStream;
+                bitmapImage.EndInit();
+            }
+        }
+
+        return bitmapImage;
     }
 
     /*
@@ -112,7 +156,10 @@ public partial class Photo : ObservableObject
         _ = Load(new(),false);
     }
 
-
+    public void AddToken(CancellationToken Ctoken)
+    {
+        ctoken = Ctoken;
+    }
 
     /// <summary>
     /// asynchroniczne łądowanie obrazów do postaci miniatury
@@ -123,7 +170,7 @@ public partial class Photo : ObservableObject
     /// <param name="x">umożliwia pominięcie sprawdzania tokena, 
     /// jednak nalezy go utworzyć</param>
     /// <returns></returns>
-    public async Task Load(CancellationToken token, bool x = true)
+    public async Task Load(CancellationToken token = default(CancellationToken), bool x = true)
     {
         if (token.IsCancellationRequested && x)
         {
@@ -131,7 +178,12 @@ public partial class Photo : ObservableObject
             return;
         }
 
-        try { 
+        if (token == default(CancellationToken)&& ctoken != default(CancellationToken))
+        {
+            token = this.ctoken;
+        }
+        //this.token = token;
+        try {            
             Image = await Task.Run(() =>
             {
                 using (var fileStream = new FileStream(
@@ -147,15 +199,19 @@ public partial class Photo : ObservableObject
                     catch(FileFormatException ex)
                     {
                         Debug.WriteLine($"błąd formatu pliku: {ex.Message}");
-                        return null; // Return null if loading fails
+                        return Task.FromResult(BitmapFrame.Create(
+                            PhotoHelper.CreateEmtpyBitmapSource())); // Return null if loading fails
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error creating BitmapFrame: {ex.Message}");
-                        return null; // Return null if loading fails
+                        Debug.WriteLine($"błąd utworzenia miniatury: {ex.Message}");
+                        return Task.FromResult(BitmapFrame.Create(
+                            CreateEmtpyBitmapSource())); // Return null if loading fails
                     }
                 }
             });
+
+            
 
             //NewWidth= (NewHwight/OldHeight) * OldWidth;
             //dodać łądowanie obrazka zastępczego
@@ -167,8 +223,6 @@ public partial class Photo : ObservableObject
             Debug.WriteLine($"zadanie wstrzymane (Task): {ex.Message}");
             //return null; // Return null if loading fails
         }
-            
-
     }
 
 
@@ -192,6 +246,5 @@ public partial class Photo : ObservableObject
 
         return BitmapFrame.Create(resizedImage);
     }
-
 
 }

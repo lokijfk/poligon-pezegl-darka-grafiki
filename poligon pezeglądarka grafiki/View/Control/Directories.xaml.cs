@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.Windows.Controls;
 using Microsoft.Win32;
 using poligon_pezeglądarka_grafiki.ViewModel;
@@ -13,6 +14,22 @@ namespace poligon_pezeglądarka_grafiki.View.Control;
 public partial class Directories : UserControl
 {
     //public ObservableCollection<SSS> list = []; 
+    /*
+    private string previousView = string.Empty;
+    public Directories(string previousView)
+    {        
+        InitializeComponent();
+        this.previousView = previousView;
+    }
+
+    public string PreviousView
+    {
+        get { return previousView; }
+        set { previousView = value; }
+    }*/
+
+    //public static readonly string Identyfier = "Settings";
+
     public Directories()
     {
         //DataContext = new MainWindowViewModel();
@@ -23,6 +40,7 @@ public partial class Directories : UserControl
         
         
     }
+
 
     private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
     {   
@@ -41,10 +59,10 @@ public partial class Directories : UserControl
     private void Button_Click_AddFolder(object sender, System.Windows.RoutedEventArgs e)
     {
         var ofd = new OpenFolderDialog();
-         ofd.ShowDialog();
+        _ = ofd.ShowDialog();
         string path = ofd.FolderName;
         //Debug.WriteLine (path);
-        (this.DataContext as MainWindowViewModel).AddFolder(path);
+        _ = (this.DataContext as MainWindowViewModel).AddRootFolderToTree(path);
         /*if ((this.DataContext as MainWindowViewModel).AddFolder(path))
         {
             LList.UpdateLayout();
@@ -57,10 +75,10 @@ public partial class Directories : UserControl
     {
         //do zmiany !! 
         var ofd = new OpenFolderDialog();
-        ofd.ShowDialog();
+        _ = ofd.ShowDialog();
         string path = ofd.FolderName;
         //Debug.WriteLine (path);
-        (this.DataContext as MainWindowViewModel).AddFolder(path);
+        _ = (this.DataContext as MainWindowViewModel).AddRootFolderToTree(path);
     }
 
     private void Expander_Expanded(object sender, System.Windows.RoutedEventArgs e)

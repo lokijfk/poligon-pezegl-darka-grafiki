@@ -1,4 +1,6 @@
 ﻿
+using poligon_pezeglądarka_grafiki.DEP;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -14,26 +16,20 @@ public static class TreeViewItemExtension
     /// <returns></returns>
     public static DependencyObject GetCHildTextBox(this DependencyObject item)
     {
-
         if (item != null)
-        {
+        {            
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(item); i++)
-            {
+            {                
                 var child = VisualTreeHelper.GetChild(item, i);
                 if (child is TextBox)
-                {
-                    //Debug.WriteLine("Found TextBox: " + ((TextBox)child).Text);
+                {                    
                     return (TextBox)child;
-                }
-
+                }     
                 DependencyObject childItem = GetCHildTextBox(child);
-                if (childItem != null) return childItem as TextBox;
+                if (childItem != null) return childItem as TextBox;                
             }
-        }
+        }        
         return null;
-
-
-
 
         /*
         //DependencyObject item = block;
@@ -57,7 +53,6 @@ public static class TreeViewItemExtension
         }
         return null;
         */
-
     }
 
 

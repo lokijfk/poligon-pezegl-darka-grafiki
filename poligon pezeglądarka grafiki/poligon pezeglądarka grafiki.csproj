@@ -9,9 +9,16 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="img\g1.png" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <Content Include="img\73042biohazard_109537%281%29.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="img\g1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -24,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Exceptions\" />
     <Folder Include="Style\" />
   </ItemGroup>
 	<ItemGroup>

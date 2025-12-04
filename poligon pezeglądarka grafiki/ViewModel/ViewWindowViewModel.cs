@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using poligon_pezeglądarka_grafiki.Model;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -10,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.VisualBasic.FileIO;
+using System.Diagnostics;
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
@@ -17,13 +17,17 @@ public partial class ViewWindowViewModel: ObservableObject
 {
     [ObservableProperty]
     private BitmapImage myBitmapImage = new();
+    [ObservableProperty]
+    double myWidth;
+    [ObservableProperty]
+    double myHeight;
     //private ImageSource myBitmapImage;// = new();
     [ObservableProperty]
     private Color _Bacground_C;
     [ObservableProperty]
     private double _Opacity_C;
     //czy to jest potrzebne??
-    private List<string> ImagePaths = new();
+    private List<string> ImagePaths = [];
 
     public ObservableCollection<Photo> Photos;
     
@@ -81,11 +85,28 @@ public partial class ViewWindowViewModel: ObservableObject
         */
 
         //Uri src = new Uri(path, UriKind.RelativeOrAbsolute);
+        //dodać wysokość i szerokosć obrazka o ile jest to zaznaczone w ini
         MyBitmapImage = new();
         MyBitmapImage.BeginInit();
         MyBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
         MyBitmapImage.UriSource = new Uri(path, UriKind.RelativeOrAbsolute); //src;
-        MyBitmapImage.EndInit();
+        
+        MyBitmapImage.EndInit(); 
+        //myHeight = MyBitmapImage.Height.ToString();
+        //myWidth = MyBitmapImage.Width.ToString();
+        if((MyBitmapImage.Height <= 300)||(MyBitmapImage.Width <= 300))
+        {
+            MyHeight = MyBitmapImage.Height;
+            //MyWidth = MyBitmapImage.Width;
+        }
+        else
+        {
+            MyHeight = double.NaN;
+            //MyWidth = double.NaN;
+        }
+ 
+
+           // Debug.WriteLine("rozmiar obrazka: " + myWidth + " x " + myHeight +", orginalny: "+MyBitmapImage.Width +" x "+MyBitmapImage.Height);
     }
 
 
@@ -151,6 +172,13 @@ public partial class ViewWindowViewModel: ObservableObject
     [RelayCommand]
     private void BTClick(object? parameter)
     {
+        /*NOTATKI
+         * dodać wyświetlanie w orginalnym rozmiarze
+         * dodać zoom in/out    
+         * dodać przyciski do nawigacji - prawo, lewo i zamykanie
+         * 
+         * 
+         */
         //Debug.WriteLine("jest ewent");
         //myBitmapImage = Model.GetImage();
         if (parameter is KeyEventArgs e)
@@ -243,13 +271,15 @@ public partial class ViewWindowViewModel: ObservableObject
                 //Debug.WriteLine("usuwanie pliku");
                 // dodać obsługę przenoszeniao do kosza
                 string FileToDele = Photos[currentImageIndex].Path;
+                // to trzeba dodać do VM, lub zrobić klasę typu helper? która to przechowa
                 if (File.Exists(FileToDele))
                 {
                     try
                     {
                         //to blokuje wątek przeglądania i blokuje program !!!
                         //wyskoczenia dodatkowego okna powoduje że to okno przestaje być aktywne 
-                        FileSystem.DeleteFile(FileToDele, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+                        _ = BrokerFile.DeleteFile(FileToDele);
+                        //FileSystem.DeleteFile(FileToDele, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
                         //Debug.WriteLine("plik usunięty: " + FileToDele);
                         Photos.RemoveAt(currentImageIndex);
                         if (Photos.Count == 0)
@@ -270,7 +300,7 @@ public partial class ViewWindowViewModel: ObservableObject
                     catch (Exception ex)
                     {
                         //Debug.WriteLine("Błąd przy usuwaniu pliku: " + ex.Message);
-                        GetWindow().Activate();// aktywuje okno, żeby można było zamknąć komunikat
+                        _ = GetWindow().Activate();// aktywuje okno, żeby można było zamknąć komunikat
                     }
                 }
 

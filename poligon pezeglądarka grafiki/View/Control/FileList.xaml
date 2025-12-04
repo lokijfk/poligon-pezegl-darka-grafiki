@@ -12,19 +12,24 @@
              >
     <Grid>
         <!--TextBlock Text="{Binding SelectedTreeItem}"/-->
+
         <ListView Margin="10" Grid.Row="1"  x:Name="Lista" ItemsSource="{Binding FilesList}"
                   MouseDoubleClick="ListBox_MouseDoubleClick">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn x:Name="Nazwa" >
-                        <GridViewColumnHeader  Content="Nazwa" />
+                    <GridViewColumn >
+                        <GridViewColumnHeader  Content="Nazwa" Width="Auto"/>
                         <!-- tu trzeba dać jeszcze behawior -->
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" >
                                     <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,4,0"/>
-                                    <TextBlock Text="{Binding Name}"  Background="Transparent" />
-                                    <TextBox Text="{Binding Name,Mode=TwoWay}" Visibility="Hidden" />
+                                    <Grid>
+                                        <TextBox Text="{Binding Name}"  x:Name="EditBox" Background="DarkRed" Visibility="Collapsed"/> 
+                                        <!-- błąd który tu występuje prawdopodobnie jest z material design-->
+                                        <TextBlock Text="{Binding Name}" x:Name="LabelBlock"  Background="Blue" />
+                                    </Grid>
+                                    <!--TextBlock Text="{Binding Name}" /-->
                                     <!-- tu był textblock zmiana żeby był edytowalny, 
                                     ale może da się tak zrobić żeby do edycji podmieniać rodzaj pól -->
                                     <!-- kolor może da się zmienić za pomocą triggera -->
@@ -32,9 +37,9 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn x:Name="Roz" Header="Roz." DisplayMemberBinding="{Binding Extension}" />
-                    <GridViewColumn x:Name="SizeX" Header="Wielkość" DisplayMemberBinding="{Binding Size}"/>
-                    <GridViewColumn x:Name="PathX" Header="Ścieszka"  DisplayMemberBinding="{Binding Path}" />
+                    <GridViewColumn Width="Auto" Header="Roz." DisplayMemberBinding="{Binding Extension}" />
+                    <GridViewColumn Width="Auto" Header="Wielkość" DisplayMemberBinding="{Binding Size}"/>
+                    <GridViewColumn Width="Auto" Header="Ścieszka"  DisplayMemberBinding="{Binding Path}" />
 
                     <!--GridView.ColumnHeaderContainerStyle>
                         <Style TargetType="{x:Type GridViewColumnHeader}" >

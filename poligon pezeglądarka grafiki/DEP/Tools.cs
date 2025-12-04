@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Windows.Media.Imaging;
-using System.Windows.Media;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Diagnostics;
@@ -22,92 +20,7 @@ static internal class Tools
     public static string GetProjectName        
         => Assembly.GetExecutingAssembly().GetName().Name.ToString();
 
-    /// <summary>
-    /// zwraca przeroczystą bitmapę o wymarach 16x16
-    /// przerobić tak żeby wymarytrzeba było podać
-    /// </summary>
-    /// <returns></returns>
-    public static BitmapSource CreateEmtpyBitmapSource()
-    {
-        /*
-        int width = 16;
-        int height = width;
-        int stride = width / 8;
-        byte[] pixels = new byte[height * stride];
-
-        // Try creating a new image with a custom palette.
-        //List<System.Windows.Media.Color> colors = new List<System.Windows.Media.Color>();
-        //colors.Add(System.Windows.Media.Colors.Red);
-        //colors.Add(System.Windows.Media.Colors.Blue);
-        //colors.Add(System.Windows.Media.Colors.Green);
-        //BitmapPalette myPalette = new BitmapPalette(colors);
-        BitmapPalette myPalette = new BitmapPalette(new List<Color> { Colors.Transparent });
-        // Creates a new empty image with the pre-defined palette
-        BitmapSource image = BitmapSource.Create(width, height,96, 96,PixelFormats.Indexed1,
-                                                 myPalette,pixels,stride);
-        return image;*/
-        return BitmapImage.Create(16, 16, 96, 96, PixelFormats.Indexed1,
-                    new BitmapPalette(new List<Color> { Colors.Transparent }), new byte[32], 2);
-    }
-
-    /// <summary>
-    /// zwraca przeroczystą bitmapę o wymarach 16x16
-    /// przerobić tak żeby wymarytrzeba było podać
-    /// </summary>
-    /// <returns></returns>
-    public static BitmapImage GetBitmapImage( )
-    {
-        // before encoding/decoding, check if bitmapSource is already a BitmapImage
-        BitmapSource bitmapSource = Tools.CreateEmtpyBitmapSource();
-        if (!(bitmapSource is BitmapImage bitmapImage))
-        {
-            bitmapImage = new BitmapImage();
-
-            BmpBitmapEncoder encoder = new BmpBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
-
-            using (MemoryStream memoryStream = new MemoryStream())
-            {
-                encoder.Save(memoryStream);
-                memoryStream.Position = 0;
-
-                bitmapImage.BeginInit();
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.StreamSource = memoryStream;
-                bitmapImage.EndInit();
-            }
-        }
-
-        return bitmapImage;
-    }
-
-
-    /*
-    /// <summary>
-    /// do wywalenia - przenieść do BrokeraINI - przeniesione
-    /// Zwraca plik imi o podanej nazwie umieszczony w {user}\AppData\Local\{AppName}
-    /// jeżeli nie ma pliko to tworzynowy
-    /// Może zwrócić plik znajdujący się w aktualnym katalogu aplikacji o ile wcześniej został tam utworzony
-    /// </summary>
-    /// <param name="inis"></param>
-    /// <returns>zwraca obiekt IniFile lub null</returns>
     
-    static public IniFile LoadIni(string inis)
-    {
-        IniFile ini;
-        if (File.Exists(Directory.GetCurrentDirectory() + "\\" + inis))
-        {
-            ini = new IniFile(Directory.GetCurrentDirectory() + "\\" + inis);            
-        }
-        else
-        {           
-            ini = new IniFile(GetUserAppDataPath + "\\" + inis);
-        }
-        return ini;
-    }
-
-    static public IniFile LoadIniProject() => LoadIni(GetProjectName+ ".ini");
-    */
 
     /// <summary>
     /// sprawdza czy podany katalog nie ma atrybutu "ukryty"

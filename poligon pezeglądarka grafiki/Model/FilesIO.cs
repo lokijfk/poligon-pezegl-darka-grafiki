@@ -3,6 +3,9 @@ using System.Windows.Media;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
+/// <summary>
+/// ta klasa jest tylko pojenikiem na dane o plikach
+/// </summary>
 public class FilesIO
 {
     //public bool Select { get; set; } = false;

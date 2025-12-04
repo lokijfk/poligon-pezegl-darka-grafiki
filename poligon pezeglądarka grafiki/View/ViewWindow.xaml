@@ -11,24 +11,57 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:ViewWindowViewModel}"
         xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Style="{StaticResource MaterialDesignWindow }" 
-        
+        Style="{StaticResource MaterialDesignWindow }"         
         WindowStyle="None" ResizeMode="NoResize" WindowState="Maximized"
         Title="ViewWindow" Height="450" Width="800"
-         Cursor="None" 
+        Cursor="None"
         AllowsTransparency="True"
+        MouseWheel="Image_MouseWheel"
+        x:Name="WindowView"
+        Loaded="Image_Loaded"
         >
+    <!--    -->
     <Window.Background>
         <SolidColorBrush Opacity="{Binding Opacity_C}" Color="{Binding Bacground_C}"/>
     </Window.Background>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="KeyDown">
+            <!-- czy to na pewno jest potrzebne ?? może da siębez tego a wywołać z BC ??-->
             <i:InvokeCommandAction Command="{Binding BTClickCommand}" PassEventArgsToCommand="True" />
             <!--CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}" /-->
         </i:EventTrigger>
     </i:Interaction.Triggers>
+    
+    <Canvas x:Name="CanvasView">
+        <Image HorizontalAlignment="Center" VerticalAlignment="Center"
+               x:Name="ImageS" Source="{Binding MyBitmapImage, Mode=OneWay}"  >
+            <!--Image.RenderTransform>
+                <TranslateTransform X="{Binding ElementName=WindowView,Path=CanvasTop}" Y="{Binding ElementName=WindowView, Path=CanvasLeft}" />
+            </Image.RenderTransform-->
+            <Image.Style>
+                <Style TargetType="Image">
+                    <EventSetter Event="MouseMove" Handler="Image_MouseMove"/>
+                    <EventSetter Event="LostMouseCapture" Handler="Image_LostMouseCapture"/>
+                    <EventSetter Event="Loaded" Handler="Image_Loaded"/>
+                    <EventSetter Event="SizeChanged" Handler="Image_SizeChanged" />
+                    <EventSetter Event="MouseLeftButtonDown" Handler="Image_MouseLeftButtonDown" />
+                    <!--EventSetter Event="Initialized" Handler="Image_Initialized" /-->
+                </Style>
+            </Image.Style>
+        </Image>
+    </Canvas>
+    
+    <!--Grid>
+        <Image x:Name="ImageS" Source="{Binding MyBitmapImage, Mode=OneWay}" Height="{Binding MyHeight}" >
+            
+            <Image.Style>
+                <Style TargetType="Image">
+                    <EventSetter Event="MouseMove" Handler="Image_MouseMove"/>
+                    <EventSetter Event="LostMouseCapture" Handler="Image_LostMouseCapture"/>
+                    <EventSetter Event="Loaded" Handler="Image_Loaded"/>
+                </Style>
+            </Image.Style>
+        </Image>
 
-    <Grid>
-        <Image Source="{Binding MyBitmapImage, Mode=OneWay}"/>
-    </Grid>
+    </Grid-->
 </Window>
