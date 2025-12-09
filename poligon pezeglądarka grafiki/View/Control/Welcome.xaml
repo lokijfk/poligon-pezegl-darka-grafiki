@@ -9,16 +9,55 @@
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <TextBlock Text=" Witam" />
-            <StackPanel Orientation="Horizontal">
-                <Label Content="Wersja:"/>
-                <Label Content="{Binding version}"/>
-                <!-- tu musze dodać możliwość czytania z pliku txt lub rft-->
-                
-            </StackPanel>
-
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+            <RichTextBox Width="400" IsReadOnly="True" BorderThickness="0" Background="Transparent" >
+                <FlowDocument>
+                    <Paragraph TextAlignment="Left">
+                        <Run Text="TO NAPISY TESTOWE. "/>
+                        <LineBreak/>
+                        <Run Text="Obsługuje formaty takie jak: PNG, JPEG, BMP, GIF, TIFF, WEBP "/>
+                        <LineBreak />
+                        <Run Text=" odsługiwane formaty zależne są od systemu"/>
+                        <LineBreak/>
+                        <Run Text="Drak and Drop:"/>
+                        <LineBreak/>
+                        <Run Text=" - CTRL + LKM kopiowanie"/>
+                        <LineBreak/>
+                        <Run Text="- SHIFT + LKM przenoszenie"/>
+                        <LineBreak/>
+                        <Run Text="Schowek systemowy: "/>    
+                        <LineBreak/>
+                        <Run Text="- CTRL + V wklejanie obrazu z schowka"/>
+                        <LineBreak/>
+                        <Run Text="- CTRL + C kopiowanie obrazu do schowka"/>
+                        <LineBreak/>
+                        <Run Text="- CTRL + X wycinanie obrazu do schowka, obsługiwanie tylko wewnątrz aplikacji"/>
+                        <LineBreak/>
+                        <Run Text="Inne: "/>
+                        <LineBreak/>
+                        <Run Text=" - CTRL + A - zaznacza/odznacza wszystkie elementy w wybranym katalogu" />
+                        
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
         </StackPanel>
-        <Image Source="/img/g1.png" />
+
+        <!--TextBlock Text="- Obsługuje formaty takie jak: PNG, JPEG, BMP, GIF, TIFF, WEBP. 
+                           Drak and Drop:
+                           - CTRL + LKM kopiowanie
+                           - SHIFT + LKM przenoszenie
+                           Schowek systemowy: 
+                            - CTRL + V wklejanie obrazu z schowka
+                           - CTRL + C kopiowanie obrazu do schowka
+                           - CTRL + X wycinanie obrazu do schowka, obsługiwanie tylko wewnątrz aplikacji
+                           
+                           
+                           "
+                           TextWrapping="Wrap" Width="400"/-->
+
+            
+
+        <!--/StackPanel-->
+        <!--Image Source="/img/g1.png" /-->
     </Grid>
 </UserControl>

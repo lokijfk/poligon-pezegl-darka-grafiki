@@ -351,14 +351,20 @@ public partial class MainWindow : Window
                 //Debug.WriteLine("TreeView_Drop Copy: ");
                 foreach (var dataString in dataStrings)
                 {
-                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path, true);
+                    //tu by się przydało żeby moveFileToFolder przyjmowało TreeModel jako drugi parametr
+                    //może wtedy by sie unikneło niepotrzebnego wyszukiwania tego elementu w drzewie
+                    //((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path, true);
+                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, (TreeModel)treeViewItem.DataContext, true);
                 }                
             }
             else if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))//muszę dodać do ustawień zmianę klawiszy specjalnych definiujących operaqcję
             {
                 //Debug.WriteLine("TreeView_Drop Move: ");
                 foreach (var dataString in dataStrings)
-                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path);
+                {
+                    //((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path);
+                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, (TreeModel)treeViewItem.DataContext);
+                }
             }
             //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
             /*
@@ -442,19 +448,7 @@ public partial class MainWindow : Window
 
 
     #region TreeView
-    /*
-    private void TreeViewX_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-    {
-        znacznik = 0; // reset znacznik po zmianie zaznaczenia
-        //selectedItem = (sender as TreeView).GetTreeViewItem();
-        //Debug.WriteLine("TreeViewX_SelectedItemChanged: " + e.NewValue.GetType().ToString());
-        //Debug.WriteLine("TreeViewX_SelectedItemChanged sender: " + sender.ToString());
-        //Debug.WriteLine("TreeViewX_SelectedItemChanged orginalSource: " + e.OriginalSource.GetType().ToString());
-        //Debug.WriteLine(((e.OriginalSource as TreeViewItem).DataContext as TreeModel).Name);
-    }
-    */
-
-
+   
     /// <summary>
     /// potrzebne do zaznaczenia elementu do metod wywoływanych z menu kontekstowego
     /// zmiana nazwy, usuwanie folderu, dodawanie folderu
@@ -464,6 +458,8 @@ public partial class MainWindow : Window
     private void TreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {         
         menuSelectedItem = (sender as TreeViewItem);
+        (DataContext as MainWindowViewModel).MenuSelectedItem((TreeModel)menuSelectedItem.DataContext);
+        
     }
 
     /// <summary>
@@ -472,6 +468,7 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
+    /*
     private void TreeViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true; // to powinno zablokować dalsze przetwarzanie
@@ -485,7 +482,7 @@ public partial class MainWindow : Window
                 else Debug.WriteLine("none");
             }
         }         
-    }
+    }*/
 
     /*
     private void TreeViewItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -538,142 +535,7 @@ public partial class MainWindow : Window
         #pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.        
     }
 
-    #region metody do dostępu do warstwy wizualnej - do usunięcia
-    //kopiowane ze strony microsoftu i jeszcze z jakiejś
-    //niby przeznaczone do uzyskania dostępu do warstwy wizualnej 
-    // i ma działać przy virtualizacji ale jednak virtualizacji nie ogarnia
-    // trzeba zastąpić wyskakujacym oknem 
-    /*
-    private bool gotTheItem = false;
-    private void RecurseItem(TreeViewItem item)
-    {
-        foreach (var subItem in item.Items)
-        {
-            TreeViewItem tvi = item.ItemContainerGenerator.ContainerFromItem(subItem) as TreeViewItem;
-            // do something
-            if (!gotTheItem)
-            {
-                RecurseItem(tvi);
-            }
-        }
-    }
-
-    private TreeViewItem GetTreeViewItem(ItemsControl container, TreeModel item)
-    {
-        if (container != null)
-        {
-            if (container.DataContext == item)
-            {
-                return container as TreeViewItem;
-            }
-
-            // Expand the current container
-            if (container is TreeViewItem && !((TreeViewItem)container).IsExpanded)
-            {
-                container.SetValue(TreeViewItem.IsExpandedProperty, true);
-            }
-
-            // Try to generate the ItemsPresenter and the ItemsPanel.
-            // by calling ApplyTemplate.  Note that in the
-            // virtualizing case even if the item is marked
-            // expanded we still need to do this step in order to
-            // regenerate the visuals because they may have been virtualized away.
-
-            container.ApplyTemplate();
-            ItemsPresenter itemsPresenter =
-                (ItemsPresenter)container.Template.FindName("ItemsHost", container);
-            if (itemsPresenter != null)
-            {
-                itemsPresenter.ApplyTemplate();
-            }
-            else
-            {
-                // The Tree template has not named the ItemsPresenter,
-                // so walk the descendents and find the child.
-                itemsPresenter = FindVisualChild<ItemsPresenter>(container);
-                if (itemsPresenter == null)
-                {
-                    container.UpdateLayout();
-
-                    itemsPresenter = FindVisualChild<ItemsPresenter>(container);
-                }
-            }
-
-            Panel itemsHostPanel = (Panel)VisualTreeHelper.GetChild(itemsPresenter, 0);
-
-            // Ensure that the generator for this panel has been created.
-            UIElementCollection children = itemsHostPanel.Children;
-
-            //MyVirtualizingStackPanel virtualizingPanel =
-              //  itemsHostPanel as MyVirtualizingStackPanel;
-
-            for (int i = 0, count = container.Items.Count; i < count; i++)
-            {
-                TreeViewItem subContainer;
-                
-                    subContainer =
-                        (TreeViewItem)container.ItemContainerGenerator.
-                        ContainerFromIndex(i);
-
-                    // Bring the item into view to maintain the
-                    // same behavior as with a virtualizing panel.
-                    subContainer.BringIntoView();             
-
-                //to do rekurencji
-                if (subContainer != null)
-                {
-                    // Search the next level for the object.
-                    TreeViewItem resultContainer = GetTreeViewItem(subContainer, item);
-                    if (resultContainer != null)
-                    {
-                        return resultContainer;
-                    }
-                    else
-                    {
-                        // The object is not under this TreeViewItem
-                        // so collapse it.
-                        subContainer.IsExpanded = false;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Search for an element of a certain type in the visual tree.
-    /// </summary>
-    /// <typeparam name="T">The type of element to find.</typeparam>
-    /// <param name="visual">The parent element.</param>
-    /// <returns></returns>
-    private T FindVisualChild<T>(Visual visual) where T : Visual
-    {
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(visual); i++)
-        {
-            Visual child = (Visual)VisualTreeHelper.GetChild(visual, i);
-            if (child != null)
-            {
-                T correctlyTyped = child as T;
-                if (correctlyTyped != null)
-                {
-                    return correctlyTyped;
-                }
-
-                T descendent = FindVisualChild<T>(child);
-                if (descendent != null)
-                {
-                    return descendent;
-                }
-            }
-        }
-
-        return null;
-    }
-    */
-
-    #endregion
-
+    
     private void MenuItem_DeleteDir(object sender, RoutedEventArgs e)
     {        
         //Debug.WriteLine("MenuItem_DeleteDir: " + (menuSelectedItem.DataContext as TreeModel).Path);
@@ -705,9 +567,11 @@ public partial class MainWindow : Window
         //*/
     }
 
-    private void MenuItem_Refresh(object sender, RoutedEventArgs e)
+    private void MenuItem_Paste(object sender, RoutedEventArgs e)
     {
-
+        //czy to da się zastąpić komendą w mv? na przykład PreviewMouseRightButtonDown
+        (DataContext as MainWindowViewModel).MenuSelectedItem((TreeModel)menuSelectedItem.DataContext);
+        _ = (DataContext as MainWindowViewModel).RefreshClipboardListenerResoult();
     }
 
 
@@ -720,15 +584,5 @@ public partial class MainWindow : Window
     #endregion
 
 
-    /*
-private void TreeViewItem_MouseDown(object sender, MouseButtonEventArgs e)
-{
-   //wogóle nie jest wywoływany
-   Debug.WriteLine("XXX TreeViewItem_MouseDown single click: " + sender.GetType().ToString());
-   if ((e.ChangedButton == MouseButton.Left)&&(e.ClickCount == 2))
-   {
-       Debug.WriteLine("XXX TreeViewItem_MouseDown double click: " + sender.GetType().ToString());
-   }
-}
-*/
+   
 }

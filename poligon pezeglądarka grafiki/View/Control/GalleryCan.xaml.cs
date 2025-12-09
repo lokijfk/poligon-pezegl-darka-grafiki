@@ -18,7 +18,7 @@ namespace poligon_pezeglądarka_grafiki.View.Control;
 /// <summary>
 /// Logika interakcji dla klasy Gallery.xaml
 /// </summary>
-public partial class Gallery : UserControl
+public partial class GalleryCan : UserControl
 {
     /*NOTATKI
      * dodać obsługę klawiszy np: enter przy zaznaczonych elementach do otwierania okna podglądu
@@ -33,7 +33,7 @@ public partial class Gallery : UserControl
 
     
 
-    public Gallery()
+    public GalleryCan()
     {
         InitializeComponent();
         

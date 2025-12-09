@@ -8,8 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.VisualBasic.FileIO;
-using System.Diagnostics;
+
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
@@ -37,7 +36,7 @@ public partial class ViewWindowViewModel: ObservableObject
         // Create a new instance of the model
        // Model = new Model.Model();
     }
-    public ViewWindowViewModel( string path)
+    public ViewWindowViewModel(string path)
     {
         if ((path != null)&& (File.Exists(path)))
         {
@@ -243,11 +242,17 @@ public partial class ViewWindowViewModel: ObservableObject
                 Window view = GetWindow();
                 if (!MainIsShow())
                 {
-                    MainWindow main = new MainWindow { DataContext = new MainWindowViewModel() };
-                    // tu będzie błąd jak wywalu null i trzeba to jakoś przechwycić
-                    main.Owner = view.Owner;
-                    main.Show();
-                    view.Owner = main;
+                    try
+                    {
+                        MainWindow main = new MainWindow { DataContext = new MainWindowViewModel(ImagePaths[currentImageIndex]) };
+                        // tu będzie błąd jak wywalu null i trzeba to jakoś przechwycić
+                        main.Owner = view.Owner;
+                        main.Show();
+                        view.Owner = main;
+                    } catch 
+                    {
+                        view.Close();
+                    }
                 }
                 view.Close();// jak przekazać index obrazu który jest wyświetlany w tym oknie?
 

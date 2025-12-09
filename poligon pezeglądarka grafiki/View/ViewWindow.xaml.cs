@@ -1,4 +1,4 @@
-﻿using poligon_pezeglądarka_grafiki.ViewModel;
+﻿
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,6 +53,8 @@ public partial class ViewWindow : Window //czemu musi być partial ??
 
     private void Image_MouseMove(object sender, MouseEventArgs e)
     {
+        //ImageS.HorizontalAlignment = HorizontalAlignment.Stretch;
+       // ImageS.VerticalAlignment = VerticalAlignment.Stretch;
         if (((ImageS.ActualHeight > WindowView.ActualHeight) || (ImageS.ActualWidth > WindowView.ActualWidth)) && (WindowView.Cursor == Cursors.Hand))
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -93,7 +95,17 @@ public partial class ViewWindow : Window //czemu musi być partial ??
 
     private void Image_Loaded(object sender, RoutedEventArgs e)
     {
-        if(ImageS.ActualHeight > 300) ImageS.Height = WindowView.ActualHeight;
+        ImageS.Height = WindowView.ActualHeight;
+        /*
+        if (ImageS.ActualWidth > WindowView.ActualWidth)
+        {
+            ImageS.Width = WindowView.ActualWidth;
+        }
+        else if(ImageS.ActualHeight > 300) 
+        {
+            ImageS.Height = WindowView.ActualHeight;
+        }*/
+
         //CanvasLeft = (WindowView.ActualWidth/2)-(ImageS.ActualWidth/2);
         //CanvasTop = (WindowView.ActualHeight/2)-(ImageS.ActualHeight/2);
 
@@ -101,7 +113,7 @@ public partial class ViewWindow : Window //czemu musi być partial ??
         //Canvas.SetTop(ImageS, CanvasTop);
         //Debug.WriteLine("WindowView.ActualWidth: " + WindowView.ActualWidth + ", WindowView.ActualHeight: " 
         //    + WindowView.ActualHeight + ", ImageS.ActualWidth: " + ImageS.ActualWidth + ", ImageS.ActualHeight: " + ImageS.ActualHeight);
-        
+
         //Debug.WriteLine("CanvasLeft: " + CanvasLeft + ", CanvasTop: " + CanvasTop + ", canvaImage left: "+Canvas.GetLeft(ImageS) + ", canvaImage top: " + Canvas.GetTop(ImageS));
 
     }

@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Packaging;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -46,8 +47,6 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<Photo> Photos { get; set; } = [];
 
     #endregion Collection
-    [ObservableProperty]
-    private bool _loadedList = true;
 
     [ObservableProperty]
     private SelectionMode _CurSelectionMode = SelectionMode.Single;
@@ -133,7 +132,7 @@ public partial class MainWindowViewModel : ObservableObject
     
     private bool _cut = false;
 
-   
+    public string version { get; set; } = "251204 Alfa";
     public string pattern { get; set; }  = @"\.(jpg|jpeg|bmp|png|webp)";
 
     //public readonly string HGelpFile = @"pack://application:,,,/Help/help.rtf";
@@ -1518,16 +1517,11 @@ public partial class MainWindowViewModel : ObservableObject
                             Photos.Add(p);
                             if (Photos.IndexOf(p) == 0)
                             {
-                                LoadedList = true;
                                 p.IsSelected = true;
                             }
-                            else
-                            {
-                               // LoadedList = false;
-                            }
-                                //p.AddToken(token);
-                                //jak zrobić żeby to było odpalane przez interfejs? a nie tutaj
-                                await p.Load(token);
+                            //p.AddToken(token);
+                            //jak zrobić żeby to było odpalane przez interfejs? a nie tutaj
+                            await p.Load(token);
                             //_ = p.Load(token);
                         }
                         

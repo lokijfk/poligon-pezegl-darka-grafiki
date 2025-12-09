@@ -4,9 +4,125 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
+             xmlns:vm ="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             d:DesignHeight="450" d:DesignWidth="800"
+             
+             
+             >
+    <!--d:DataContext="{d:DesignInstance vm:MainWindowViewModel}" -->
+    <UserControl.Resources>
+        <Style x:Key="HorizontalDividerBorder" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignDivider}" />
+            <Setter Property="Height" Value="1" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="UseLayoutRounding" Value="True" />
+        </Style>
+    </UserControl.Resources>
+    <StackPanel Name="kontener" Cursor="">
+
+
+        <Expander Name="SettingsX"  VerticalAlignment="Center" Expanded="Expander_Expanded" Header="ustawienia ogólne"
+                  BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
+                  
+                  >
+
+            <StackPanel MinHeight="200">
+                <ListBox x:Name="DemoItemsListBox"
+                           Margin="12,16,12,16"
+                           AutomationProperties.Name="DemoPagesListBox">
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal" >
+                            <CheckBox IsChecked="{Binding VisibleToolBar, Mode=TwoWay}" Margin="0,0,10,0">pasek narzędziowy</CheckBox>
+                            <CheckBox IsChecked="{Binding VisibleStatusBar, Mode=TwoWay}" Margin="0,0,10,0">pasek stanu</CheckBox>
+                            <CheckBox IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}">pokaż ilość plików w katalogach na drzewie</CheckBox>
+                        </StackPanel>
+                    </ListBoxItem>                      
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal" >
+                            <Button Content="Instaluj" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
+                                    Command="{Binding Path=InstallCommand}" Margin="0,0,10,0"
+                             />
+                            <Button Content="Odinstaluj" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
+                                    Command="{Binding Path=DeinstallCommand}" Margin="0,0,10,0"
+                            />
+                            <Button Content="Test" ToolTip="test otwarcie explorera windows na podanej ściezce"
+                                    Command="{Binding Path=TestExploreraCommand}" Margin="0,0,10,0"
+                             />
+                            <Button Content="Skrót na pulpicie"
+                                    Command="{Binding Path=ShortcutCallCommand}"
+                                    />
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+
+
+                </StackPanel>
+        </Expander>
+
+        <Expander Name="AddFolderX"  VerticalAlignment="Center" 
+                  Expanded="Expander_Expanded" Header="katalogi przeglądane"
+                  BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
+                  >
             
-    </Grid>
+            <StackPanel MinHeight="200">
+                
+                <ListBox Name="LList" ItemsSource="{Binding DirPath}" >
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <WrapPanel>
+                                <Label Content="{Binding }" />
+                                <Button Style="{StaticResource MaterialDesignPaperDarkButton}"
+                                        Click="Button_Click_Usun" 
+                                        >
+                                    <materialDesign:PackIcon Kind="DeleteForever" />
+                                </Button>
+
+                            </WrapPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>                    
+                </ListBox>
+                
+                <Button Content="Dodaj" Click="Button_Click_AddFolder" VerticalAlignment="Bottom" Cursor="Hand" />
+            </StackPanel>
+            
+            
+        </Expander>
+        
+        <Border Style="{StaticResource HorizontalDividerBorder}" />
+        <Expander Name="ExcludeFolder" Header="katalogi wykluczone z przeglądania" Expanded="Expander_Expanded"
+                  BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
+                  >
+            <!--StackPanel>                
+                <ListBox Name="DList" ItemsSource="{Binding DirPath}" AllowDrop="True" DragEnter="DList_DragEnter">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <WrapPanel>
+                                <Label Content="{Binding }" />
+                                <Button Style="{StaticResource MaterialDesignPaperDarkButton}"
+                                       Click="Button_Click_UsunD" 
+                                       >
+                                    <materialDesign:PackIcon Kind="DeleteForever" />
+                                </Button>
+
+                            </WrapPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Content="Dodaj" Click="Button_Click_ExcludeFolder"/>
+            </StackPanel-->
+            <TextBlock Text="Chwilowo nie wspiwrane" />
+        </Expander>
+        <Border Style="{StaticResource HorizontalDividerBorder}" />
+        <Expander Name="ExcludeFile"  Expanded="Expander_Expanded" Header="pliki wykluczone z przeglądania"
+                  BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
+                  >
+
+            
+            <TextBlock Text="Chwilowo nie wspiwrane" />
+            
+        </Expander>
+
+    </StackPanel>
 </UserControl>

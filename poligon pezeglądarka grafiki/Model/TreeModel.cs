@@ -24,7 +24,7 @@ public partial class TreeModel :ObservableObject
     
     public bool IsExpanded { get; set; } = false;
     
-    public bool IsRightSelected { get; set; } = false;
+    public string  IsRightSelected { get; set; } = string.Empty;
     
     public string View { get; set; } = string.Empty;
     [ObservableProperty]
@@ -36,6 +36,17 @@ public partial class TreeModel :ObservableObject
     #endregion properties
 
     #region methods
+
+    public void RightSelect()
+    {   if (Parent != null)
+        {
+            GetRootNode(this).IsRightSelected = _path;
+        }
+        else
+        {
+            IsRightSelected = _path;
+        }
+    }
 
     public override string ToString()
     {

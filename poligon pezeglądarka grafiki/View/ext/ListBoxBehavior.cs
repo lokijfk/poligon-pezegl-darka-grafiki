@@ -250,7 +250,8 @@ public static class ListBoxBehavior
         var itemsControl = obj as ItemsControl;
         if (itemsControl == null)
         {
-            throw new Exception("ScrollToTopOnItemsSourceChange Property must be attached to an ItemsControl based control.");
+            //throw new Exception("ScrollToTopOnItemsSourceChange Property must be attached to an ItemsControl based control.");
+            throw new Exception("ScrollToTopOnItemsSourceChange Właściwość musi być dołączona do kontrolki opartej na ItemsControl");
         }
 
         DependencyPropertyDescriptor descriptor =
@@ -271,29 +272,32 @@ public static class ListBoxBehavior
     static void ItemsSourceChanged(object sender, EventArgs e)
     {
         var itemsControl = sender as ItemsControl;
-        DoScrollToTop(itemsControl);
+        Debug.WriteLine("sender: "+sender.GetType());
+            DoScrollToTop(itemsControl);
 
-        var collection = itemsControl.ItemsSource as INotifyCollectionChanged;
-        if (collection != null)
-        {
+        if (itemsControl.ItemsSource is INotifyCollectionChanged collection)
+        {           
             collection.CollectionChanged += (o, args) => DoScrollToTop(itemsControl);
         }
     }
 
     static void DoScrollToTop(ItemsControl itemsControl)
     {
-        EventHandler eventHandler = null;
-        eventHandler =
-            delegate
-            {
-                if (itemsControl.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
+        if (itemsControl.Items.Count < 10)
+        {
+            EventHandler eventHandler = null;
+            eventHandler =
+                delegate
                 {
-                    var scrollViewer = xGetVisualChild<ScrollViewer>(itemsControl);
-                    scrollViewer.ScrollToTop();
-                    itemsControl.ItemContainerGenerator.StatusChanged -= eventHandler;
-                }
-            };
-        itemsControl.ItemContainerGenerator.StatusChanged += eventHandler;
+                    if (itemsControl.ItemContainerGenerator.Status == GeneratorStatus.ContainersGenerated)
+                    {
+                        var scrollViewer = xGetVisualChild<ScrollViewer>(itemsControl);
+                        scrollViewer.ScrollToTop();
+                        itemsControl.ItemContainerGenerator.StatusChanged -= eventHandler;
+                    }
+                };
+            itemsControl.ItemContainerGenerator.StatusChanged += eventHandler;
+        }
     }
 
     static T xGetVisualChild<T>(DependencyObject parent) where T : Visual

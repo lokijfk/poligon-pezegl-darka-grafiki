@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>img\73042biohazard_109537(1).ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,9 +16,10 @@
 
 
   <ItemGroup>
-    <Content Include="img\73042biohazard_109537%281%29.ico">
+    <EmbeddedResource Include="img\73042biohazard_109537%281%29.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </EmbeddedResource>
+    <Content Include="img\73042biohazard_109537(1).ico" />
     <Content Include="img\g1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
