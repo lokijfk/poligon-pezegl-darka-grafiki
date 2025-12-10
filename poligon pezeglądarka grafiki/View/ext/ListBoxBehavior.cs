@@ -271,8 +271,7 @@ public static class ListBoxBehavior
 
     static void ItemsSourceChanged(object sender, EventArgs e)
     {
-        var itemsControl = sender as ItemsControl;
-        Debug.WriteLine("sender: "+sender.GetType());
+        var itemsControl = sender as ItemsControl;        
             DoScrollToTop(itemsControl);
 
         if (itemsControl.ItemsSource is INotifyCollectionChanged collection)

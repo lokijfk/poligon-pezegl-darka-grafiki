@@ -30,17 +30,21 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.SplitButton.xaml" />
                 <!--ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ToggleButton.xaml" /-->
             </ResourceDictionary.MergedDictionaries>
             <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <converters:MulitConverterStringToString x:Key="MBConwerterSTS" />
+            
         </ResourceDictionary>
     </Window.Resources>
 
     <Window.InputBindings>
-        <KeyBinding Key="F5" Command="{Binding ButtonRefreshCommand,Mode=OneWay}" />
+        <!-- wklejanie działa globalnie to można też i inne przyciski zrobić globalnie 
+        tylko trzeba to przetestować i może być zależne od widoku -->
+        <!--KeyBinding Key="F5" Command="{Binding ButtonRefreshCommand,Mode=OneWay}" /-->
         <KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding MenuPasteInputBindingsCommand,Mode=OneWay}" />
-        <KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding SelectAllCommand,Mode=OneWay}" />
+        <!--KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding SelectAllCommand,Mode=OneWay}" /-->
     </Window.InputBindings>
 
     <i:Interaction.Triggers>
@@ -76,12 +80,12 @@
                                Foreground="{DynamicResource WindowTextBrush}"/>
                         <ToolBar  Grid.Row="0" Visibility="{Binding VisibleToolBar, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <!-- tu przerobić na Behawior zamiast zdarzeń-->
-                            <Button Click="Button_Click_ViewGrid"  ToolTip="Widok miniatur">
+                            <Button   ToolTip="Widok miniatur" Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery">
                                 <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
                                 <materialDesign:PackIcon Kind="ViewGrid" />
                             </Button>
-                            
-                            <Button Click="Button_Click_ViewList" ToolTip="widok listy, w trakcie...">
+
+                            <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="FList" ToolTip="widok listy, w trakcie...">
                                 <materialDesign:PackIcon Kind="ViewList" />
                             </Button>
                             <ToggleButton
@@ -102,7 +106,7 @@
                                   ToolTip="pokaż/ukryj napisy"
                             />
 
-                        <!--Viewbox  Height="20">
+                            <!--Viewbox  Height="20">
                                 <ToggleButton  Style="{StaticResource MaterialDesignSwitchToggleButton}" 
                                            WindowChrome.IsHitTestVisibleInChrome ="True" 
                                            IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"                                      
@@ -113,7 +117,7 @@
                                     </materialDesign:ToggleButtonAssist.OnContent>
                                 </ToggleButton>
                             </Viewbox-->
-                            <Button   Click="Button_Click_SettingsFolder">
+                            <Button   Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Settings">
                                 <materialDesign:PackIcon Kind="CogOutline" />
                             </Button>
                             <Button 
@@ -128,15 +132,18 @@
                             </Button>
                             
                             
-                            <Button Click="Button_Click_ViewList2" ToolTip="widok miniatur, starszy, nie dokończony" >
+                            <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery2"
+                                    ToolTip="widok miniatur, starszy, nie dokończony" >
                                 <materialDesign:PackIcon Kind="ViewGrid" />
                             </Button>
-                            <Button Click="Button_Click_FDataGrid" ToolTip="widok listy, starszy, nie dokończony">
+                            <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="FDataGrid" 
+                                    ToolTip="widok listy, starszy, nie dokończony">
                                 <materialDesign:PackIcon Kind="ViewList" />
                             </Button>
                             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
                             <Viewbox Width="20">
-                                <Button  Click="Button_Click_Welcome" ToolTip="About"                                  
+                                <Button  Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Welcome" 
+                                         ToolTip="About"                                  
                                       Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" 
                                          Background="#6598fa"
                                          >
@@ -145,8 +152,12 @@
                                         />
                                 </Button>
                             </Viewbox>
-                            
-                    </ToolBar>
+                            <Label VerticalAlignment="Center" Content="sortowanie po:" />
+                            <ComboBox ItemsSource="{Binding Path=TypSotowania}" IsSynchronizedWithCurrentItem="True"
+                                    DisplayMemberPath="Name">
+                                        
+                                </ComboBox>
+                        </ToolBar>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition  Width="auto"/>
@@ -260,10 +271,10 @@
                                             Value="True" />
                                        <Setter Property="IsExpanded"
                                             Value="{Binding IsExpanded,Mode=TwoWay}" />
-                                    <Setter Property="IsSelected"
-                                            Value="{Binding IsSelected, Mode=TwoWay}" />
-                                    <EventSetter Event="PreviewMouseRightButtonDown" 
-                                                 Handler="TreeViewItem_PreviewMouseRightButtonDown" />                         
+                                       <Setter Property="IsSelected"
+                                                Value="{Binding IsSelected, Mode=TwoWay}" />
+                                       <EventSetter Event="PreviewMouseRightButtonDown" 
+                                                     Handler="TreeViewItem_PreviewMouseRightButtonDown" />                         
                                   </Style>
                              </TreeView.ItemContainerStyle>
                         </TreeView>

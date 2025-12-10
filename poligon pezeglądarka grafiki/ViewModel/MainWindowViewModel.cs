@@ -38,17 +38,18 @@ public partial class MainWindowViewModel : ObservableObject
     /// kolekcja przechowująca tablicę obrazów w katalogu do widoków tabelarycznych
     /// </summary>
     public ObservableCollection<FilesIO> FilesList { get; set; } = [];
-    public ObservableCollection<string> DirPath { get; private set; } = [];
-    
+    // public ObservableCollection<string> DirPath { get; private set; } = [];
+
+
+    public ObservableCollection<string> TypSotowania { get; set; } = [];
+
     /// <summary>
     /// kolekcja przechowująca kolekcją obrazów w katalogu do urzytku w widoku galerii
     /// </summary>
     public ObservableCollection<Photo> Photos { get; set; } = [];
 
     #endregion Collection
-    [ObservableProperty]
-    private bool _loadedList = true;
-
+    
     [ObservableProperty]
     private SelectionMode _CurSelectionMode = SelectionMode.Single;
 
@@ -170,6 +171,7 @@ public partial class MainWindowViewModel : ObservableObject
         string destinyDir = BrokerFile.GetUserAppDataPath;
         string[] dir = Directory.GetDirectories(sourcedir);
         string destDirImg = string.Empty, dirName, subDirectory = string.Empty, pathExe = string.Empty;
+        /*
         foreach (string directory in dir)
         {
             dirName = Path.GetFileName(directory);            
@@ -180,15 +182,18 @@ public partial class MainWindowViewModel : ObservableObject
                 subDirectory = directory;                
                 break;
             }
-        }
+        }*/
+        destDirImg = Path.Combine(destinyDir, "img");
+        subDirectory = Path.Combine(sourcedir, "img");
+        _ = Directory.CreateDirectory(destDirImg);
         string[] files = Directory.GetFiles(sourcedir);
         foreach (string file in files)
         {
             if (File.Exists(file))
             {
                 string ext = Path.GetExtension(file);
-                string fileName = Path.GetFileName(file);
-                if (ext == ".exe" || ext == ".dll")
+                //string fileName = Path.GetFileName(file);
+                if (ext == ".exe" || ext == ".dll" || ext == ".json")
                 {
                     _ = FileMove(file, destinyDir, true);
                     if(ext == ".exe")
@@ -196,35 +201,83 @@ public partial class MainWindowViewModel : ObservableObject
                         pathExe = Path.Combine(destinyDir, Path.GetFileName(file));
                     }
                 }
-                else
-                {
-                    if (fileName == "poligon pezeglądarka grafiki.runtimeconfig.json") _ = FileMove(file, destinyDir, true);                    
-                }
             }
         }
-        if (subDirectory != string.Empty && destDirImg != string.Empty)
+        if ( !string.IsNullOrEmpty(subDirectory) && !string.IsNullOrEmpty(destDirImg))
         {
             files = Directory.GetFiles(subDirectory);
             foreach (string file in files)
             {
                 _ = FileMove(file, destDirImg, true);
             }
-        }
-        if(pathExe != string.Empty) StartExe(pathExe);
-        Application.Current.Shutdown();
+            if (pathExe != string.Empty) StartExe(pathExe);
+            Application.Current.Shutdown();
+        }//tu dodać info o błędzie w kopiowaniu
+ 
+        
     }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallCommand))]
     private bool _InstallCanExecute = true;
 
-    private void StartExe(string path)
+    [RelayCommand]
+    private void InsatallCanExecuteTest()
     {        
-        if (File.Exists(path))
+        string directoruApp = BrokerFile.GetUserAppDataPath;
+        string[] files = Directory.GetFiles(directoruApp);
+        if (files.Length > 1)
+        {
+            InstallCanExecute = false;
+            //a co ze sprawdzeniem wersji??
+            UpdateCanExecute = !InstallCanExecute;
+            if (Directory.GetCurrentDirectory() != BrokerFile.GetUserAppDataPath)
+            {
+                DeinstallCanExecute = UpdateCanExecute;
+            }DeinstallCanExecute = false;
+        }
+        else
+        {
+            InstallCanExecute = true;
+            UpdateCanExecute = !InstallCanExecute;
+            if (Directory.GetCurrentDirectory() != BrokerFile.GetUserAppDataPath)
+            {
+                DeinstallCanExecute = UpdateCanExecute;
+            }DeinstallCanExecute = false ;
+        }        
+    }
+
+    [RelayCommand]
+    private void Update()
+    {
+        //tu jakoś muszę jeszcze zrobić sprawdzanie wersji
+    }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(UpdateCommand))]
+    private bool _UpdateCanExecute = false;
+
+    private void StartExe(string path,string param = "")
+    {
+        //if (File.Exists(path))
+        //to powoduje ryzyko powstania błędu
+        if (!string.IsNullOrEmpty(path))
         {
             try
             {
-                _ = Process.Start(path);               
+                if (!string.IsNullOrEmpty(param))
+                {
+                    //to jest po to żeby można było wywołać komendy systemu pn explorer
+                    _ = Process.Start(path,param);
+                }
+                else
+                {
+                    if (File.Exists(path))
+                    {
+                        //ale tu to naprawiam
+                        _ = Process.Start(path);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -237,18 +290,49 @@ public partial class MainWindowViewModel : ObservableObject
     private void Deinstall()
     {
         Debug.WriteLine("Deinstalacja");
+        string currentDir = Directory.GetCurrentDirectory();
+        string appDir = BrokerFile.GetUserAppDataPath;
+        string[] dir = Directory.GetDirectories(appDir);
+        string[] files = Directory.GetFiles(appDir);
+        if (currentDir != appDir)
+        {
+            foreach (string directory in dir)
+            {
+                BrokerFile.DeleteDirectory(directory);
+               // DeleteFolder(directory);
+            }
+            foreach (string file in files)
+            {
+                string ext = Path.GetExtension(file);
+                //string fileName = Path.GetFileName(file);
+                if (ext != ".ini")//to tylko na czas testów, później jest do usunięcia
+                {
+                    //BrokerFile.DeleteFile(file);
+                    BrokerFile.DeleteFileStrong(file);
+                }
+            }
+            Application.Current.Shutdown();
+        }
     }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeinstallCommand))]
     private bool _DeinstallCanExecute = false;
 
+    /// <summary>
+    /// otwiera katalog programu w explorerze
+    /// katalog programu to katalog dzie jest plik ini i gdzie zostanie zainstalowany program
+    /// </summary>
     [RelayCommand]
-    private void TestExplorera()
+    private void OpenExplorer()
     {
-        Debug.WriteLine("test explorera");
+        string destinyDir = BrokerFile.GetUserAppDataPath;                
+        StartExe("explorer", destinyDir);
     }
 
+    /// <summary>
+    /// tworzy skrót na pulpicie o ile program jest zainstalowany
+    /// </summary>
     [RelayCommand]
     private void ShortcutCall()
     {     
@@ -262,18 +346,75 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    /*
+    /// <summary>
+    /// zmienia widok na galerię
+    /// </summary>
     [RelayCommand]
     private void Button_Click_ViewGrid()
-    {        
+    {
+        Debug.WriteLine("select gallery");
         ChangeView("Gallery");
     }
 
+    /// <summary>
+    /// zmienia widok na galerię testową
+    /// </summary>
     [RelayCommand]
     private void Button_Click_ViewGridCan()
     {        
         ChangeView("GaleryCan");
     }
 
+    */
+    [RelayCommand]
+    private void ReloadView()
+    {
+        //Debug.WriteLine($"reload view - selectView: {SelectedViewWindow}");
+        //ChangeView(SelectedViewWindow);
+        SelectedView = SelectedViewWindow;//to na wszelki wypadek
+        SelectionChanged(SelectedView);
+    }
+
+    /// <summary>
+    /// obsługa zmiany widoków, polecenie z parametrem
+    /// </summary>
+    /// <param name="sel">nazwa widoku, wielkość liter jest ważna</param>
+    [RelayCommand]
+    private void SelectionChanged(object sel)
+    {
+        if ((sel is string sx) && (!string.IsNullOrEmpty(sx)))
+        {
+           // Debug.WriteLine($"Selection Changed: {sx} ");
+            //SelectedView = sx;
+            if (sx != "Settings")
+            {
+                SelectedViewWindow = sx;//zapis do ini
+                SelectedViewModel = CallMethod(sx);
+                SelectedView = sx;//to na wszelki wypadek
+            }
+            else
+            {
+                if (SelectedView == sx)
+                {
+                    SelectedView = SelectedViewWindow;
+                    SelectedViewModel = CallMethod(SelectedView);
+                }
+                else
+                {
+                    SelectedView = sx;
+                    SelectedViewModel = CallMethod(sx);
+                }
+            }
+            if (SelectedViewWindow == "Gallery") ReloadFileList(SelectedItem);
+        }
+    }
+
+    /*
+    /// <summary>
+    /// zmienia widok na podany
+    /// </summary>
+    /// <param name="view"></param>
     private void ChangeView(string view)
     {
         if(view != SelectedView && view != string.Empty)
@@ -284,7 +425,7 @@ public partial class MainWindowViewModel : ObservableObject
             //Debug.WriteLine("ChangeView to: " + view +" ret: "+SelectedViewModel.GetType().ToString());
             ReloadFileList(SelectedItem);
         }
-    }
+    }*/
 
     [RelayCommand]
     private void DeleteFolderTreeItem()
@@ -295,7 +436,6 @@ public partial class MainWindowViewModel : ObservableObject
             MenuSelectedItem(null);            
         }
     }
-
 
     [RelayCommand(CanExecute = nameof(ClipboardListenerResoult))]
     private void MenuPaste()
@@ -337,6 +477,7 @@ public partial class MainWindowViewModel : ObservableObject
             //Debug.WriteLine("MenuSelectedItem: " + ti.Path);
         }
     }
+
     /// <summary>
     /// wklejanie ze skrótów klawiaturowych (CTRL+V) z schowka systemowego
     /// </summary>
@@ -482,6 +623,10 @@ public partial class MainWindowViewModel : ObservableObject
         } */       
     }
 
+    /// <summary>
+    /// usuwa plik poza kosz
+    /// </summary>
+    /// <param name="parameter"></param>
     [RelayCommand]
     private void DeleteFileStrong(object parameter)
     {
@@ -537,7 +682,10 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    //zwraca ilość zaznaczonych elementów w Photos
+    /// <summary>
+    /// zwraca ilość zaznaczonych elementów w Photos
+    /// </summary>
+    /// <returns></returns>
     private int GetCountSelectedItem()
     {
         Photo[] photos = [.. Photos.Where(static p => p.IsSelected)];
@@ -558,6 +706,9 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// odśwież ilość plików w pasku statusu (po przenoszeniu, kopiowaniu, wycinaniu)
+    /// </summary>
     private void RefreshStatusBarFileCount()
     {
         if (selectedItem != null)
@@ -571,29 +722,28 @@ public partial class MainWindowViewModel : ObservableObject
 
     #endregion
 
-
     #region Konstruktory
     public MainWindowViewModel()
     {
-
         _init(String.Empty);
     }
 
     public MainWindowViewModel(string path)
     {
-
-        _init(path);
-        //Debug.WriteLine($"{path}");
-
+        _init(path);       
     }
 
     private void _init(string path)
     {
-
         if (CurMainWindowState == WindowState.Minimized)
             CurMainWindowState = WindowState.Normal;
 
         //BuildDirParh();
+
+        TypSotowania.Add("nazwie");
+        TypSotowania.Add("dacie");
+        TypSotowania.Add("wielkości");
+
 
         SwitchTglButton = SwitchToggleButton;
         SwitchThemeMode();
@@ -632,21 +782,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     #region wywołania Control
 
-    [RelayCommand]
-    private void SelectionChanged(object sel)
-    {
-        if((sel is string sx) &&(!string.IsNullOrEmpty(sx)))SelectedView = sx;
-        if (SelectedView != "Settings")
-        {
-            SelectedViewWindow = SelectedView;//zapis do ini
-            SelectedViewModel = CallMethod(SelectedView);
-        }
-        else
-        {
-            SelectedViewModel = CallMethod(SelectedView);
-        }   
-        if (SelectedViewWindow == "Gallery") ReloadFileList(SelectedItem);
-    }
+    
 
     private object CallMethod(string p, object?[]? x = null)
     {
@@ -689,7 +825,6 @@ public partial class MainWindowViewModel : ObservableObject
 
 
     #endregion wywołania Control
-
 
     #region Folders and Files
 
@@ -811,21 +946,31 @@ public partial class MainWindowViewModel : ObservableObject
     public TreeModel AddFolder(TreeModel treeModel)
     {
         if (treeModel != null)
-        {
-            string x = AddFolder(treeModel.Path);
-            if (x != string.Empty)
-            {                
-                if((treeModel.GetSelfFromParent() is TreeModel xuz)&& (xuz != null))
+        {            
+            string x = AddFolder(treeModel.Path);//dodaje "nowy folder" do podanej ścieżki
+            if (x != string.Empty)// jeżeli się udało to...
+            {
+                /*
+                if ((treeModel.GetSelfFromParent() is TreeModel xuz) && (xuz != null))
                 {
                     xuz.Children.Clear();
-                    xuz.Addchild(ScanPath(xuz.Path, "").Children);
+                    xuz.Addchild(ScanPath(xuz.Path).Children);
                     xuz.IsExpanded = true;
-                    if((xuz.FindChild(x) is TreeModel newItem)&& (newItem != null))
-                    {                       
-                        newItem.IsExpanded = true;                       
+                    if ((xuz.FindChild(x) is TreeModel newItem) && (newItem != null))
+                    {
+                        newItem.IsExpanded = true;
                         return newItem;
-                    }                    
+                    }
                 }
+                else if (treeModel.Parent == null)
+                {*/
+                //jest reochę problemów z aktualizacją drzewa ;(
+                    //Debug.WriteLine($"tree path:{treeModel.Path} ");
+                    treeModel.Children.Clear();
+                    treeModel.Addchild(ScanPath(treeModel.Path).Children);
+                    treeModel.IsExpanded = true;
+
+                //}
             }
             return null;
         }
@@ -946,7 +1091,6 @@ public partial class MainWindowViewModel : ObservableObject
         Debug.WriteLine("You can intercept the closed event here (10)." + eventArgs.Parameter);
     }
     #endregion okna
-
 
     #region DragDrop
 
@@ -1351,7 +1495,6 @@ public partial class MainWindowViewModel : ObservableObject
 
     #endregion
 
-
     #region Tree and View
 
     [RelayCommand]
@@ -1441,6 +1584,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>
     /// ładuje kolekcje FilesList i Photos według podanej ścieżki
     /// dodać znacznik określający czy Photos jest potrzebne
+    /// PRZEBUDOWAĆ - połączyć FilesIO i Photo
     /// </summary>
     /// <param name="path"></param>
     /// <param name="token"></param>
@@ -1459,43 +1603,30 @@ public partial class MainWindowViewModel : ObservableObject
             var imFiles = Directory.EnumerateFiles(path);
             FileInfo finfo;
             string ext, name;
-            var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
-            //string pattern = @"\.(jpg|jgeg|bmp|png|webp)";
+            var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));            
             Match m;
-            string View = SelectedView.Split('.').Last();
-            //FilesToLoad = imFiles.Count().ToString();
+            string View = SelectedView.Split('.').Last();            
             FilesToLoad = GetCountFiles(path).ToString();
             int licznik = 0;
             foreach (var imFile in imFiles.Select(static (value, i) => (value, i)))
             {
                 if (token.IsCancellationRequested)
-                {
-                    //Debug.WriteLine("FileListLoad: Canceled");
+                {                    
                     counter = false;
                     return;
-                    /*
-                    while (!token.IsCancellationRequested)
-                    {
-                        Thread.SpinWait(50000);
-                    }
-                    */
                 }
-                counter = true;
-
-                
+                counter = true;                
                 ext = System.IO.Path.GetExtension(imFile.value);
                 //pattern to zmienne globalna, będzie ustawiana przy starcie z ini, na razie jest to string na stałe
                 m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
                 if (m.Success && !token.IsCancellationRequested)
-                {
-                    //licznik++;
+                { 
                     FileLoaded = (++licznik).ToString();
                     try
-                    {                        
-                        
+                    {                                          
                         name = System.IO.Path.GetFileName(imFile.value);
                         finfo = new FileInfo(imFile.value);
-                        //Debug.WriteLine("LBM klik, path:" + path+ " file: "+name);
+
                         //to też ładować tylko w razie potrzeby!!, dodać warónek i sprawdzanie
                         //if (FileView.Contains(View))
                             FilesList.Add(new FilesIO()
@@ -1517,13 +1648,8 @@ public partial class MainWindowViewModel : ObservableObject
                             p.Image = back;
                             Photos.Add(p);
                             if (Photos.IndexOf(p) == 0)
-                            {
-                                LoadedList = true;
+                            {                                
                                 p.IsSelected = true;
-                            }
-                            else
-                            {
-                               // LoadedList = false;
                             }
                                 //p.AddToken(token);
                                 //jak zrobić żeby to było odpalane przez interfejs? a nie tutaj
@@ -1782,8 +1908,6 @@ public partial class MainWindowViewModel : ObservableObject
     }
     #endregion
     #endregion Tree and View
-
-
 
     #region Theme Window
     [RelayCommand]

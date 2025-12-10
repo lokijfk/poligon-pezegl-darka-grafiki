@@ -13,7 +13,7 @@
             <RichTextBox Width="400" IsReadOnly="True" BorderThickness="0" Background="Transparent" >
                 <FlowDocument>
                     <Paragraph TextAlignment="Left">
-                        <Run Text="TO NAPISY TESTOWE. "/>
+                        <Run Text="Klawiszologia. " FontStyle="Italic" FontWeight="Bold" />
                         <LineBreak/>
                         <Run Text="Obsługuje formaty takie jak: PNG, JPEG, BMP, GIF, TIFF, WEBP "/>
                         <LineBreak />
@@ -21,17 +21,17 @@
                         <LineBreak/>
                         <Run Text="Drak and Drop:"/>
                         <LineBreak/>
-                        <Run Text=" - CTRL + LKM kopiowanie"/>
+                        <Run Text=" - CTRL + LKM - kopiowanie"/>
                         <LineBreak/>
-                        <Run Text="- SHIFT + LKM przenoszenie"/>
+                        <Run Text="- SHIFT + LKM - przenoszenie"/>
                         <LineBreak/>
                         <Run Text="Schowek systemowy: "/>    
                         <LineBreak/>
-                        <Run Text="- CTRL + V wklejanie obrazu z schowka"/>
+                        <Run Text="- CTRL + V - wklejanie obrazu z schowka"/>
                         <LineBreak/>
-                        <Run Text="- CTRL + C kopiowanie obrazu do schowka"/>
+                        <Run Text="- CTRL + C - kopiowanie obrazu do schowka"/>
                         <LineBreak/>
-                        <Run Text="- CTRL + X wycinanie obrazu do schowka, obsługiwanie tylko wewnątrz aplikacji"/>
+                        <Run Text="- CTRL + X - wycinanie obrazu do schowka, obsługiwanie tylko wewnątrz aplikacji"/>
                         <LineBreak/>
                         <Run Text="Inne: "/>
                         <LineBreak/>

@@ -122,4 +122,9 @@ public partial class Settings : UserControl
     {
         e.Effects = System.Windows.DragDropEffects.Copy;
     }
+
+    private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+    {
+        (DataContext as MainWindowViewModel).InsatallCanExecuteTestCommand.Execute(this);
+    }
 }

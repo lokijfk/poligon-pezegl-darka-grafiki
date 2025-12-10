@@ -8,7 +8,7 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
-             
+             Loaded="UserControl_Loaded"
              
              >
     <!--d:DataContext="{d:DesignInstance vm:MainWindowViewModel}" -->
@@ -24,10 +24,8 @@
 
 
         <Expander Name="SettingsX"  VerticalAlignment="Center" Expanded="Expander_Expanded" Header="ustawienia ogólne"
-                  BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
-                  
+                  BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"                  
                   >
-
             <StackPanel MinHeight="200">
                 <ListBox x:Name="DemoItemsListBox"
                            Margin="12,16,12,16"
@@ -41,24 +39,40 @@
                     </ListBoxItem>                      
                     <ListBoxItem>
                         <StackPanel Orientation="Horizontal" >
-                            <Button Content="Instaluj" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
+                            <Button Command="{Binding Path=InsatallCanExecuteTestCommand}"  ToolTip="odświerza stan przyciskó">
+                                <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
+                                <materialDesign:PackIcon Kind="Refresh" />
+                            </Button>
+                            <Button Content="Kopiuj do Profilu urzytkownika" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
                                     Command="{Binding Path=InstallCommand}" Margin="0,0,10,0"
                              />
-                            <Button Content="Odinstaluj" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
+                            <Button Content="usuń z profilu urzytkownika" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
                                     Command="{Binding Path=DeinstallCommand}" Margin="0,0,10,0"
                             />
-                            <Button Content="Test" ToolTip="test otwarcie explorera windows na podanej ściezce"
-                                    Command="{Binding Path=TestExploreraCommand}" Margin="0,0,10,0"
+                            <Button Content="Aktualizuj" ToolTip="aktualizuje wersję zainstalowaną w profilu urzytkownika urzytkownika"
+                                     Margin="0,0,10,0" IsEnabled="False"
+                            />
+                            <Button Content="Otwórz katalog programu" ToolTip="test otwarcie explorera windows na podanej ściezce"
+                                    Command="{Binding Path=OpenExplorerCommand}" Margin="0,0,10,0"
                              />
                             <Button Content="Skrót na pulpicie"
                                     Command="{Binding Path=ShortcutCallCommand}"
                                     />
                         </StackPanel>
                     </ListBoxItem>
+                    <ListBoxItem>
+                        <!-- tu pozmieniać kolory i podłączyć tekst z VM -->
+                        <materialDesign:Card  Width="200" Padding="8" UniformCornerRadius="6"
+                          Background="{DynamicResource PrimaryHueDarkBrush}"
+                          Foreground="{DynamicResource PrimaryHueDarkForegroundBrush}"  
+                         >
+                            <TextBlock TextWrapping="Wrap" Text="You can adjust the corner radius" />
+                        </materialDesign:Card>
+                    </ListBoxItem>
                 </ListBox>
+                
 
-
-                </StackPanel>
+            </StackPanel>
         </Expander>
 
         <Expander Name="AddFolderX"  VerticalAlignment="Center" 
@@ -68,11 +82,12 @@
             
             <StackPanel MinHeight="200">
                 
-                <ListBox Name="LList" ItemsSource="{Binding DirPath}" >
+                <!--ListBox Name="LList" ItemsSource="{Binding DirPath}" -->
+                <ListBox Name="LList" ItemsSource="{Binding Path=Tree}" >
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <WrapPanel>
-                                <Label Content="{Binding }" />
+                                <Label Content="{Binding Path=Path}" />
                                 <Button Style="{StaticResource MaterialDesignPaperDarkButton}"
                                         Click="Button_Click_Usun" 
                                         >
@@ -123,6 +138,6 @@
             <TextBlock Text="Chwilowo nie wspiwrane" />
             
         </Expander>
-
+        <Button Content="Zamknij" Command="{Binding Path=ReloadViewCommand}"/>
     </StackPanel>
 </UserControl>

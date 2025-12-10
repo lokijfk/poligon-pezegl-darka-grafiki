@@ -23,23 +23,6 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-
-    <!-- czym to zastąpić ??-->
-    <UserControl.InputBindings >
-        <!-- ctrl + A jest gdzieś zabrany, ale gdzie?-->
-        <!--KeyBinding Key="F1" Command="{Binding Path=MenuCutCommand}" /--> 
-        <!--KeyBinding Key="S" Modifiers="Ctrl" Command="{Binding  Path=SelectAllCommand}"/-->
-        <!--KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding  Path=SelectAllCommand}"/-->
-        
-        <!-- tu muszę wymyśleć jak zrobić odświerzenie albo kierować do innej command-->
-        <!--KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
-                                                        AncestorType={x:Type UserControl}}, Path=DataContext.MenuPasteInputBindingsCommand}"/-->
-        
-        <!--KeyBinding Key="Delete" Command="{Binding  RelativeSource={RelativeSource Mode=FindAncestor, 
-                                                        AncestorType={x:Type UserControl}}, Path=DataContext.DeleteThumbnailsCommand}"  /-->
-    </UserControl.InputBindings>
-
-
     <Grid>        
         <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
                  ItemsSource="{Binding Photos}"                  
@@ -56,13 +39,10 @@
                  DragOver="ListBox_DragOver"  
                  SelectionMode="{Binding CurSelectionMode,Mode=TwoWay}"
                  Focusable="True"
-                 >
-            <!-- ext:ListBoxBehavior.ScrollToTopOnItemsSourceChange="True"-->
+                 >            
             <ListBox.ContextMenu>
                 <ContextMenu  materialDesign:MenuAssist.MenuItemsPresenterMargin="0"
-                             DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">
-                    
-                    <!-- jak tu dodać jakieś zachowanie?? tak żeby uniknąć kodu BC-->              
+                             DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">                                            
                     <MenuItem Header="zaznacz wszystko" 
                               Command="{Binding Path=DataContext.SelectAllCommand}"
                               CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
@@ -124,11 +104,12 @@
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
                 <KeyBinding Key="X" Modifiers="Ctrl" Command="{Binding  Path=MenuCutCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
-
+                <!--KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding MenuPasteInputBindingsCommand,Mode=OneWay}" /-->
                 <KeyBinding Key="Delete" Command="{Binding  DeleteThumbnailsCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
                 <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding  DeleteFileStrongCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
+                <!-- open nie działa, tu trzeba poprzwić -->
                 <KeyBinding Key="Enter" Command="Open" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
             </ListBox.InputBindings>
@@ -197,9 +178,7 @@
                     <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBox_PreviewMouseRightButtonDown" />
                 </Style>
-            </ListBox.Style>
-            
-
+            </ListBox.Style>      
         </ListBox>
     </Grid>
 </UserControl>

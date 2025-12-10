@@ -234,8 +234,10 @@ public partial class MainWindow : Window
         }
     }
     //to będzie do przerobienia, przenieść wykonanie  do mv
+    /* - przeniesione, zakomentowane w razie problemów
     private void Button_Click_ViewGrid(object sender, RoutedEventArgs e)
     {
+        Debug.WriteLine("Button_Click_ViewGrid");
         var mv = (this.DataContext as MainWindowViewModel);
         mv.SelectedView = "Gallery";
         mv.SelectionChangedCommand.Execute(this);
@@ -283,6 +285,7 @@ public partial class MainWindow : Window
         mv.SelectedView = "Welcome";
         mv.SelectionChangedCommand.Execute(this);
     }
+    */
     #endregion widoki
 
 
@@ -527,7 +530,7 @@ public partial class MainWindow : Window
     {
         #pragma warning disable CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
         TreeModel itemTV = (TreeModel)menuSelectedItem.DataContext;
-        var path = itemTV.Path;
+        //var path = itemTV.Path;
         TreeModel name = ((MainWindowViewModel)this.DataContext).AddFolder(itemTV);
         // z powodu wirtualizacji nie można dostać się do nowo utworzonego TreeViewItem
         // a jak wyłączymy wirtualizację to od ręki nie posiada on elemętów podrzędnych
