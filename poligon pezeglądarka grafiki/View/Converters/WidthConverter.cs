@@ -8,15 +8,15 @@ class WidthConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        double v = (double)value;        
-        if(v == 0 || value == null)
+        double v = (double)value;
+        if (v == 0 || value == null)
         {
             return 200;
         }
         else
         {
             return v;
-        }               
+        }
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

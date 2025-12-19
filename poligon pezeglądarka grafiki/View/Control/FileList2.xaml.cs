@@ -11,7 +11,7 @@ namespace poligon_pezeglądarka_grafiki.View.Control
     {
         public FileList2()
         {
-           // Debug.WriteLine("-- jest: FileList");
+            // Debug.WriteLine("-- jest: FileList");
 
             InitializeComponent();
         }

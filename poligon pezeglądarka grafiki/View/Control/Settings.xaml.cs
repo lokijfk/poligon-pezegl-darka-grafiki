@@ -22,7 +22,7 @@ public partial class Settings : UserControl
      */
     public Settings()
     {
-        InitializeComponent();  
+        InitializeComponent();
     }
 
 
@@ -58,13 +58,13 @@ public partial class Settings : UserControl
         //if(parent != kontener)
         foreach (var ch in kontener.Children)
         {
-            if((ch is Expander)&&(ch != expander))
+            if ((ch is Expander) && (ch != expander))
             {
                 (ch as Expander).IsExpanded = false;
-            }   
+            }
 
         }
-       // expander.IsExpanded = true;
+        // expander.IsExpanded = true;
     }
 
     private void Button_Click_Usun(object sender, System.Windows.RoutedEventArgs e)
@@ -101,11 +101,11 @@ public partial class Settings : UserControl
         {
             var parent = button.Parent as WrapPanel;
             foreach (var ch in parent.Children)
-            {                              
+            {
                 if (ch is Label)
                 {
                     var cy = ch as Label;
-                   (this.DataContext as MainWindowViewModel).RemoveFolder(cy.Content.ToString());
+                    (this.DataContext as MainWindowViewModel).RemoveFolder(cy.Content.ToString());
                 }
             }
         }

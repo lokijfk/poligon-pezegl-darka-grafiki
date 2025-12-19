@@ -45,28 +45,41 @@
                             </Button>
                             <Button Content="Kopiuj do Profilu urzytkownika" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
                                     Command="{Binding Path=InstallCommand}" Margin="0,0,10,0"
-                             />
-                            <Button Content="usuń z profilu urzytkownika" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
-                                    Command="{Binding Path=DeinstallCommand}" Margin="0,0,10,0"
-                            />
-                            <Button Content="Aktualizuj" ToolTip="aktualizuje wersję zainstalowaną w profilu urzytkownika urzytkownika"
-                                     Margin="0,0,10,0" IsEnabled="False"
-                            />
+                             />                                                      
                             <Button Content="Otwórz katalog programu" ToolTip="test otwarcie explorera windows na podanej ściezce"
                                     Command="{Binding Path=OpenExplorerCommand}" Margin="0,0,10,0"
-                             />
-                            <Button Content="Skrót na pulpicie"
-                                    Command="{Binding Path=ShortcutCallCommand}"
-                                    />
+                             />                            
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal" >                            
+                            <Button Content="usuń z profilu urzytkownika" ToolTip="przenosi do katalogu w profilu urzytkownika i tworzy skrót na pulpicie,odblokowuje kojazeie plików"
+                                    Command="{Binding Path=DeinstallCommand}" Margin="0,0,10,0" />
+                            <Button Content="Aktualizuj" ToolTip="aktualizuje wersję zainstalowaną w profilu urzytkownika urzytkownika"
+                                     Margin="0,0,10,0" Command="{Binding Path=UpdateCommand}"/>
+                            <Button Content="Skrót na pulpicie" Command="{Binding Path=ShortcutCallCommand}"  />
                         </StackPanel>
                     </ListBoxItem>
                     <ListBoxItem>
                         <!-- tu pozmieniać kolory i podłączyć tekst z VM -->
-                        <materialDesign:Card  Width="200" Padding="8" UniformCornerRadius="6"
+                        <materialDesign:Card   Padding="8" UniformCornerRadius="6"
                           Background="{DynamicResource PrimaryHueDarkBrush}"
-                          Foreground="{DynamicResource PrimaryHueDarkForegroundBrush}"  
+                            
                          >
-                            <TextBlock TextWrapping="Wrap" Text="You can adjust the corner radius" />
+                            <StackPanel Orientation="Horizontal" >
+                                <TextBlock  Text=" aktualny katalog: "/>
+                                <TextBlock TextWrapping="Wrap" Text="{Binding Path=ActualPath}" />
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <!-- tu pozmieniać kolory i podłączyć tekst z VM -->
+                        <materialDesign:Card   Padding="8" UniformCornerRadius="6"
+                             Background="{DynamicResource PrimaryHueDarkBrush}" >
+                            <StackPanel Orientation="Horizontal" >
+                                <TextBlock  Text="katalog programu w profilu urzytkownika: "/>
+                                <TextBlock TextWrapping="Wrap" Text="{Binding Path=InstallPath}" />
+                            </StackPanel>
                         </materialDesign:Card>
                     </ListBoxItem>
                 </ListBox>
@@ -79,17 +92,17 @@
                   Expanded="Expander_Expanded" Header="katalogi przeglądane"
                   BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
                   >
-            
+            <!-- ścieżki do katalogów w drzewie i ich usuwanie z programu -->
             <StackPanel MinHeight="200">
                 
                 <!--ListBox Name="LList" ItemsSource="{Binding DirPath}" -->
                 <ListBox Name="LList" ItemsSource="{Binding Path=Tree}" >
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <WrapPanel>
+                            <WrapPanel VerticalAlignment="Center">
                                 <Label Content="{Binding Path=Path}" />
                                 <Button Style="{StaticResource MaterialDesignPaperDarkButton}"
-                                        Click="Button_Click_Usun" 
+                                        Click="Button_Click_Usun" ToolTip="usuwa katalo z przeglądania, nie usuwa z dysku"
                                         >
                                     <materialDesign:PackIcon Kind="DeleteForever" />
                                 </Button>

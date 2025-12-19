@@ -23,10 +23,10 @@ public partial class TreeModel : ObservableObject
 
     //dodać pole "ukryty" i zaimplementować w drzewie, dodać przycisk pokazyjący okno z ukrytymi i możliwością odkrycia
     //usunąć zbędna, obiekt przystosowany do bazy danych a nie do systemu katalogów !!
-  /*  [ObservableProperty]
-    private int _Id = -1;
-    [ObservableProperty]
-    public int _ParentID = -1;*/
+    /*  [ObservableProperty]
+      private int _Id = -1;
+      [ObservableProperty]
+      public int _ParentID = -1;*/
     [ObservableProperty]
     private TreeModel? _Parent = null;// zostawiam może ułatwi nawigowanie
     [ObservableProperty]
@@ -62,7 +62,7 @@ public partial class TreeModel : ObservableObject
         child.Parent = this;
         this.Children.Add(child);
     }
-   // public TreeModel GetSelectedItem => Children.FirstOrDefault(i => i.IsSelected);
+    // public TreeModel GetSelectedItem => Children.FirstOrDefault(i => i.IsSelected);
     #endregion methods
     // to jest jakieś rozwiązanie nie najlepsze ale innego chwilowo nie mam
     public TreeModel? GetSelectedItem(TreeModel nodes = null)
@@ -93,12 +93,12 @@ public partial class TreeModel : ObservableObject
         // to też jest nie potrzebne, to jest brane z path elementu
         TreeModel tree = GetSelectedItem();
         if (tree != null)
-        return tree.Path;// przetestować co zwróci
+            return tree.Path;// przetestować co zwróci
         return String.Empty;
     }
 
     public TreeModel? GetParent(TreeModel item) => item.Parent;
-  
+
 
     #region static methods
     // metody statyczne można przenieść do innego obiektu, tu raczej nie mają sensu 

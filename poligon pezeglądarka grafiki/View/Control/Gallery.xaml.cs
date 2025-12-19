@@ -2,7 +2,6 @@
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -28,24 +27,15 @@ public partial class Gallery : UserControl
      * 
      * 
      */
-    public bool edit = false;    
+    public bool edit = false;
     private ListBoxItem? selectedItem = null;
 
-    
+
 
     public Gallery()
     {
         InitializeComponent();
-        
-    }
 
-    private void ThumbinailView_Loaded(object sender, RoutedEventArgs e)
-    {
-        //Window window = Window.GetWindow(this);
-        //foreach (InputBinding ib in this.InputBindings)
-        //{
-        //    window.InputBindings.Add(ib);
-        //}
     }
 
 
@@ -61,11 +51,12 @@ public partial class Gallery : UserControl
             TextBlock lb = textBox.GetSisTextBlock();//GetChildrenTBO(textBox.GetParentAsGrid());
             lb.Visibility = System.Windows.Visibility.Visible;
             edit = false;
-            if((textBox.DataContext as Photo).Name != textBox.Text)
-            (DataContext as MainWindowViewModel).RenameFile(textBox.DataContext as Photo, textBox.Text);
+            if ((textBox.DataContext as Photo).Name != textBox.Text)
+                (DataContext as MainWindowViewModel).RenameFile(textBox.DataContext as Photo, textBox.Text);
             e.Handled = true;
 
-        }else if (e.Key == Key.Escape)
+        }
+        else if (e.Key == Key.Escape)
         {
             TextBox textBox = sender as TextBox;
             textBox.Visibility = System.Windows.Visibility.Collapsed;
@@ -107,7 +98,8 @@ public partial class Gallery : UserControl
                 //Debug.WriteLine("TextBoxActivate - textBlock != null");
                 textBlock.Visibility = Visibility.Collapsed;
                 textBox.Visibility = Visibility.Visible;
-                if (textBox.IsVisible) {
+                if (textBox.IsVisible)
+                {
                     //Debug.WriteLine("TextBoxActivate - textBox.IsVisible");
                     _ = textBox.Focus();
                     if (textBox.IsFocused)
@@ -140,57 +132,11 @@ public partial class Gallery : UserControl
         {
             edit = true;
             TextBox textBox = (selectedItem as DependencyObject).GetCHildTextBox() as TextBox;
-            selectedItem =  null;
+            selectedItem = null;
             if (textBox != null) TextBoxActivate(textBox);
         }
     }
 
-    /*
-    private void MenuItem_Delete(object sender, RoutedEventArgs e)
-    {
-        ListBoxItem listBoxItem = selectedItem as ListBoxItem;
-        if (listBoxItem != null)
-        {
-            if (listBoxItem.DataContext is Photo photo)
-            {       
-                //Debug.WriteLine("usuwanie: " + photo.Name);
-                (DataContext as MainWindowViewModel).DeleteFile([photo]);
-            }
-        }
-
-    }
-
-    /// <summary>
-    /// placebo, nic nie robi
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void MenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        // to tylko placebo, ma być zstąpione metodami które będą wykonywały właściwe działania
-    }
-    private void MenuItem_Copy(object sender, RoutedEventArgs e)
-    {
-        //to można przenieść do ViewModelu
-        if (selectedItem is ListBoxItem listBoxItem)        
-        {
-            if(listBoxItem.DataContext is Photo photo)
-            {                
-                StringCollection paths = [photo.Path];           
-                Clipboard.SetFileDropList(paths);
-            }
-        }
-    }
-
-    /// <summary>
-    /// zmiana trybu zaznaczania na Multiple, do zaznaczenia wielu elementów w MV
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void MenuItem_ListSelectionMode(object sender, RoutedEventArgs e)
-    {
-        Lista.SelectionMode = SelectionMode.Multiple;
-    }*/
 
     #endregion
 
@@ -206,17 +152,18 @@ public partial class Gallery : UserControl
                     var listitem = list.GetListBoxItem(e.GetPosition(list));
                     if (e.OriginalSource.GetType().Name == "Image")
                     {
-                        
+
                         if (listitem != null && ph == listitem.DataContext)
                         {
-                            
+
                             ViewSelectedImage(list, ph);
                         }
-                    } else if(e.OriginalSource.GetType().Name == "TextBlock")
+                    }
+                    else if (e.OriginalSource.GetType().Name == "TextBlock")
                     {
                         TextBox textBox = (TextBox)listitem.GetCHildTextBox();
                         if (textBox != null)
-                        TextBoxActivate(textBox);
+                            TextBoxActivate(textBox);
                     }
                     //Debug.WriteLine("orginal source: " + e.OriginalSource.GetType().Name);
                 }
@@ -260,7 +207,7 @@ public partial class Gallery : UserControl
     private void ListBoxItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
         selectedItem = sender as ListBoxItem;
-        if(Lista.SelectedItems.Count > 1)
+        if (Lista.SelectedItems.Count > 1)
         {
             //Debug.WriteLine("więcej niż jeden element zaznaczony");
             Lista.SelectionMode = SelectionMode.Extended;
@@ -271,6 +218,7 @@ public partial class Gallery : UserControl
     private void ListBox_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
         _ = (DataContext as MainWindowViewModel).RefreshClipboardListenerResoult();
+
     }
 
     /*private void ListBoxItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -300,30 +248,37 @@ public partial class Gallery : UserControl
     {
         //trzeba to zmienić bo generuje problemy i błędy
         //Debug.WriteLine("preview mouse left button down");
-        if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))) 
-            //&& ((Lista.SelectionMode != SelectionMode.Single)||(Lista.SelectionMode != SelectionMode.Extended)))
+        if ((Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+        //&& ((Lista.SelectionMode != SelectionMode.Single)||(Lista.SelectionMode != SelectionMode.Extended)))
         {
             //Debug.WriteLine("ctrl wciśnięty");
             Lista.SelectionMode = SelectionMode.Multiple;
         }
-        else if((Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
+        else if ((Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)))
         {
             //Debug.WriteLine("shift wciśnięty");
             Lista.SelectionMode = SelectionMode.Extended;
         }
-        else { 
-            Lista.SelectionMode = SelectionMode.Single;
+        else
+        {
+            if (sender is ListBox lisBox)
+            {
+                if (lisBox.SelectedItems.Count <= 1)
+                {
+                    Lista.SelectionMode = SelectionMode.Single;
+                }
+            }
         }
     }
     private void ListBox_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         //Debug.WriteLine("preview mouse left button up");
-        if (!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl)&& !Keyboard.IsKeyDown(Key.LeftShift)&& !Keyboard.IsKeyDown(Key.RightShift))
+        if (!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl) && !Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift))
         {
             Lista.SelectionMode = SelectionMode.Single;
         }
     }
-    
+
     /// <summary>
     /// uruchamiane się jak klikamy poza elementami listy ale na liście
     /// </summary>
@@ -332,12 +287,12 @@ public partial class Gallery : UserControl
     private void ListBox_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         //uruchamia się jak klikamy poza elementami listy ale na liście
-        if((Lista.SelectionMode == SelectionMode.Multiple)||(Lista.SelectionMode == SelectionMode.Extended))
+        if ((Lista.SelectionMode == SelectionMode.Multiple) || (Lista.SelectionMode == SelectionMode.Extended))
         {
             //Debug.WriteLine("klik poza elementami listy, czyszczenie zaznaczenia");
             Lista.SelectedItems.Clear();
         }
-        
+
         Lista.SelectionMode = SelectionMode.Single;
         Lista.SelectedItem = null;
         if (edit)
@@ -350,24 +305,12 @@ public partial class Gallery : UserControl
 
     // Poprawka dla IDE0019 i CS8600 w metodzie ListBox_KeyDown
 
-    
+
     private void ListBox_KeyDown(object sender, KeyEventArgs e)
     {
-        Debug.WriteLine("naciśnięto klawisz w ListBox: " + e.Key.ToString());
-       
-        /*
-        if (e.Key== Key.A)// && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
-        {   if(Keyboard.IsKeyDown(Key.LeftCtrl) && Keyboard.IsKeyDown(Key.RightCtrl))
-            {
-                Debug.WriteLine("Ctrl + A wciśnięte");
-                Lista.SelectionMode = SelectionMode.Multiple;
-                Lista.SelectAll();
-                e.Handled = true;
-            }
-            
-        }*/
-
-        /*
+        //Debug.WriteLine("naciśnięto klawisz w ListBox: " + e.Key.ToString());
+        //to omija InputBindings tam mam problem z tym bo to jest wywoływane tylko po stronie interfejsu
+        // i nie ma nic wspólnego z danymi, no oprócz elementu wybranego
         if ((e.Key == Key.Enter) && (edit == false))
         {
             if (sender is ListBox list)
@@ -382,35 +325,7 @@ public partial class Gallery : UserControl
                 //tu dodać jeszcze tryb z zaznaczonymi wieloma obrazami
             }
         }
-        
-        if ((e.Key == Key.Delete) && (edit == false))
-        {
-            //ListBoxItem listBoxItem = (ListBoxItem)Lista.SelectedItem;
-            //if (listBoxItem != null)
-            //{
-                Photo photo = (Photo)Lista.SelectedItem; 
-                var mv = (MainWindowViewModel)DataContext;
-                if (photo != null && mv != null)
-                {
-                //if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
-                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
-                {
-                    _ = mv.DeleteFileStrong(photo.Path);
-                }
-                else
-                {
-                    //Debug.WriteLine("usuwanie: " + photo.Name);
-                    mv.DeleteFile(photo.Path);
-                }
-                    
-                }
-            //}
-            //else
-            //{
-            //    Debug.WriteLine("selected item nie jest ListBoxItem");
-            //    Debug.WriteLine("selected item is: "+ Lista.SelectedItem.GetType().Name);
-            //}
-        }*/
+
     }
 
     #endregion ListBox & ListBoxItem events
@@ -456,9 +371,9 @@ public partial class Gallery : UserControl
                             // i ma zresetować kolejkę plików, czyli usunąć te przeniesione
                             //ale usuwa również jak nie powinny być przeniesione,
                             //to trzeba poprawić lub dać to w innym miejscu
-                            if(DataContext is MainWindowViewModel viewModel)
+                            if (DataContext is MainWindowViewModel viewModel)
                                 viewModel.MoveFileToFolder();//??
-                                                                                    //Debug.WriteLine("przeniesiono plik");
+                                                             //Debug.WriteLine("przeniesiono plik");
                         }
                         //Debug.WriteLine("efekt przeciągania:" + effect);
                     }
@@ -521,14 +436,14 @@ public partial class Gallery : UserControl
         //    if (listBox == Lista && listBox2 == Lista)
         //    {
         //        Debug.WriteLine("źródło = przeznaczenia: "+e.Source.GetType());
-                
+
         //        //return;
         //    }
         //}
 
         //tu nie wiem jak rozwiązać problem z wrzucaniem grafiki
 
-        if (e.Data.GetDataPresent(DataFormats.FileDrop)&&(e.Effects != DragDropEffects.None))
+        if (e.Data.GetDataPresent(DataFormats.FileDrop) && (e.Effects != DragDropEffects.None))
         {
             //Debug.WriteLine("orginal source: "+e.Source.GetType().Name);
             //Debug.WriteLine("ListBox_Drop - upuszczono plik(effects != none): "+e.Effects.ToString());
@@ -547,10 +462,10 @@ public partial class Gallery : UserControl
                     //Debug.WriteLine("TreeView_Drop Copy: ");
                     //foreach (var dataString in dataStrings)//kopiowanie
                     //{
-                        mv.MoveFileToFolder(dataString, true);
+                    mv.MoveFileToFolder(dataString, true);
                     //}
                 }
-                else if(e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
+                else if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
                 {
                     //przenoszenie 
                     mv.MoveFileToFolder(dataString);
@@ -559,13 +474,13 @@ public partial class Gallery : UserControl
             //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
             //dodawać na sam koniec a nie odświeżać, to zajmuje czas
         }
-        
+
     }
     private void ListBox_DragOver(object sender, DragEventArgs e)
     {
         //Debug.WriteLine("ListBox_DragOver -pre efekt: " + e.Effects.ToString());
         e.Effects = DragDropEffects.None;//??
-        
+
         //Debug.WriteLine("ListBox_DragOver");
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
@@ -579,7 +494,7 @@ public partial class Gallery : UserControl
                 if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))
                 {
                     //pobiera rozszeżenie przenoszonego pliku
-                    string ext = Path.GetExtension(dataString).ToLower();                    
+                    string ext = Path.GetExtension(dataString).ToLower();
                     m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
                     if (m.Success)
                     {
@@ -591,7 +506,8 @@ public partial class Gallery : UserControl
                         else e.Effects = DragDropEffects.Move;
                         //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
                         //Debug.WriteLine("ListBox_DragOver - plik graficzny: "+dataString);
-                    }else e.Effects = DragDropEffects.None;
+                    }
+                    else e.Effects = DragDropEffects.None;
                 }
                 //jeżeli istnieje taki katalog
                 else if (Directory.Exists(dataString) && !Path.HasExtension(dataString))
@@ -609,12 +525,12 @@ public partial class Gallery : UserControl
         //Debug.WriteLine("ListBox_DragOver - after efekt: " + e.Effects.ToString());
     }
 
-   
+
 
 
 
 
 
     #endregion DragDrop
-           
+
 }

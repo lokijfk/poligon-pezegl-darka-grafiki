@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Navigation;
 //using System.Drawing;
 
 namespace poligon_pezeglądarka_grafiki.Model;
@@ -15,7 +16,7 @@ class BrokerIni
     //na pewno dojedzie ini z kolorami ustawianymi przez urzytkownika 
     // i może drugi ze schematami bazy danych, co też będzie mógł modyfikować urzytkownik
     private readonly IniFile iniFile;
-
+    private static BrokerIni brokerini;
 
     #region HEAD
     public static IniFile LoadIni(string inis)
@@ -44,9 +45,27 @@ class BrokerIni
         }
         return iniFile;
     }
+    
+    /// <summary>
+    /// zwraca zainicjowany obiekt BrokerIni tak żeby był jeden dla całego projektu
+    /// nie jest to wałściwe rozwiązanie ale jak na razie musi wystarczyć
+    /// </summary>
+    /// <returns></returns>
+    public static BrokerIni GetBroker()
+    {
+        if(brokerini == null)
+        {
+            brokerini = new();
+            return brokerini;
+        }
+        else
+        {
+            return brokerini;
+        }
+    }
 
     public BrokerIni()
-    { 
+    {
         iniFile = GetIni();
     }
     #endregion HEAD
@@ -56,7 +75,7 @@ class BrokerIni
     #region interface
     public bool VisibleToolBar
     {
-        get => GetBoolValue(GetCurrentMethod(),"Interface");
+        get => GetBoolValue(GetCurrentMethod(), "Interface");
         set => SetBoolValue(GetCurrentMethod(), value, "Interface");
     }
 
@@ -84,8 +103,8 @@ class BrokerIni
     #region Tree 
     public string PathFolderTree
     {
-        get => GetStringValue(GetCurrentMethod(),"Folders");
-        set => SetStringValue(GetCurrentMethod(), value,"Folders");
+        get => GetStringValue(GetCurrentMethod(), "Folders");
+        set => SetStringValue(GetCurrentMethod(), value, "Folders");
     }
 
     public string PathFolderExcluded
@@ -96,7 +115,7 @@ class BrokerIni
 
     public string SelectedPathFolderTree
     {
-        get => GetStringValue(GetCurrentMethod(),"Folders");
+        get => GetStringValue(GetCurrentMethod(), "Folders");
         set => SetStringValue(GetCurrentMethod(), value, "Folders");
     }
 
@@ -116,9 +135,9 @@ class BrokerIni
             string name = GetStringValue(GetCurrentMethod());
             if (name == null) return new Color();
             System.Drawing.Color col = System.Drawing.Color.FromName(GetStringValue(GetCurrentMethod()));
-            return   new Color() { A = col.A, R = col.R, G = col.G, B = col.B };
+            return new Color() { A = col.A, R = col.R, G = col.G, B = col.B };
         }
-        set  { SetStringValue(GetCurrentMethod(), value.ToString());  }
+        set { SetStringValue(GetCurrentMethod(), value.ToString()); }
     }
 
     public Color SecondaryColor
@@ -144,14 +163,14 @@ class BrokerIni
 
     #region Window
 
-    public double WindowTop 
+    public double WindowTop
     {
         get => GetDoubleValue(GetCurrentMethod(), "Window") == 0 ? 5 : GetDoubleValue(GetCurrentMethod(), "Window");
         set => SetDoubleValue(GetCurrentMethod(), value, "Window");
     }
 
 
-    public double WindowLeft 
+    public double WindowLeft
     {
         get => GetDoubleValue(GetCurrentMethod(), "Window") == 0 ? 5 : GetDoubleValue(GetCurrentMethod(), "Window");
         set => SetDoubleValue(GetCurrentMethod(), value, "Window");
@@ -161,16 +180,16 @@ class BrokerIni
 
     public double WindowHeight
     {
-        get => GetDoubleValue(GetCurrentMethod(), "Window") == 0 ?  450: GetDoubleValue(GetCurrentMethod(), "Window");
+        get => GetDoubleValue(GetCurrentMethod(), "Window") == 0 ? 450 : GetDoubleValue(GetCurrentMethod(), "Window");
         set => SetDoubleValue(GetCurrentMethod(), value, "Window");
     }
 
     public double WindowWidth
     {
-        get => GetDoubleValue(GetCurrentMethod(), "Window")==0? 800 : GetDoubleValue(GetCurrentMethod(), "Window") ;
+        get => GetDoubleValue(GetCurrentMethod(), "Window") == 0 ? 800 : GetDoubleValue(GetCurrentMethod(), "Window");
         set => SetDoubleValue(GetCurrentMethod(), value, "Window");
     }
-            
+
 
     public WindowState CurMainWindowState
     {
@@ -192,8 +211,8 @@ class BrokerIni
 
     public double LastWidth
     {
-        get => GetDoubleValue(GetCurrentMethod(),"Window") == 0 ? 800 : GetDoubleValue(GetCurrentMethod(),"Window");
-        set => SetDoubleValue(GetCurrentMethod(), value,"Window");
+        get => GetDoubleValue(GetCurrentMethod(), "Window") == 0 ? 800 : GetDoubleValue(GetCurrentMethod(), "Window");
+        set => SetDoubleValue(GetCurrentMethod(), value, "Window");
     }
 
     public double LastHeihgt
@@ -214,6 +233,22 @@ class BrokerIni
         set => SetDoubleValue(GetCurrentMethod(), value, "Window");
     }
     #endregion Window
+
+    #region sortowanie
+
+    public string Sortowaniekryterium
+    {
+        get => GetStringValue(GetCurrentMethod(), "Sortowanie") == string.Empty ? "Nazwa" : GetStringValue(GetCurrentMethod(), "Sortowanie");
+        set => SetStringValue(GetCurrentMethod(), value, "Sortowanie");
+    }
+
+    public string Sortowaniekierunek
+    {
+        get => GetStringValue(GetCurrentMethod(), "Sortowanie") == string.Empty ? "Rosnąco" : GetStringValue(GetCurrentMethod(), "Sortowanie");
+        set => SetStringValue(GetCurrentMethod(), value, "Sortowanie");
+    }
+
+    #endregion
 
     #endregion Metody publiczne
 
@@ -236,19 +271,19 @@ class BrokerIni
     // ale później lepiej żeby to można było rozdzielić
     private static bool IsNotNull([NotNullWhen(true)] object? obj) => obj != null;
     private int GetIntValue(string mert) => iniFile.GetIniValue("General", mert);
-    private int GetIntValue(string mert,string sec) => iniFile.GetIniValue(sec, mert);
+    private int GetIntValue(string mert, string sec) => iniFile.GetIniValue(sec, mert);
     private Double GetDoubleValue(string mert, string sec) => iniFile.GetDoubleValue(sec, mert);
     private void SetIntValue(string met, int val) => iniFile.SetValue("General", met, val.ToString());
-    private void SetIntValue(string met, int val,string sec) => iniFile.SetValue(sec, met, val.ToString());
+    private void SetIntValue(string met, int val, string sec) => iniFile.SetValue(sec, met, val.ToString());
     private void SetDoubleValue(string met, double val, string sec) => iniFile.SetValue(sec, met, val.ToString());
     private bool GetBoolValue(string mert) => iniFile.GetBoolValue("General", mert);
-    private bool GetBoolValue(string mert,string sec) => iniFile.GetBoolValue(sec, mert);
+    private bool GetBoolValue(string mert, string sec) => iniFile.GetBoolValue(sec, mert);
     private void SetBoolValue(string met, bool val) => iniFile.SetValue("General", met, val.ToString());
-    private void SetBoolValue(string met, bool val,string sec) => iniFile.SetValue(sec, met, val.ToString());
+    private void SetBoolValue(string met, bool val, string sec) => iniFile.SetValue(sec, met, val.ToString());
     private string GetStringValue(string mert) => iniFile.GetStringValue("General", mert);
-    private string GetStringValue(string mert,string sec) => iniFile.GetStringValue(sec, mert);
+    private string GetStringValue(string mert, string sec) => iniFile.GetStringValue(sec, mert);
     private void SetStringValue(string met, string val) => iniFile.SetValue("General", met, val);
-    private void SetStringValue(string met, string val,string sec) => iniFile.SetValue(sec, met, val);
+    private void SetStringValue(string met, string val, string sec) => iniFile.SetValue(sec, met, val);
 
     #endregion Metordy dostępowe prywatne
 }

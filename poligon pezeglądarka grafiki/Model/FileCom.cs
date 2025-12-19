@@ -3,44 +3,64 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-
-
 namespace poligon_pezeglądarka_grafiki.Model;
 
-public partial class Photo : ObservableObject//,IDisposable
+/// <summary>
+/// to objekt teoretyczny, w trakcie ... jeszcze nie wykożystywany
+/// stanowi połączenie Photo i FilesIO
+/// </summary>
+public partial class FileCom : ObservableObject
 {
-    //private readonly Uri _source;
-    //private readonly Stream _streamSource;
-    public string Path { get; private set; }
 
+    public string Path { get; set; } = string.Empty;
+    //public string Name { get; set; } = string.Empty;
+    public string Extension { get; set; } = string.Empty;
+    public ImageSource Icon { get; set; }    
+    public string Size { get; set; } = string.Empty;
+    public string RealSize { get; set; } = string.Empty;
+    public string File { get; set; } = string.Empty;
+    //dodać rozmiar i czas tworzenia
+    //zobaczyć co z FileInfo można zaimportować
+    //jak by się dało z fileinfo wyeksportować do listy lub tablicy a tu zaimportować to
+    //lista by była chyba lepsza
+    
     [ObservableProperty]
     private string _Name;
 
+    /// <summary>
+    /// ściezka do pliku zastępczego
+    /// </summary>
+    public string maska = string.Empty;
     [ObservableProperty]
     private ImageSource image;
+    //dodać typ odpowiadający za plik filmu o ile taki jest
 
     [ObservableProperty]
     private bool isSelected = false;
-
-    //public override string ToString() => _source.ToString();
+        
     public override string ToString() => Path;
     private CancellationToken ctoken;
-    //private bool isLoaded = false;
-    //public ExifMetadata Metadata { get; } tu trzeba zbudować właśną klasę do odczytu metadanych
-    // test jest po to żeby załadować w odpowiedniej kolejności pliki ale bez grafiki
-    // żeby nie było opóźnień a samą grafikę przerobić w osobnym wątku jak się da
-    // i do tego służy metoda publiczna
 
-    // exif mogą też przechowywać orientację zdjęcia/obrazu, warto ją odczytać
-    // tak samo jak i komentarz z PNG
+    public void Clear()
+    {
+        //Select  = false;
+        Path = string.Empty;
+        Name = string.Empty;
+        Extension = string.Empty;
+        Icon = null;
+        Size = string.Empty;
+        RealSize = string.Empty;
+        File = string.Empty;
+        //dodać resztę właściwości do wyczyszczenia
+    }
 
-    public string maska = string.Empty;
 
-    public Photo(string path)
+    public FileCom(string path)
     {
         Path = path;
         //_streamSource = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -86,70 +106,7 @@ public partial class Photo : ObservableObject//,IDisposable
         return bitmapImage;
     }
 
-    /*
-    public Photo(string path,string name,bool test = true)
-    {
-        Path = path;
-        _source = new Uri(path);
-        Name = name;
-        if (test) Image = ShortPiec(path, 200, _source);
-        else Image = Tools.GetBitmapImage();
-    }
-
-    private BitmapImage ShortPiec(string path, int height, Uri uri = null)
-    {
-        //Image xim = new();
-        BitmapImage myBitmapImage = new();
-        //myBitmapImage = new();
-        myBitmapImage.BeginInit();
-        if (uri == null)
-        {
-            myBitmapImage.UriSource = new Uri(path);
-        }
-        else
-        {
-            myBitmapImage.UriSource = uri;
-        }
-            myBitmapImage.DecodePixelHeight = (int)height;
-        myBitmapImage.EndInit();
-        //xim.Source = myBitmapImage;
-        return myBitmapImage;
-    }
-
-    private BitmapImage ShortPiec(string path, int height)
-    {
-        //Image xim = new();
-        BitmapImage myBitmapImage = new();
-        //myBitmapImage = new();
-        myBitmapImage.BeginInit();
-
-        myBitmapImage = Image.Clone() as BitmapImage;
-        
-        myBitmapImage.DecodePixelHeight = (int)height;
-        myBitmapImage.EndInit();
-        //xim.Source = myBitmapImage;
-        return myBitmapImage;
-    }
-
-    public void CreateShortPic()
-    {
-        Image = ShortPiec(Path, 200, _source);
-    }
-    
-     
-    public async Task Load()
-    {
-        Image = await Task.Run(() =>
-        {
-            using (var fileStream = new FileStream(
-                Path, FileMode.Open, FileAccess.Read))
-            {
-                return BitmapFrame.Create(
-                    fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-            }
-        });        
-    }
-     */
+   
 
     /// <summary>
     /// to będzie chyba do usunięcia, urzyteczność znikoma
@@ -203,7 +160,7 @@ public partial class Photo : ObservableObject//,IDisposable
                             fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad));
                     }
                     catch (FileFormatException ex)
-                    {                            
+                    {
                         errored = true;
                         return Task.FromResult(BitmapFrame.Create(
                             new Uri(maska), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None));
@@ -219,20 +176,18 @@ public partial class Photo : ObservableObject//,IDisposable
             });
 
             if (errored)
-            {                
+            {
                 var UriX = new Uri(Path, UriKind.RelativeOrAbsolute);
                 BitmapImage MyBitmapImage = new();
                 MyBitmapImage.BeginInit();
                 MyBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
                 MyBitmapImage.UriSource = UriX;
-                MyBitmapImage.DecodePixelHeight = 200;                
-                MyBitmapImage.EndInit();  
-                //MyBitmapImage.getQuery()
+                MyBitmapImage.DecodePixelHeight = 200;
+                MyBitmapImage.EndInit();
                 Image = MyBitmapImage;
             }
-            //BitmapMetadata MyMeta = (BitmapMetadata)Image.Frames[0].Metadata;
             Image = CreateResizedImage(Image, (int)((200 / Image.Height) * Image.Width), (int)200, 0);
-            //Debug.WriteLine($"komentarz: {getComment(Path)}");
+
         }
         catch (OperationCanceledException ex)
         {
@@ -241,25 +196,6 @@ public partial class Photo : ObservableObject//,IDisposable
         }
     }
 
-    private String getComment(string inFullPath)
-    {
-        //DateTime returnDateTime = DateTime.MinValue;
-        string Comment = string.Empty;
-        try
-        {
-            FileStream picStream = new FileStream(inFullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            BitmapSource bitSource = BitmapFrame.Create(picStream);
-            picStream.Close();
-            BitmapMetadata metaData = (BitmapMetadata)bitSource.Metadata;
-            //returnDateTime = DateTime.Parse(metaData.DateTaken);
-            Comment = metaData.Comment;
-        }
-        catch
-        {
-            //do nothing  
-        }
-        return Comment;
-    }
 
     private static BitmapFrame CreateResizedImage(ImageSource source, int width, int height, int margin)
     {
@@ -281,5 +217,4 @@ public partial class Photo : ObservableObject//,IDisposable
 
         return BitmapFrame.Create(resizedImage);
     }
-
 }

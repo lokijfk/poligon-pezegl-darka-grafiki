@@ -40,9 +40,10 @@
     </UserControl.InputBindings>
 
 
-    <Canvas>
-        <!-- -->
-        <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
+    <Grid>
+        <Canvas>
+            <!-- -->
+            <ListBox x:Name="Lista" VirtualizingStackPanel.VirtualizationMode="Recycling" 
                  ItemsSource="{Binding Photos}"                  
                  ext:ListBoxBehavior.ScrollToTopOnItemsSourceChange="True"
                  ext:ListBoxBehavior.SelectItemOnMouseUp="True"
@@ -59,151 +60,152 @@
                  Focusable="True"
                  Width="{Binding ActualWidth, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Canvas}}}"
                  >
-            <ListBox.ContextMenu>
-                <ContextMenu  materialDesign:MenuAssist.MenuItemsPresenterMargin="0"
+                <ListBox.ContextMenu>
+                    <ContextMenu  materialDesign:MenuAssist.MenuItemsPresenterMargin="0"
                              DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">
-                    
-                    <!-- jak tu dodać jakieś zachowanie?? tak żeby uniknąć kodu BC-->              
-                    <MenuItem Header="zaznacz wszystko" 
+
+                        <!-- jak tu dodać jakieś zachowanie?? tak żeby uniknąć kodu BC-->
+                        <MenuItem Header="zaznacz wszystko" 
                               Command="{Binding Path=DataContext.SelectAllCommand}"
                               CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
                               >
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="SelectAll" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <!-- "otwórz" to menu testowe, bedzie do usunięcia-->
-                    <MenuItem Header="Otwórz" Command="{Binding Path=DataContext.TestMethodCommand}" 
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="SelectAll" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <!-- "otwórz" to menu testowe, bedzie do usunięcia-->
+                        <MenuItem Header="Otwórz" Command="{Binding Path=DataContext.TestMethodCommand}" 
                               CommandParameter="{Binding Path=SelectedItems}" 
                               >
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="OpenInNew" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="RenameOutline" />
-                        </MenuItem.Icon>
-                    </MenuItem>
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="OpenInNew" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename">
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="RenameOutline" />
+                            </MenuItem.Icon>
+                        </MenuItem>
 
-                    <MenuItem Header="Usuń" 
+                        <MenuItem Header="Usuń" 
                               Command="{Binding Path=DataContext.DeleteThumbnailsCommand}" 
-                              CommandParameter="{Binding Path=SelectedItems}">                        
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="DeleteRestore" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Wytnij" Command="{Binding Path=DataContext.MenuCutCommand}" 
+                              CommandParameter="{Binding Path=SelectedItems}">
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="DeleteRestore" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Wytnij" Command="{Binding Path=DataContext.MenuCutCommand}" 
                                             CommandParameter="{Binding Path=SelectedItems}">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="ContentCut" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Kopiuj" 
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="ContentCut" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Kopiuj" 
                               Command="{Binding Path=DataContext.MenuCopyCommand}" 
                                 CommandParameter="{Binding Path=SelectedItems}">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="ContentCopy" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Wlkej" Command="{Binding Path=DataContext.MenuPasteCommand}">
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="ContentPaste" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                    <MenuItem Header="Odśwież" Command="{Binding Path=DataContext.MenuRefreshCommand}" >
-                        <MenuItem.Icon>
-                            <materialDesign:PackIcon Kind="Refresh" />
-                        </MenuItem.Icon>
-                    </MenuItem>
-                </ContextMenu>
-            </ListBox.ContextMenu>
-            <ListBox.InputBindings>
-                <KeyBinding Key="F5" Command="{Binding Path=MenuRefreshCommand}" />
-                <KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding Path=SelectAllCommand}" />
-                <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding  Path=MenuCopyCommand}" 
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="ContentCopy" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Wlkej" Command="{Binding Path=DataContext.MenuPasteCommand}">
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="ContentPaste" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Odśwież" Command="{Binding Path=DataContext.MenuRefreshCommand}" >
+                            <MenuItem.Icon>
+                                <materialDesign:PackIcon Kind="Refresh" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </ListBox.ContextMenu>
+                <ListBox.InputBindings>
+                    <KeyBinding Key="F5" Command="{Binding Path=MenuRefreshCommand}" />
+                    <KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding Path=SelectAllCommand}" />
+                    <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding  Path=MenuCopyCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
-                <KeyBinding Key="X" Modifiers="Ctrl" Command="{Binding  Path=MenuCutCommand}" 
+                    <KeyBinding Key="X" Modifiers="Ctrl" Command="{Binding  Path=MenuCutCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
 
-                <KeyBinding Key="Delete" Command="{Binding  DeleteThumbnailsCommand}" 
+                    <KeyBinding Key="Delete" Command="{Binding  DeleteThumbnailsCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
-                <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding  DeleteFileStrongCommand}" 
+                    <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding  DeleteFileStrongCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
-                <KeyBinding Key="Enter" Command="Open" 
+                    <KeyBinding Key="Enter" Command="Open" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
-            </ListBox.InputBindings>
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel IsItemsHost="True" />
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <!-- z powodu że to jest canvas  to obrazy nie są "zawijane" do następnej linijki-->
-                    <!-- trzeba też dopracować wysokość całego ListBoxa, ale tu są potrzeben obliczenia -->
-                    <!-- myślę ze to by się przydało zrobić jako zachowani bo nie wiem czy BC to przejdzie -->
-                    <StackPanel x:Name="SP" Orientation="Vertical" >
-                        <Image Source="{Binding Image,Mode=OneWay}" 
+                </ListBox.InputBindings>
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel IsItemsHost="True" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <!-- z powodu że to jest canvas  to obrazy nie są "zawijane" do następnej linijki-->
+                        <!-- trzeba też dopracować wysokość całego ListBoxa, ale tu są potrzeben obliczenia -->
+                        <!-- myślę ze to by się przydało zrobić jako zachowani bo nie wiem czy BC to przejdzie -->
+                        <StackPanel x:Name="SP" Orientation="Vertical" >
+                            <Image Source="{Binding Image,Mode=OneWay}" 
                                Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
                                                         AncestorType={x:Type Window}}, Path=DataContext.ThumbnailHeight}"/>
-                        <Grid Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
+                            <Grid Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
                               Visibility="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
                                                         AncestorType={x:Type Window}}, Path=DataContext.Writings,
                                         Converter={StaticResource BooleanToVisibilityConverter}}"
                               >
-                        <!--Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                <!--Grid Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
                                                         AncestorType={x:Type StackPanel}} }"-->
-                            <TextBlock               
+                                <TextBlock               
                             Text="{Binding Name}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                 Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}"
                                 TextAlignment="Center">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="TextWrapping" Value="Wrap" />               
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                            <TextBox Text="{Binding Name,Mode=OneWay}" 
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="TextWrapping" Value="Wrap" />
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBox Text="{Binding Name,Mode=OneWay}" 
                                      Width="{Binding Image.Width,Converter={StaticResource WidthConverter}}" 
-                                     Visibility="Hidden">                                      
-                                <TextBox.Style>
-                                    <Style TargetType="TextBox">
-                                        <Setter Property="TextWrapping" Value="Wrap" />
-                                        <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
-                                        <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
-                                    </Style>                                    
-                                </TextBox.Style>
-                            </TextBox>
-                        </Grid>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem" >
-                    <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBoxItem_PreviewMouseRightButtonDown" />
-                    <!--EventSetter Event="MouseLeftButtonDown" Handler="ListBoxItem_MouseLeftButtonDown" / mie działa -->
-                    <!--EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_PreviewMouseLeftButtonDown" /-->
-                    
-                    <!--EventSetter Event="MouseDown" Handler="ListBoxItem_MouseDown" /-->
-                    <!--EventSetter Event="MouseMove" Handler="ListBoxItem_MouseMove" /-->
-                    <!--EventSetter Event="PreviewMouseRightButtonUp" Handler="ListBoxItem_PreviewMouseRightButtonUp" /-->
-                    <!--EventSetter Event="PreviewMouseDown" Handler="ListBoxItem_PreviewMouseDown" /-->
-                    <!--EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" /-->
-                </Style>
-            </ListBox.ItemContainerStyle>
-            <ListBox.Style>
-                <Style TargetType="ListBox">
-                    <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Background" Value="Transparent"/>
-                    <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
-                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBox_PreviewMouseRightButtonDown" />
-                </Style>
-            </ListBox.Style>
-            
+                                     Visibility="Hidden">
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="TextWrapping" Value="Wrap" />
+                                            <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
+                                            <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </Grid>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem" >
+                        <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                        <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBoxItem_PreviewMouseRightButtonDown" />
+                        <!--EventSetter Event="MouseLeftButtonDown" Handler="ListBoxItem_MouseLeftButtonDown" / mie działa -->
+                        <!--EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListBoxItem_PreviewMouseLeftButtonDown" /-->
 
-        </ListBox>
-    </Canvas>
+                        <!--EventSetter Event="MouseDown" Handler="ListBoxItem_MouseDown" /-->
+                        <!--EventSetter Event="MouseMove" Handler="ListBoxItem_MouseMove" /-->
+                        <!--EventSetter Event="PreviewMouseRightButtonUp" Handler="ListBoxItem_PreviewMouseRightButtonUp" /-->
+                        <!--EventSetter Event="PreviewMouseDown" Handler="ListBoxItem_PreviewMouseDown" /-->
+                        <!--EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" /-->
+                    </Style>
+                </ListBox.ItemContainerStyle>
+                <ListBox.Style>
+                    <Style TargetType="ListBox">
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
+                        <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBox_PreviewMouseRightButtonDown" />
+                    </Style>
+                </ListBox.Style>
+
+
+            </ListBox>
+        </Canvas>
+    </Grid>
 </UserControl>

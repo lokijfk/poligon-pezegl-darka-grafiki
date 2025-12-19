@@ -39,7 +39,7 @@ public static class ListBoxBehavior
 
     private static void onSelectItemOnMouseUpChange(
         DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {        
+    {
         if (d is Selector selector)
         {
             selector.MouseDown -= HandleSelectMouseDown;
@@ -53,7 +53,7 @@ public static class ListBoxBehavior
         }
     }
 
-    
+
     private static void HandleSelectMouseUp(object sender, MouseButtonEventArgs e)
     {
         var selector = (Selector)sender;
@@ -70,17 +70,18 @@ public static class ListBoxBehavior
                     {
                         if ((listBox.SelectionMode == SelectionMode.Multiple) || (listBox.SelectionMode == SelectionMode.Extended))
                         {
-                            if (listBox.SelectedItems.Contains(listBox.Items[index])&&(element == null))
+                            if (listBox.SelectedItems.Contains(listBox.Items[index]) && (element == null))
                             {
                                 listBox.SelectedItems.Remove(listBox.Items[index]);
-                            }else element = null;
+                            }
+                            else element = null;
                         }
                     }
                 }
             }
         }
     }
-    
+
 
     private static void HandleSelectMouseDown(object sender, MouseButtonEventArgs e)
     {
@@ -271,11 +272,11 @@ public static class ListBoxBehavior
 
     static void ItemsSourceChanged(object sender, EventArgs e)
     {
-        var itemsControl = sender as ItemsControl;        
-            DoScrollToTop(itemsControl);
+        var itemsControl = sender as ItemsControl;
+        DoScrollToTop(itemsControl);
 
         if (itemsControl.ItemsSource is INotifyCollectionChanged collection)
-        {           
+        {
             collection.CollectionChanged += (o, args) => DoScrollToTop(itemsControl);
         }
     }

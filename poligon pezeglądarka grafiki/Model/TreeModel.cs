@@ -6,39 +6,40 @@ using System.Diagnostics.Eventing.Reader;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-public partial class TreeModel :ObservableObject
+public partial class TreeModel : ObservableObject
 {
- 
+
     #region properties
 
     //dodać pole "ukryty" i zaimplementować w drzewie, dodać przycisk pokazyjący okno z ukrytymi i możliwością odkrycia
     //usunąć zbędna, obiekt przystosowany do bazy danych a nie do systemu katalogów !!
-    
+
     public TreeModel? Parent { get; set; } = null;// zostawiam może ułatwi nawigowanie
-    
+
     public ObservableCollection<TreeModel> Children { get; set; } = [];
 
     [ObservableProperty]
-    private string _name  = string.Empty;
-     public bool IsSelected { get; set; } = false;
-    
+    private string _name = string.Empty;
+    public bool IsSelected { get; set; } = false;
+
     public bool IsExpanded { get; set; } = false;
-    
-    public string  IsRightSelected { get; set; } = string.Empty;
-    
+
+    public string IsRightSelected { get; set; } = string.Empty;
+
     public string View { get; set; } = string.Empty;
     [ObservableProperty]
     private string _path = string.Empty;
-    
+
     [ObservableProperty]
-    private int _CountFiles  = 0;
+    private int _CountFiles = 0;
 
     #endregion properties
 
     #region methods
 
     public void RightSelect()
-    {   if (Parent != null)
+    {
+        if (Parent != null)
         {
             GetRootNode(this).IsRightSelected = _path;
         }
@@ -67,7 +68,7 @@ public partial class TreeModel :ObservableObject
             this.Children.Add(child);
         }
     }
-    
+
     #endregion methods
     // to jest jakieś rozwiązanie nie najlepsze ale innego chwilowo nie mam
     public TreeModel? GetSelectedItem(TreeModel nodes = null)
@@ -98,7 +99,7 @@ public partial class TreeModel :ObservableObject
         // to też jest nie potrzebne, to jest brane z path elementu
         TreeModel tree = GetSelectedItem();
         if (tree != null)
-        return tree.Path;// przetestować co zwróci
+            return tree.Path;// przetestować co zwróci
         return String.Empty;
     }
 
@@ -112,7 +113,7 @@ public partial class TreeModel :ObservableObject
     public TreeModel? GetRootNode(TreeModel item)
     {
         TreeModel root = null;
-        while(item.Parent != null)
+        while (item.Parent != null)
         {
             root = item.Parent;
             item = root;
@@ -152,11 +153,11 @@ public partial class TreeModel :ObservableObject
     {
         //Debug.WriteLine("FindChildByPath, searching for: " + path);
         TreeModel root = this;
-        if(root.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) return root;
+        if (root.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) return root;
         foreach (var child in root.Children)
         {
             if (child.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
-            { 
+            {
                 //Debug.WriteLine("FindChildByPath 1, found direct: " + path);
                 return child;
             }
@@ -235,7 +236,7 @@ public partial class TreeModel :ObservableObject
         // to jest do poprawy, nie działa jak powinno
         // nie szuka w drzewie tylko w ścieżce
         TreeModel? root = this;
-        if(root.Parent != null)
+        if (root.Parent != null)
         {
             root = GetRootNode(this);
         }
@@ -326,7 +327,7 @@ public partial class TreeModel :ObservableObject
         }
     }
     */
-#endregion static methods
+    #endregion static methods
 
 }
 /*

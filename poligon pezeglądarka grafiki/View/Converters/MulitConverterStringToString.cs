@@ -10,10 +10,10 @@ public class MulitConverterStringToString : IMultiValueConverter
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {
         string name;
-         if((values.Length == 3) &&  (values[2].ToString().ToLower() == "true") )
+        if ((values.Length == 3) && (values[2].ToString().ToLower() == "true"))
         {
             //Debug.WriteLine("3: " + values[2].ToString());
-            if(values[1] != null && values[1].ToString() != "")
+            if (values[1] != null && values[1].ToString() != "")
             {
                 name = $"{values[0]} [{values[1]}]";
             }

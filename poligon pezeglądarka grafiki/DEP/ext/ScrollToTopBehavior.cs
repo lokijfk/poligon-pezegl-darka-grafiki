@@ -34,7 +34,7 @@ public static class ScrollToTopBehavior
         {
             Debug.WriteLine("OnScrollToTopPropertyChanged: not an ItemsControl");
         }
-            
+
         ItemsControl itemsControl = dpo as ItemsControl;
         Debug.WriteLine("OnScrollToTopPropertyChanged triggered");//to nie działa
         if (itemsControl != null)

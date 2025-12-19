@@ -23,19 +23,20 @@ public static class ListBoxExtensions
             if (listBox != null)
             {
                 HitTestResult resultHit = VisualTreeHelper.HitTest(listBox, position);
-                if (resultHit != null) {
+                if (resultHit != null)
+                {
                     DependencyObject item = resultHit.VisualHit as DependencyObject;
                     if (item != null)
+                    {
+                        while (item != null && !(item is ListBoxItem))
                         {
-                            while (item != null && !(item is ListBoxItem))
-                            {
-                                item = VisualTreeHelper.GetParent(item);
-                            }
+                            item = VisualTreeHelper.GetParent(item);
                         }
-                        return item as ListBoxItem;
                     }
+                    return item as ListBoxItem;
+                }
             }
-            
+
         }
         catch (System.Exception ex)
         {

@@ -20,7 +20,7 @@ public partial class Welcome : UserControl
     public Welcome()
     {
         InitializeComponent();
-       
+
     }
 
 

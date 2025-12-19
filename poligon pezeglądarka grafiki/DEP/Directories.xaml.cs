@@ -37,13 +37,13 @@ public partial class Directories : UserControl
         //path.Split(';').ToList().ForEach(path => list.Add(path));
         InitializeComponent();
         //LList.ItemsSource = list;
-        
-        
+
+
     }
 
 
     private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
-    {   
+    {
         /*
         string path = (this.DataContext as MainWindowViewModel).TreePath;
 
@@ -53,7 +53,7 @@ public partial class Directories : UserControl
         Debug.WriteLine("wielkość: " + list.Count);
         //LList.ItemsSource = list;
         */
-        
+
     }
 
     private void Button_Click_AddFolder(object sender, System.Windows.RoutedEventArgs e)
@@ -88,13 +88,13 @@ public partial class Directories : UserControl
         //if(parent != kontener)
         foreach (var ch in kontener.Children)
         {
-            if((ch is Expander)&&(ch != expander))
+            if ((ch is Expander) && (ch != expander))
             {
                 (ch as Expander).IsExpanded = false;
-            }   
+            }
 
         }
-       // expander.IsExpanded = true;
+        // expander.IsExpanded = true;
     }
 
     private void Button_Click_Usun(object sender, System.Windows.RoutedEventArgs e)
@@ -131,11 +131,11 @@ public partial class Directories : UserControl
         {
             var parent = button.Parent as WrapPanel;
             foreach (var ch in parent.Children)
-            {                              
+            {
                 if (ch is Label)
                 {
                     var cy = ch as Label;
-                   (this.DataContext as MainWindowViewModel).RemoveFolder(cy.Content.ToString());
+                    (this.DataContext as MainWindowViewModel).RemoveFolder(cy.Content.ToString());
                 }
             }
         }

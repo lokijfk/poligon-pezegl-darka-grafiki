@@ -16,9 +16,9 @@ public partial class ViewWindow : Window //czemu musi być partial ??
 
     public double CanvasLeft { get; set; } = 30;
     public double CanvasTop { get; set; } = 30;
-    public double MyImageHeight {  get; set; } = double.NaN;
+    public double MyImageHeight { get; set; } = double.NaN;
     public ViewWindow()
-    {                
+    {
         InitializeComponent();
         //CanvasLeft = (WindowView.ActualWidth / 2) + (ImageS.ActualWidth / 2);
         //CanvasTop = (WindowView.ActualHeight / 2) + (ImageS.ActualHeight / 2);
@@ -27,8 +27,8 @@ public partial class ViewWindow : Window //czemu musi być partial ??
     }
 
     private void Image_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
-    { 
-       // Debug.WriteLine("Mouse wheel event detected."+ e.Delta+", "+ImageS.Source.ToString());        
+    {
+        // Debug.WriteLine("Mouse wheel event detected."+ e.Delta+", "+ImageS.Source.ToString());        
         ImageS.Height = ImageS.ActualHeight + e.Delta / 10;
         CanvasLeft = (WindowView.ActualWidth / 2) - (ImageS.ActualWidth / 2);
         CanvasTop = (WindowView.ActualHeight / 2) - (ImageS.ActualHeight / 2);
@@ -54,7 +54,7 @@ public partial class ViewWindow : Window //czemu musi być partial ??
     private void Image_MouseMove(object sender, MouseEventArgs e)
     {
         //ImageS.HorizontalAlignment = HorizontalAlignment.Stretch;
-       // ImageS.VerticalAlignment = VerticalAlignment.Stretch;
+        // ImageS.VerticalAlignment = VerticalAlignment.Stretch;
         if (((ImageS.ActualHeight > WindowView.ActualHeight) || (ImageS.ActualWidth > WindowView.ActualWidth)) && (WindowView.Cursor == Cursors.Hand))
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -70,9 +70,9 @@ public partial class ViewWindow : Window //czemu musi być partial ??
                         //ImageS.VerticalAlignment
                         //ImageS.TransformToAncestor(WindowView).Transform(new Point(actual.X+ (currentPossition.X - mousePositionAfterCapture.X), actual.Y+ (currentPossition.Y - mousePositionAfterCapture.Y)));
                         CanvasLeft = (WindowView.ActualWidth / 2) - (ImageS.ActualWidth / 2);
-                        
-                        Canvas.SetLeft(ImageS, CanvasLeft+ (currentPossition.X - mousePositionAfterCapture.X));
-                        
+
+                        Canvas.SetLeft(ImageS, CanvasLeft + (currentPossition.X - mousePositionAfterCapture.X));
+
 
                     }
                     if (currentPossition.Y != mousePositionAfterCapture.Y)

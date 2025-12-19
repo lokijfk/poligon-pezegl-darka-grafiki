@@ -31,7 +31,7 @@ public partial class MainWindow : Window
      * 
      */
     private TreeViewItem? menuSelectedItem = null;
-    
+
     public MainWindow()
     {
         InitializeComponent();
@@ -145,7 +145,7 @@ public partial class MainWindow : Window
                 TextBlock textBlock = textBox.GetSisTextBlock();
                 //if (textBlock != null) 
                 if (menuSelectedItem == null) menuSelectedItem = textBlock.GetTreeViewItem();
-                if ((menuSelectedItem != null) &&(textBlock != null)) 
+                if ((menuSelectedItem != null) && (textBlock != null))
                 {
                     textBlock.Visibility = Visibility.Collapsed;
                     textBox.Height = menuSelectedItem.ActualHeight;//a jak to idzie z double click?
@@ -159,7 +159,8 @@ public partial class MainWindow : Window
                     textBox.Select(TabIndex, textBox.Text.Length); // ustawia kursor na końcu tekstu
                 }
             }
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.WriteLine(ex.ToString());
         }
@@ -296,7 +297,7 @@ public partial class MainWindow : Window
         //Debug.WriteLine("TreeView_DragEnter");
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
-            
+
             if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
             {
                 e.Effects = DragDropEffects.Copy;
@@ -342,8 +343,8 @@ public partial class MainWindow : Window
         //znacznik = 0; // reset znacznik po upuszczeniu pliku
         TreeView treeView = (TreeView)sender;
         TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
-         // rozwiniecie katalogu na który upuszczamy plik, alt to też nie działa
-         //treeViewItem.BringIntoView();
+        // rozwiniecie katalogu na który upuszczamy plik, alt to też nie działa
+        //treeViewItem.BringIntoView();
         //treeViewItem.IsExpanded = true;
         //treeViewItem.ExpandSubtree();
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -358,7 +359,7 @@ public partial class MainWindow : Window
                     //może wtedy by sie unikneło niepotrzebnego wyszukiwania tego elementu w drzewie
                     //((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path, true);
                     ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, (TreeModel)treeViewItem.DataContext, true);
-                }                
+                }
             }
             else if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))//muszę dodać do ustawień zmianę klawiszy specjalnych definiujących operaqcję
             {
@@ -384,7 +385,7 @@ public partial class MainWindow : Window
 
     }
     private void TreeView_MouseMove(object sender, MouseEventArgs e)
-    {        
+    {
         try
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -400,7 +401,7 @@ public partial class MainWindow : Window
                     TreeViewItem item = treeView.GetItem(e.GetPosition(treeView));
                     TreeModel? dc = treeView.SelectedItem as TreeModel;
                     string[] paths;
-                    if ((dc != null)&&(item != null))
+                    if ((dc != null) && (item != null))
                     {
                         paths = [dc.Path];
                         var effect = DragDrop.DoDragDrop(item, new DataObject(DataFormats.FileDrop, paths),
@@ -424,7 +425,7 @@ public partial class MainWindow : Window
     private void TreeView_DragOver(object sender, DragEventArgs e)
     {
         e.Effects = DragDropEffects.None;
-         if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
             //Regex regex = new Regex("^-?[0-9]*[\\.,]?[0-9]?[0-9]?$");
@@ -432,16 +433,16 @@ public partial class MainWindow : Window
             {
                 if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))
                 {
-                    string ext = Path.GetExtension(dataString).ToLower();                    
+                    string ext = Path.GetExtension(dataString).ToLower();
                     //to jakoś trzeba zamienić na rozszeżenia brane z ustawień
-                    if( ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
+                    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
                     {
-                        e.Effects = DragDropEffects.Copy | DragDropEffects.Move;                        
+                        e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
                     }
                 }
-                else if (Directory.Exists(dataString)&& !Path.HasExtension(dataString))
+                else if (Directory.Exists(dataString) && !Path.HasExtension(dataString))
                 {
-                    e.Effects = DragDropEffects.Copy | DragDropEffects.Move;                    
+                    e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
                 }
 
             }
@@ -451,7 +452,7 @@ public partial class MainWindow : Window
 
 
     #region TreeView
-   
+
     /// <summary>
     /// potrzebne do zaznaczenia elementu do metod wywoływanych z menu kontekstowego
     /// zmiana nazwy, usuwanie folderu, dodawanie folderu
@@ -459,10 +460,10 @@ public partial class MainWindow : Window
     /// <param name="sender"></param>
     /// <param name="e"></param>
     private void TreeViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
-    {         
+    {
         menuSelectedItem = (sender as TreeViewItem);
         (DataContext as MainWindowViewModel).MenuSelectedItem((TreeModel)menuSelectedItem.DataContext);
-        
+
     }
 
     /// <summary>
@@ -528,19 +529,19 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private void MenuItem_AddDir(object sender, RoutedEventArgs e)
     {
-        #pragma warning disable CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
+    #pragma warning disable CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
         TreeModel itemTV = (TreeModel)menuSelectedItem.DataContext;
         //var path = itemTV.Path;
         TreeModel name = ((MainWindowViewModel)this.DataContext).AddFolder(itemTV);
         // z powodu wirtualizacji nie można dostać się do nowo utworzonego TreeViewItem
         // a jak wyłączymy wirtualizację to od ręki nie posiada on elemętów podrzędnych
 
-        #pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.        
+    #pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.        
     }
 
-    
+
     private void MenuItem_DeleteDir(object sender, RoutedEventArgs e)
-    {        
+    {
         //Debug.WriteLine("MenuItem_DeleteDir: " + (menuSelectedItem.DataContext as TreeModel).Path);
         ((MainWindowViewModel)this.DataContext).DeleteFolder((TreeModel)menuSelectedItem.DataContext);
     }
@@ -549,12 +550,13 @@ public partial class MainWindow : Window
     {
         var t = menuSelectedItem.GetCHildTextBox();
         TextBox textBox;// = (menuSelectedItem as DependencyObject).GetCHildTextBox() as TextBox;
-        #pragma warning disable IDE0019
-        if (t is TextBox x) {
-            textBox = x; 
+    #pragma warning disable IDE0019
+        if (t is TextBox x)
+        {
+            textBox = x;
             TextBoxActivate(textBox);
         }
-        #pragma warning restore IDE0019
+    #pragma warning restore IDE0019
         menuSelectedItem = null; // reset zaznaczenia po aktywacji TextBoxa
         /*
         TextBlock textBlock = textBox.GetSisTextBlock();
@@ -578,6 +580,8 @@ public partial class MainWindow : Window
     }
 
 
+
+
     #endregion Menu Context
 
     #region EndGame
@@ -587,5 +591,11 @@ public partial class MainWindow : Window
     #endregion
 
 
-   
+    private void MenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem MI)
+        {
+            (DataContext as MainWindowViewModel).SortAD(MI.DataContext);
+        }
+    }
 }

@@ -11,15 +11,17 @@ public static class ListBoxItemExtensions
     public static TextBox GetTexBox(this ListBoxItem listBoxItem, System.Windows.Point position)
     {
         //kliknięty element wizualny
-        if (listBoxItem == null) {
+        if (listBoxItem == null)
+        {
             //Debug.WriteLine("GetTexBox - listBoxItem is null");
             return null;
         }
         DependencyObject item = null;
-        try 
+        try
         {
             HitTestResult itemHit = VisualTreeHelper.HitTest(listBoxItem, position);
-            if (itemHit == null) {
+            if (itemHit == null)
+            {
                 //Debug.WriteLine("GetTexBox - HitTestResult is null");
                 return null;
             }
@@ -27,10 +29,11 @@ public static class ListBoxItemExtensions
             // DependencyObject item = VisualTreeHelper.HitTest(listBoxItem, position).VisualHit;
             while (item != null && !(item is TextBox))
             {
-            //Debug.WriteLine("item TextBox: " + item.GetType().ToString());
-            item = VisualTreeHelper.GetParent(item);
+                //Debug.WriteLine("item TextBox: " + item.GetType().ToString());
+                item = VisualTreeHelper.GetParent(item);
             }
-        }catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.WriteLine("GetTexBox - exception: " + ex.Message);
             return null;
@@ -47,14 +50,14 @@ public static class ListBoxItemExtensions
         DependencyObject item = VisualTreeHelper.HitTest(listBoxItem, position).VisualHit;
         //Debug.WriteLine("HitTest: " + item.GetType().ToString());   
         // DependencyObject item = VisualTreeHelper.HitTest(listBoxItem, position).VisualHit;
-        
+
         while (item != null && !(item is TextBlock))
         {
             Debug.WriteLine("item TextBlock: " + item.GetType().ToString());
 
             item = VisualTreeHelper.GetParent(item);
         }
-        
+
         //item = VisualTreeHelper.GetParent(item);
 
         /*

@@ -15,14 +15,68 @@ internal class BrokerFile
 {
     //private static ModelPB model = null;
     public static string GetUserAppDataPath =>
-        
+
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\" +
             GetProjectName;
 
-    public static string GetProjectName        
+    public static string GetProjectName
         => Assembly.GetExecutingAssembly().GetName().Name.ToString();
 
-    
+    /// <summary>
+    /// ma zwracać pliki z wybranego katalogu zgodnie z podanym sortowaniem
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public IEnumerable<string> GetFiles(string path)
+    {
+
+
+        return new List<string>();
+    }
+
+    public static string[] GetFiles(string folder, string kryterium, string kierunek)
+    {
+        //trzeba wymyśleć jak to ma być zrobione żeby brał to z jakiejś zmiennej globalnej
+        string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];
+        string[] files = [];
+        if (kierunek == "Rosnąco")
+        {
+            if (kryterium == "Nazwa")
+            {
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower())).OrderBy(f => new FileInfo(f).Name).ToArray();
+            }
+            else if (kryterium == "Data")
+            {
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderBy(f => new FileInfo(f).CreationTime).ToArray();//Select(static fn => new FileInfo(fn)).OrderBy(f => f.CreationTime);
+            }
+            else if (kryterium == "Wielkość")
+            {
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderBy(f => new FileInfo(f).Length).ToArray();
+            }
+        }
+        else
+        {
+            if (kryterium == "Nazwa")
+            {
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).Name).ToArray();
+            }
+            else if (kryterium == "Data")
+            {
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).CreationTime).ToArray();//Select(static fn => new FileInfo(fn)).OrderBy(f => f.CreationTime);
+            }
+            else if (kryterium == "Wielkość")
+            {
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).Length).ToArray();
+            }
+            //return files = Directory.GetFiles(folder).OrderByDescending(f => new FileInfo(f).Name).ToArray();//OrderByDescending(f => f.Name);
+        }
+        return files;
+    }
 
     /// <summary>
     /// sprawdza czy podany katalog nie ma atrybutu "ukryty"
@@ -191,7 +245,7 @@ internal class BrokerFile
         }
         return true;
     }
-        
+
 
     public static void DeleteDirectory(string DirectoryToDele)
     {

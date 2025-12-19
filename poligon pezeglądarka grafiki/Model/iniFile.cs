@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-internal class IniFile: IDisposable
+internal class IniFile : IDisposable
 {
     /// <summary>
     /// klasa do obsługi plików ini, zapis odczyt, modyfikacja
@@ -320,7 +320,7 @@ internal class IniFile: IDisposable
     {
         string x = GetValue(section, key);
         if ((x == null) || (x == string.Empty)) return -1;//throw new ArgumentNullException("wartość jest pusta lub nie istnieje", nameof(key));
-        
+
         return Convert.ToInt32(x);
     }
 
@@ -349,7 +349,7 @@ internal class IniFile: IDisposable
     {
         string x = GetValue(section, key);
         //if(x == "true") return true;
-        if ((x == "")||(x ==  string.Empty)) return false;
+        if ((x == "") || (x == string.Empty)) return false;
         return Convert.ToBoolean(x);
         //return Convert.ToInt32(x);
         //return true
@@ -451,7 +451,7 @@ internal class IniFile: IDisposable
         }
     }
 
-    ~IniFile()=>Dispose();
+    ~IniFile() => Dispose();
 
     /// <summary>
     /// usuwa istniejącą strukturę i wczytuje nową z podanego pliku ini
@@ -581,7 +581,7 @@ internal class IniFile: IDisposable
     public void Dispose()
     {
         SaveIni();
-    
+
         ((IDisposable)ListAdw).Dispose();
 
         // throw new NotImplementedException();

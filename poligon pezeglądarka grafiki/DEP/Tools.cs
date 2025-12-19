@@ -13,14 +13,14 @@ static internal class Tools
 {
     //private static ModelPB model = null;
     public static string GetUserAppDataPath =>
-        
+
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\" +
             GetProjectName;
 
-    public static string GetProjectName        
+    public static string GetProjectName
         => Assembly.GetExecutingAssembly().GetName().Name.ToString();
 
-    
+
 
     /// <summary>
     /// sprawdza czy podany katalog nie ma atrybutu "ukryty"

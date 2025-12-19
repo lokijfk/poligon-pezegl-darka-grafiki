@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -12,7 +13,7 @@ using System.Windows.Media.Imaging;
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
-public partial class ViewWindowViewModel: ObservableObject
+public partial class ViewWindowViewModel : ObservableObject
 {
     [ObservableProperty]
     private BitmapImage myBitmapImage = new();
@@ -29,16 +30,16 @@ public partial class ViewWindowViewModel: ObservableObject
     private List<string> ImagePaths = [];
 
     public ObservableCollection<Photo> Photos;
-    
+
     public int currentImageIndex = 0;
     public ViewWindowViewModel()
     {
         // Create a new instance of the model
-       // Model = new Model.Model();
+        // Model = new Model.Model();
     }
     public ViewWindowViewModel(string path)
     {
-        if ((path != null)&& (File.Exists(path)))
+        if ((path != null) && (File.Exists(path)))
         {
             //Debug.WriteLine("Load image and load files");
             LoadImage(path);
@@ -50,8 +51,8 @@ public partial class ViewWindowViewModel: ObservableObject
     public ViewWindowViewModel(int index, ref readonly ObservableCollection<Photo> Photos_X)
     {
         this.Photos = Photos_X;
-       // Debug.WriteLine("load only image");
-       currentImageIndex = index;
+        // Debug.WriteLine("load only image");
+        currentImageIndex = index;
         LoadImage(Photos[index].Path);
         Init();
     }
@@ -89,11 +90,11 @@ public partial class ViewWindowViewModel: ObservableObject
         MyBitmapImage.BeginInit();
         MyBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
         MyBitmapImage.UriSource = new Uri(path, UriKind.RelativeOrAbsolute); //src;
-        
-        MyBitmapImage.EndInit(); 
+
+        MyBitmapImage.EndInit();
         //myHeight = MyBitmapImage.Height.ToString();
         //myWidth = MyBitmapImage.Width.ToString();
-        if((MyBitmapImage.Height <= 300)||(MyBitmapImage.Width <= 300))
+        if ((MyBitmapImage.Height <= 300) || (MyBitmapImage.Width <= 300))
         {
             MyHeight = MyBitmapImage.Height;
             //MyWidth = MyBitmapImage.Width;
@@ -103,9 +104,9 @@ public partial class ViewWindowViewModel: ObservableObject
             MyHeight = double.NaN;
             //MyWidth = double.NaN;
         }
- 
 
-           // Debug.WriteLine("rozmiar obrazka: " + myWidth + " x " + myHeight +", orginalny: "+MyBitmapImage.Width +" x "+MyBitmapImage.Height);
+
+        // Debug.WriteLine("rozmiar obrazka: " + myWidth + " x " + myHeight +", orginalny: "+MyBitmapImage.Width +" x "+MyBitmapImage.Height);
     }
 
 
@@ -116,32 +117,41 @@ public partial class ViewWindowViewModel: ObservableObject
     // inaczej mają się sprawy jak to okno jest otworzone jko pierwsze a więc treba badać jak to jest...
     private void LoadFiles(string path)
     {
-        
+
         //if ((path == null) || (!Directory.Exists(path))) return;
         var p = Path.GetDirectoryName(path);
         if ((path != null) && (Directory.Exists(p)))
         {
             //Debug.WriteLine("katalog istnieje");
-            string pattern = @"\.(jpg|bmp|png)";
-            var imFiles = Directory.EnumerateFiles(p);
-            Match m;
-            foreach (var item in imFiles.Select((value, i) => (value, i)))
+            //string pattern = @"\.(jpg|bmp|png)";
+            string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];
+            //tu wprowadzić poprawki zgodnie ze zmianami z VM
+            //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))];
+            List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
+            //var imFiles = Directory.EnumerateFiles(p);
+            //Match m;
+            //foreach (var item in imFiles.Select((value, i) => (value, i)))
+            ImagePaths.AddRange(files);
+            currentImageIndex = ImagePaths.FindIndex(x => x == path);
+            /*
+            foreach (var item in files)
             {
-                string currentFile = item.value;
-                string ext = System.IO.Path.GetExtension(currentFile);
-                m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                if (m.Success)//jeżeli rozszeżenia jest jednym z obsługiwanych to dodaje plik do listy  plików
-                {
+                string currentFile = item;
+               // string ext = System.IO.Path.GetExtension(currentFile);
+                //m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
+                //if (m.Success)//jeżeli rozszeżenia jest jednym z obsługiwanych to dodaje plik do listy  plików
+                //{
                     ImagePaths.Add(currentFile);
-                    if(currentFile == path)// jeżeli dodany plik ma taką samąścieżkęjak ten na wejściu to zapisujemy jego insex z ImagePaths
+                    if (currentFile == path)// jeżeli dodany plik ma taką samąścieżkęjak ten na wejściu to zapisujemy jego insex z ImagePaths
                     {
                         //currentImageIndex = item.i;
                         currentImageIndex = ImagePaths.FindIndex(x => x == path);
                         //Debug.WriteLine("index z listy:"+ currentImageIndex+" , index kolejny z for: "+ item.i);
                         // tego nie jestem pewien, zepisuje kolejn¹ liczbê a nie indeks z listy
                     }
-                }
+                //}
             }
+            */
         }
     }
 
@@ -163,7 +173,7 @@ public partial class ViewWindowViewModel: ObservableObject
     {
         foreach (Window item in Application.Current.Windows)
         {
-            if(item.GetType() == typeof(MainWindow)) { return true; }
+            if (item.GetType() == typeof(MainWindow)) { return true; }
         }
         return false;
     }
@@ -188,7 +198,8 @@ public partial class ViewWindowViewModel: ObservableObject
                 if (!MainIsShow())
                 {
                     System.Windows.Application.Current.Shutdown();
-                }else GetWindow().Close();// tu to samo jak wyjdzie null to będzie błąd
+                }
+                else GetWindow().Close();// tu to samo jak wyjdzie null to będzie błąd
             }
             else if (e.Key is Key.Left)
             {
@@ -200,7 +211,8 @@ public partial class ViewWindowViewModel: ObservableObject
                         LoadImage(ImagePaths[currentImageIndex]);
                         //Debug.WriteLine("left - index z listy:" + currentImageIndex + " : "+ ImagePaths[currentImageIndex]);
                     }
-                }else if (Photos != null && Photos.Count > 0)
+                }
+                else if (Photos != null && Photos.Count > 0)
                 {
                     if ((currentImageIndex <= Photos.Count) && (currentImageIndex > 0))
                     {
@@ -221,7 +233,8 @@ public partial class ViewWindowViewModel: ObservableObject
                         LoadImage(ImagePaths[currentImageIndex]);
                         //Debug.WriteLine("right - index z listy:" + currentImageIndex + " : " + ImagePaths[currentImageIndex]);
                     }
-                }else if(Photos != null && Photos.Count > 0)
+                }
+                else if (Photos != null && Photos.Count > 0)
                 {
                     if (currentImageIndex + 1 < Photos.Count)
                     {
@@ -249,7 +262,8 @@ public partial class ViewWindowViewModel: ObservableObject
                         main.Owner = view.Owner;
                         main.Show();
                         view.Owner = main;
-                    } catch 
+                    }
+                    catch
                     {
                         view.Close();
                     }

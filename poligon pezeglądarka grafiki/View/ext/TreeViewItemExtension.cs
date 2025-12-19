@@ -17,18 +17,18 @@ public static class TreeViewItemExtension
     public static DependencyObject GetCHildTextBox(this DependencyObject item)
     {
         if (item != null)
-        {            
+        {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(item); i++)
-            {                
+            {
                 var child = VisualTreeHelper.GetChild(item, i);
                 if (child is TextBox)
-                {                    
+                {
                     return (TextBox)child;
-                }     
+                }
                 DependencyObject childItem = GetCHildTextBox(child);
-                if (childItem != null) return childItem as TextBox;                
+                if (childItem != null) return childItem as TextBox;
             }
-        }        
+        }
         return null;
 
         /*

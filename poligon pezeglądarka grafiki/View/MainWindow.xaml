@@ -4,10 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        
         xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki"
         xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
         xmlns:model ="clr-namespace:poligon_pezeglądarka_grafiki.Model"        
         xmlns:converters="clr-namespace:poligon_pezeglądarka_grafiki.View.Converters"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+        xmlns:control="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
+        xmlns:ext="clr-namespace:poligon_pezeglądarka_grafiki.View.ext"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
         Title="Poligon - przeglądarka"
@@ -16,8 +20,7 @@
         Height="{Binding Height, Mode=TwoWay}" Width="{Binding Width, Mode=TwoWay}"
         Top="{Binding Top, Mode=TwoWay}" Left="{Binding Left, Mode=TwoWay}"
         WindowState="{Binding CurMainWindowState, Mode=TwoWay}"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
-        xmlns:control="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
+        
         Style="{StaticResource MaterialDesignWindow }" WindowStyle="None"    
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
         Background="{DynamicResource MaterialDesign.Brush.Background}" 
@@ -126,7 +129,8 @@
                                 <materialDesign:PackIcon Kind="PlusCircleOutline" />
                             </Button>
                             <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
-                            <Button Command="{Binding Button_Click_ViewGridCanCommand}"  ToolTip="Widok miniatur Canvas, eksperymentalny">
+                            <Button  Command="{Binding Path=SelectionChangedCommand}" CommandParameter="GalleryCan"  
+                                    ToolTip="Widok miniatur Canvas, eksperymentalny">
                                 <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
                                 <materialDesign:PackIcon Kind="ViewGrid" />
                             </Button>
@@ -152,11 +156,26 @@
                                         />
                                 </Button>
                             </Viewbox>
-                            <Label VerticalAlignment="Center" Content="sortowanie po:" />
+                            <!--Label VerticalAlignment="Center" Content="sortowanie w/g:" />
                             <ComboBox ItemsSource="{Binding Path=TypSotowania}" IsSynchronizedWithCurrentItem="True"
-                                    DisplayMemberPath="Name">
+                                   
+                                      >
                                         
-                                </ComboBox>
+                                </ComboBox-->
+
+                            <Menu>
+                                <MenuItem Header="Sortowanie" ItemsSource="{Binding MenuSort}">
+                                    <MenuItem.ItemContainerStyle>
+                                        <Style TargetType="MenuItem">
+                                            <Setter Property="Header" Value="{Binding Name}" />
+                                            <Setter Property="IsCheckable" Value="True" />
+                                            <Setter Property="IsChecked" Value="{Binding IsChecked}" />                                            
+                                            <EventSetter Event="Click" Handler="MenuItem_Click" />
+                                        </Style>
+                                    </MenuItem.ItemContainerStyle>
+                                
+                            </MenuItem>
+                            </Menu>
                         </ToolBar>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
@@ -230,7 +249,7 @@
                                             <!-- tu dać wrap panel ikonę do katalogu 
                                             i dalej grid do tekstu-->
                                        <Grid>                                                
-                                            <TextBlock >
+                                            <TextBlock ToolTip="{Binding Path=Path}">
                                                  <TextBlock.Text>
                                                      <MultiBinding Converter="{StaticResource MBConwerterSTS}">
                                                          <Binding Path="Name" Mode="OneWay" />

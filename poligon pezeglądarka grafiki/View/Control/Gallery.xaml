@@ -12,8 +12,6 @@
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"  
              x:Name="ThumbinailView"
-             
-             Loaded="ThumbinailView_Loaded"
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -33,7 +31,7 @@
                  PreviewMouseLeftButtonDown="ListBox_PreviewMouseLeftButtonDown"
                  PreviewMouseLeftButtonUp="ListBox_PreviewMouseLeftButtonUp"
                  MouseLeftButtonDown="ListBox_MouseLeftButtonDown"
-                 
+                 KeyDown="ListBox_KeyDown"
                  MouseMove="ListBox_MouseMove" AllowDrop="True"
                  DragEnter="ListBox_DragEnter" Drop="ListBox_Drop"
                  DragOver="ListBox_DragOver"  
@@ -110,8 +108,9 @@
                 <KeyBinding Key="Delete" Modifiers="Shift" Command="{Binding  DeleteFileStrongCommand}" 
                             CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
                 <!-- open nie działa, tu trzeba poprzwić -->
-                <KeyBinding Key="Enter" Command="Open" 
-                            CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/>
+                <!--KeyBinding Key="Enter" Command="Open" 
+                            CommandParameter="{Binding Path=SelectedItems, RelativeSource={RelativeSource FindAncestor,AncestorType=ListBox}}"/-->
+                <!--KeyBinding Key="Execute" Command="{Binding }" /-->
             </ListBox.InputBindings>
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>

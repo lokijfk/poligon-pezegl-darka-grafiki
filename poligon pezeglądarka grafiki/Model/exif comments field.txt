@@ -11,3 +11,4 @@ PNG wykorzystuje fragmenty (chunks) do organizacji danych. Najważniejsze fragme
 tEXt: Przechowuje tekstowe metadane w formacie ASCII. 
 iTXt: Przechowuje tekstowe metadane w formacie Unicode. 
 zTXt: Przechowuje skompresowane tekstowe metadane. 
+ w PNG jest specjalna część na teks i nie jest normalnie dostępna, trzeba sprawdzić jak się do niej dostać bez zbędnych bibliotek

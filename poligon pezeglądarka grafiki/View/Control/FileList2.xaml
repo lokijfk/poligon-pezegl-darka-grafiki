@@ -97,7 +97,6 @@
                         </b:EventTrigger>
                     </b:Interaction.Triggers-->
                 </ListBox>
-            </ScrollViewer>
-        
+            </ScrollViewer>        
     </Grid>
 </UserControl>

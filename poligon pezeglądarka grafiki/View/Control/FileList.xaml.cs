@@ -33,7 +33,7 @@ public partial class FileList : UserControl
             return;
         }
         var FList = (this.DataContext as MainWindowViewModel)?.FilesList;
-        var p = FList[index].Path+"\\"+ FList[index].Name;
+        var p = FList[index].Path + "\\" + FList[index].Name;
         ViewWindow viewWindow = new ViewWindow { DataContext = new ViewWindowViewModel(p) };
         viewWindow.Show();
         //Debug.WriteLine("MouseDoubleClick:"+sender.ToString()+" event:"+(e.Source as ListBox).SelectedIndex );
