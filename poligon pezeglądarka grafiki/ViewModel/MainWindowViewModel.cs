@@ -168,6 +168,7 @@ public partial class MainWindowViewModel : ObservableObject
     private TreeModel? MenuSelectedTreeItem = null;
     private bool counter = false;
     private CancellationTokenSource? cts = null;
+    private CancellationToken token;
     string[] GalleryView = ["Gallery", "Gallery2", "GaleryCan"];
     string[] FileView = ["FDataGrid", "FList"];
     #endregion Private
@@ -808,11 +809,11 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="kierunek"></param>
     private void LoadSortowanie(string kryterium, string kierunek)
     {
-        MenuSort.Add(new("Nazwa", (kryterium == "Nazwa"), 2, "kryterium"));
-        MenuSort.Add(new("Data", (kryterium == "Data"), 3, "kryterium"));
-        MenuSort.Add(new("Wielkość", (kryterium == "Wielkość"), 4, "kryterium"));
-        MenuSort.Add(new("Rosnąco", (kierunek == "Rosnąco"), 0, "kierunek"));
-        MenuSort.Add(new("Malejąco", (kierunek == "Malejąco"), 1, "kierunek"));
+        MenuSort.Add(new("Nazwa", (kryterium == "Nazwa"),  "kryterium"));
+        MenuSort.Add(new("Data", (kryterium == "Data"),  "kryterium"));
+        MenuSort.Add(new("Wielkość", (kryterium == "Wielkość"),  "kryterium"));
+        MenuSort.Add(new("Rosnąco", (kierunek == "Rosnąco"),  "kierunek"));
+        MenuSort.Add(new("Malejąco", (kierunek == "Malejąco"),  "kierunek"));
     }
     private void _init(string path)
     {
@@ -839,16 +840,17 @@ public partial class MainWindowViewModel : ObservableObject
         try
         {
             cts = new CancellationTokenSource();
+            token = cts.Token;
             if (!string.IsNullOrEmpty(path) && File.Exists(path))
             {
                 string pathFile = Path.GetDirectoryName(path);
                 //Debug.WriteLine($"ściezka do katalogu: {pathFile}");
-                FileListLoad(pathFile, cts.Token);
+                FileListLoad(pathFile, token);
             }
             else
             {
                 //Debug.WriteLine("nie znaleziono pliku: " + path);
-                FileListLoad(SelectedTreePath, cts.Token);
+                FileListLoad(SelectedTreePath, token);
             }
         }
         catch (Exception ex)
@@ -1042,8 +1044,11 @@ public partial class MainWindowViewModel : ObservableObject
                 cts.Cancel();
                 while (!cts.IsCancellationRequested && counter)
                 {
-                    Thread.SpinWait(50000);
+                    //Thread.SpinWait(50000);
+                    Debug.WriteLine("RenameFolder - nadal czekam ...");
+                    Thread.SpinWait(5000);
                 }
+                //cts.Dispose();
             }
             if (cts == null || (cts.IsCancellationRequested && !counter))
             {
@@ -1321,9 +1326,11 @@ public partial class MainWindowViewModel : ObservableObject
                     //Debug.WriteLine("MoveFoderToFolder: Waiting for cancellation");
                     while (!cts.IsCancellationRequested)
                     {
-                        //Debug.WriteLine("MoveFoderToFolder: still waiting...");
-                        Thread.SpinWait(50000);
+                        Debug.WriteLine("MoveFoderToFolder: still waiting...");
+                        //Thread.SpinWait(50000);
+                        Thread.SpinWait(5000);
                     }
+                    //cts.Dispose();
                     //Debug.WriteLine("MoveFoderToFolder: Canceled");
                 }
 
@@ -1384,16 +1391,37 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
 
-    /// <summary>
-    /// to w zasadzie zakończenie przenoszenia, ma za zadanie odświezyć aktualny katalog
-    /// </summary>
-    /// <remarks></remarks>
-    public void MoveFileToFolder()
+    public void RemoveFileFromPhotos(Photo[] photos)
     {
-        //MoveFileToFolder(String.Empty, String.Empty);
-        //MoveFileToFolder(String.Empty, null);// niejednoznaczne odwołanie
-        RefreshFileList();
+        //Debug.WriteLine("usuwanie przeniesionych plików z Photos");
+       
+        foreach (var item in photos)
+        {
+            Photos.Remove(item);
+            //Debug.WriteLine($"Remowe: {item.Name}");
+        }
     }
+    /// <summary>
+    /// usuwa przeniesione pliki z kolekcji Photos
+    /// </summary>
+    /// <param name="photos"></param>
+    public void RemoveFileFromPhotos(List<Photo> photos)
+    {
+        //wszystkie operacje na Photos zatrzymują generowanie miniatur, trzeba ustawiać znacznik i wznawiać w jakiś sposób
+        //ale wcześniej warto przerywać tak żeby nie było błędu, albo raczej go przewidzieć !!!
+        //odejmować też pliki z "kolejki" znacznika plików na pasku statusu - statusbar
+        // zwrócić uwagę na zmiany ilości plików
+        if (cts != null)
+        {
+            Debug.WriteLine("RemoveFileFromPhotos - cts.Cancel() ...");
+            cts.Cancel();
+            //cts.Dispose();
+        }
+        photos.ForEach(photo => { Photos.Remove(photo); });
+    }
+
+
+    
     /// <summary>
     /// to jest do wrzucania plików do aktualnmie wyświetlanego folderu w listbox
     /// </summary>
@@ -1401,6 +1429,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="copy"></param>
     public void MoveFileToFolder(string file, bool copy = false)
     {
+        Debug.WriteLine("MoveFileToFolder(string file, bool copy = false)");
         if (string.IsNullOrEmpty(file)) return;
         if (!File.Exists(file)) return;
         string ViewPath = SelectedTreePath;
@@ -1486,6 +1515,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="file">plik ze ścieżką</param>
     public void MoveFileToFolder(string file, string path, bool copy = false)
     {
+        //Debug.WriteLine("MoveFileToFolder(string file, string path, bool copy");
         if ((file == String.Empty) && (path == String.Empty) && !copy)
         {
             //czyszczenie kolekcji po przeniesieniu pliku do np explorera plików
@@ -1551,7 +1581,11 @@ public partial class MainWindowViewModel : ObservableObject
                 //    }
                 //}
                 //else ReloadFileList(SelectedItem);//to jako ostateczność
-                if (!newPhoto(newFilePath)) ReloadFileList(SelectedItem);//to jako ostateczność
+                if (!newPhoto(newFilePath))
+                {
+                    //Debug.WriteLine("MoveFileToFolder -- ReloadFileList");
+                    ReloadFileList(SelectedItem);
+                }//to jako ostateczność
             }
         }
         else Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + ext);
@@ -1622,7 +1656,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
         if (!Directory.Exists(path))
         {
-            Debug.WriteLine("MoveFileToFolder: path does not exist: " + path);
+            //Debug.WriteLine("MoveFileToFolder: path does not exist: " + path);
             return String.Empty;
         }
         //Debug.WriteLine("MoveFileToFolder: path: " + path + " , file: " + file);
@@ -1748,15 +1782,25 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if (cts != null)
         {
-            //cts.Token.ThrowIfCancellationRequested();
-            cts.Cancel();
-            while (!cts.IsCancellationRequested && counter)
+            try
             {
-                //Debug.WriteLine("ReloadFileList: still waiting...");
-                Thread.SpinWait(50000);
+                // wywala bład jak próbuję użyć cancel na cts  który został dispose ... szukam rozwiązania
+                //cts.Token.ThrowIfCancellationRequested();
+                cts.Cancel();
+                while (!cts.IsCancellationRequested && counter)
+                {
+                    Debug.WriteLine("ReloadFileList: still waiting...");
+                    //Thread.SpinWait(50000);
+                    Thread.SpinWait(5000);
+                }
+                cts.Dispose();
+                cts = null;
             }
-            cts.Dispose();
-            cts = null;
+            catch (Exception ex)
+            {
+
+                Debug.WriteLine(ex.ToString());
+            }
         }
         try
         {
@@ -1798,41 +1842,48 @@ public partial class MainWindowViewModel : ObservableObject
         {
             SelectedTreeItem = path;
             //var imFiles = Directory.EnumerateFiles(path);//to może powodować problemy, tu zmienić na dostep z BrokerFile
-            var imFiles = BrokerFile.GetFiles(path, Sortowaniekryterium, Sortowaniekierunek);
+            var imFiles = BrokerFile.GetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
             FileInfo finfo;
-            string ext, name;
+            //string ext, name;
             var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
             string maska = @"pack://application:,,,/img/g1.png";
-            Match m;
+            //to poniżej do przerpbienia, może będzieszybsze, są odczuwalne opuźnienia przy większej liczbie plików
+            //Match m;
             string View = SelectedView.Split('.').Last();
             FilesToLoad = GetCountFiles(path).ToString();
             int licznik = 0;
-            foreach (var imFile in imFiles.Select(static (value, i) => (value, i)))
+            //foreach (var imFile in imFiles.Select(static (value, i) => (value, i)))
+            foreach (var imFile in imFiles)
             {
                 if (token.IsCancellationRequested)
                 {
                     counter = false;
+                    //token.ThrowIfCancellationRequested();
                     return;
                 }
                 counter = true;
-                ext = System.IO.Path.GetExtension(imFile.value);
+                //ext = System.IO.Path.GetExtension(imFile.value);
+                //ext = System.IO.Path.GetExtension(imFile);
                 //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
                 //pattern to zmienne globalna, będzie ustawiana przy starcie z ini, na razie jest to string na stałe
-                m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                if (m.Success && !token.IsCancellationRequested)
+                //m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
+                //if (m.Success && !token.IsCancellationRequested)
+                if (!token.IsCancellationRequested)
                 {
                     //FileLoaded = (++licznik).ToString();
                     try
                     {
-                        name = System.IO.Path.GetFileName(imFile.value);
-                        finfo = new FileInfo(imFile.value);
+                        //name = System.IO.Path.GetFileName(imFile.value);
+                        //name = System.IO.Path.GetFileName(imFile);
+                        //finfo = new FileInfo(imFile.value);
+                        finfo = new FileInfo(imFile);
 
                         //to też ładować tylko w razie potrzeby!!, dodać warónek i sprawdzanie
                         //if (FileView.Contains(View))
                         FilesList.Add(new FilesIO()
                         {
-                            Name = name,
-                            Extension = ext,
+                            Name = System.IO.Path.GetFileName(imFile),
+                            Extension = System.IO.Path.GetExtension(imFile),
                             Path = path,
                             Icon = BlinkIcom,
                             Size = BrokerFile.Prdouble(finfo.Length),
@@ -1842,9 +1893,10 @@ public partial class MainWindowViewModel : ObservableObject
                         //if ((View.ToLower().Contains("gallery") || View.Contains("Gallery2")) && !token.IsCancellationRequested)
                         if (GalleryView.Contains(View) && !token.IsCancellationRequested)
                         {
-                            //Debug.WriteLine("load file: " + imFile.value);
+                            // Debug.WriteLine("load file: " + imFile.value);
 
-                            Photo p = new Photo(imFile.value);
+                            //Photo p = new Photo(imFile.value);
+                            Photo p = new Photo(imFile);
                             p.maska = maska;
                             p.Image = back;
                             Photos.Add(p);
@@ -1866,7 +1918,8 @@ public partial class MainWindowViewModel : ObservableObject
                 }
                 counter = false;
             }
-            await PhotosLoadImae(token);
+            if (GalleryView.Contains(View) && !token.IsCancellationRequested)
+                await PhotosLoadImae(token);
             // wywala przy zmianie katalogu jak łąduje jeszcze obrazy, ale działi to chyba szybciej i bez problemu
             // brak licznika obrazów, liczy pliki które ładuje a nie obrazy
             //if (SelectedView == "Gallery") PhotosLoadImae(token);
@@ -1882,27 +1935,42 @@ public partial class MainWindowViewModel : ObservableObject
     /// <returns></returns>
     private async Task PhotosLoadImae(CancellationToken token)
     {
+        //Debug.WriteLine($"PhotosLoadImae - token: {token}")
         if (Photos.Count > 0 && !token.IsCancellationRequested)
         {
             //może jak tu dam for  to to by przeszło?
             try
             {
                 int licznik = 0;
-                foreach (var photo in Photos)
+                //foreach (var photo in Photos)
+                //w tym wypadku tylko pętla for ma rację bytu bo wyjątek i if nie są wywoływane
+                //trzeba to doczytać
+                for (var  i = 0; i < Photos.Count && !token.IsCancellationRequested; i++)                
                 {
+                    var photo = Photos[i];
+                    //wogóle nie jest wywoływane, nie ważne jaka pętla
                     if (token.IsCancellationRequested) 
                     {
                         //to wogóle nie jest wywoływane !! jakby token nie był ustawiany!!
                         Debug.WriteLine($"Could not load {photo}");
+                        token.ThrowIfCancellationRequested();
                         return; 
                     }
                     FileLoaded = (++licznik).ToString();
                     await photo.Load(token);
                 }
+                //to poniżej to tylko test i nie ma większego sęsu dla kodu i znaczenia o tyle że wywołuje wyjątek
+                //if (token.IsCancellationRequested)
+                //{
+                //    //to wogóle nie jest wywoływane !! jakby token nie był ustawiany!!
+                //    Debug.WriteLine($"Could not load photo");
+                //    token.ThrowIfCancellationRequested();
+                //    return;
+                //}
             }
             catch(Exception ex)
             {
-                Debug.WriteLine(ex.ToString());
+                Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
             }
         }
     }

@@ -182,6 +182,7 @@ public partial class Photo : ObservableObject//,IDisposable
         if (token.IsCancellationRequested && x)
         {
             //Debug.WriteLine("Load cancelled");
+            token.ThrowIfCancellationRequested();
             return;
         }
 
@@ -202,19 +203,25 @@ public partial class Photo : ObservableObject//,IDisposable
                         return Task.FromResult(BitmapFrame.Create(
                             fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad));
                     }
-                    catch (FileFormatException ex)
-                    {                            
+                    catch (FileFormatException)
+                    {
                         errored = true;
                         return Task.FromResult(BitmapFrame.Create(
                             new Uri(maska), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None));
 
                     }
-                    catch (Exception ex)
+                    catch (ArgumentException)
                     {
                         errored = true;
                         return Task.FromResult(BitmapFrame.Create(
                            new Uri(maska), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None));
                     }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                        return null;
+                    }
+                    
                 }
             });
 

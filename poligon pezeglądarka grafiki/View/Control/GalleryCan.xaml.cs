@@ -430,6 +430,8 @@ public partial class GalleryCan : UserControl
                 {
                     ListBoxItem item = listBox.GetListBoxItem(e.GetPosition(listBox));
                     string[] paths;
+                    //Photo[] selectedPhotos = [];
+                    List<Photo> selectedPhotos = new List<Photo>();
                     if (item != null && listBox != null)
                     {
                         if (listBox.SelectedItems.Count == 0)
@@ -440,7 +442,8 @@ public partial class GalleryCan : UserControl
                         else
                         {
                             //Debug.WriteLine("przeciąganie wielu elementów listy, Selecteditems: " + Lista.SelectedItems.Count);
-                            var selectedPhotos = Lista.SelectedItems.Cast<Photo>().ToList();
+                            selectedPhotos = Lista.SelectedItems.Cast<Photo>().ToList();
+                            //selectedPhotos = Lista.SelectedItems.Cast<Photo>().ToArray();
                             //Debug.WriteLine("Liczba zaznaczonych elementów: " + selectedPhotos.Count);
                             paths = [.. selectedPhotos.Select(static p => p.Path)];
                         }
@@ -458,8 +461,14 @@ public partial class GalleryCan : UserControl
                             //ale usuwa również jak nie powinny być przeniesione,
                             //to trzeba poprawić lub dać to w innym miejscu
                             if (DataContext is MainWindowViewModel viewModel)
-                                viewModel.MoveFileToFolder();//??
-                                                             //Debug.WriteLine("przeniesiono plik");
+                            {
+                                //ok to jest błąd bo odświeża cały katalog a powinien usuwać tylko obiekty reprezentacji plików z kolejki
+                                //do przerobienia
+                                //Debug.WriteLine("ListBox_MouseMove(object sender, MouseEventArgs e) -- przeniesiono plik");
+                                viewModel.RemoveFileFromPhotos(selectedPhotos.ToList());
+                                //viewModel.MoveFileToFolder();//??
+
+                            }
                         }
                         //Debug.WriteLine("efekt przeciągania:" + effect);
                     }
@@ -471,7 +480,6 @@ public partial class GalleryCan : UserControl
             Debug.WriteLine(ex.ToString());
         }
     }
-
     /// <summary>
     /// zmiana kursora w trakcie przeciągania określa jaka akcja będzie zrobiona
     ///  podgląd efektów operacji przeciągania i upuszczania

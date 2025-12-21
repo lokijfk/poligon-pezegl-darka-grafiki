@@ -11,17 +11,12 @@ public partial class MenuRadioButton : ObservableObject
 
     [ObservableProperty]
     private bool _IsChecked;
-
-
-    private int Value;
-
     public string Grupa;
 
-    public MenuRadioButton(string Name, bool IsChecekd, int Value, string GR)
+    public MenuRadioButton(string Name, bool IsChecekd, string GR)
     {
         this.Name = Name;
-        this.IsChecked = IsChecekd;
-        this.Value = Value;
+        this.IsChecked = IsChecekd;        
         this.Grupa = GR;
     }
 }

@@ -23,21 +23,15 @@ internal class BrokerFile
         => Assembly.GetExecutingAssembly().GetName().Name.ToString();
 
     /// <summary>
-    /// ma zwracać pliki z wybranego katalogu zgodnie z podanym sortowaniem
+    /// podaje ścieżki do plików w wybranym katalogu zgodnie z kryterium i kierunkiem wyszukiwania oraz z podanymi poaszeżeniami
     /// </summary>
-    /// <param name="path"></param>
+    /// <param name="folder">katalog</param>
+    /// <param name="kryterium">nazwa,adata lub wielkość</param>
+    /// <param name="kierunek">rosnąco lub malejącoa</param>
+    /// <param name="patternArray">np.: .jpg .gif</param>
     /// <returns></returns>
-    public IEnumerable<string> GetFiles(string path)
+    public static string[] GetFiles(string folder, string kryterium, string kierunek, string[] patternArray)
     {
-
-
-        return new List<string>();
-    }
-
-    public static string[] GetFiles(string folder, string kryterium, string kierunek)
-    {
-        //trzeba wymyśleć jak to ma być zrobione żeby brał to z jakiejś zmiennej globalnej
-        string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];
         string[] files = [];
         if (kierunek == "Rosnąco")
         {
@@ -76,6 +70,19 @@ internal class BrokerFile
             //return files = Directory.GetFiles(folder).OrderByDescending(f => new FileInfo(f).Name).ToArray();//OrderByDescending(f => f.Name);
         }
         return files;
+    }
+
+    /// <summary>
+    /// ma zwracać pliki z wybranego katalogu zgodnie z podanym sortowaniem
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+     public static string[] GetFiles(string folder, string kryterium, string kierunek)
+    {
+        //trzeba wymyśleć jak to ma być zrobione żeby brał to z jakiejś zmiennej globalnej
+        string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];
+        return GetFiles(folder, kryterium, kierunek, patternArray);
+        
     }
 
     /// <summary>
