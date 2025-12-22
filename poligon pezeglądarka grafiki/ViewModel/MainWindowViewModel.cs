@@ -22,18 +22,12 @@ namespace poligon_pezeglądarka_grafiki.ViewModel;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    /***** NOTATKI****
-     * scalić FilesIO i Photo w jeden ojekt FileIO dodać dane typu movie
-     * 
-     * 
-     */
-
+    
     #region Properties and [observableProperty]
     #region Collection
     private BrokerIni iniFile = BrokerIni.GetBroker();  //new BrokerIni();
     private ImageSource BlinkIcom { get; set; } = PhotoHelper.CreateEmtpyBitmapSource();
-
-    //private ObservableCollection<TreeModel> _tree = [];
+    
     /// <summary>
     /// kolekcja zawierająca tablicę z osobnymi drzewami katalogów do przeglądu
     /// </summary>
@@ -1842,44 +1836,30 @@ public partial class MainWindowViewModel : ObservableObject
         {
             SelectedTreeItem = path;
             //var imFiles = Directory.EnumerateFiles(path);//to może powodować problemy, tu zmienić na dostep z BrokerFile
-            var imFiles = BrokerFile.GetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
+            var imFiles = BrokerFile.IGetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
             FileInfo finfo;
             //string ext, name;
             var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
             string maska = @"pack://application:,,,/img/g1.png";
-            //to poniżej do przerpbienia, może będzieszybsze, są odczuwalne opuźnienia przy większej liczbie plików
-            //Match m;
+            
             string View = SelectedView.Split('.').Last();
             FilesToLoad = GetCountFiles(path).ToString();
             int licznik = 0;
-            //foreach (var imFile in imFiles.Select(static (value, i) => (value, i)))
+            
             foreach (var imFile in imFiles)
             {
                 if (token.IsCancellationRequested)
                 {
-                    counter = false;
-                    //token.ThrowIfCancellationRequested();
+                    counter = false;                    
                     return;
                 }
                 counter = true;
-                //ext = System.IO.Path.GetExtension(imFile.value);
-                //ext = System.IO.Path.GetExtension(imFile);
-                //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
-                //pattern to zmienne globalna, będzie ustawiana przy starcie z ini, na razie jest to string na stałe
-                //m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                //if (m.Success && !token.IsCancellationRequested)
                 if (!token.IsCancellationRequested)
-                {
-                    //FileLoaded = (++licznik).ToString();
+                {                    
                     try
-                    {
-                        //name = System.IO.Path.GetFileName(imFile.value);
-                        //name = System.IO.Path.GetFileName(imFile);
-                        //finfo = new FileInfo(imFile.value);
+                    {                        
                         finfo = new FileInfo(imFile);
 
-                        //to też ładować tylko w razie potrzeby!!, dodać warónek i sprawdzanie
-                        //if (FileView.Contains(View))
                         FilesList.Add(new FilesIO()
                         {
                             Name = System.IO.Path.GetFileName(imFile),
@@ -1949,13 +1929,14 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     var photo = Photos[i];
                     //wogóle nie jest wywoływane, nie ważne jaka pętla
-                    if (token.IsCancellationRequested) 
-                    {
-                        //to wogóle nie jest wywoływane !! jakby token nie był ustawiany!!
-                        Debug.WriteLine($"Could not load {photo}");
-                        token.ThrowIfCancellationRequested();
-                        return; 
-                    }
+                    //Debug.WriteLine($"PhotosLoadImae: {photo.Name}");//to działa
+                    //if (token.IsCancellationRequested) 
+                    //{
+                    //    //to wogóle nie jest wywoływane !! jakby token nie był ustawiany!!
+                    //    Debug.WriteLine($"Could not load {photo}");
+                    //    token.ThrowIfCancellationRequested();
+                    //    return; 
+                    //}
                     FileLoaded = (++licznik).ToString();
                     await photo.Load(token);
                 }

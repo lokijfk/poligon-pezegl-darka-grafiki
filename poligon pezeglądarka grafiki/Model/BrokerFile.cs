@@ -72,12 +72,62 @@ internal class BrokerFile
         return files;
     }
 
+    public static IEnumerable<string> IGetFiles(string folder, string kryterium, string kierunek, string[] patternArray)
+    {
+        //string[] files = [];
+        if (kierunek == "Rosnąco")
+        {
+            if (kryterium == "Nazwa")
+            {
+                /*
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(
+                    new FileInfo(f).Extension.ToLower())).OrderBy(f => new FileInfo(f).Name).ToArray();
+                */
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(
+                    new FileInfo(f).Extension.ToLower())).OrderBy(f => new FileInfo(f).Name);
+                /*
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(
+                    new FileInfo(f).Extension.ToLower())).OrderBy(f => new FileInfo(f).Name).ToArray();*/
+            }
+            else if (kryterium == "Data")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderBy(f => new FileInfo(f).CreationTime);
+            }
+            else if (kryterium == "Wielkość")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderBy(f => new FileInfo(f).Length);
+            }
+        }
+        else
+        {
+            if (kryterium == "Nazwa")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).Name);
+            }
+            else if (kryterium == "Data")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).CreationTime);
+            }
+            else if (kryterium == "Wielkość")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).Length);
+            }
+            
+        }
+        return Directory.EnumerateFiles(folder);
+    }
+
     /// <summary>
     /// ma zwracać pliki z wybranego katalogu zgodnie z podanym sortowaniem
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-     public static string[] GetFiles(string folder, string kryterium, string kierunek)
+    public static string[] GetFiles(string folder, string kryterium, string kierunek)
     {
         //trzeba wymyśleć jak to ma być zrobione żeby brał to z jakiejś zmiennej globalnej
         string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];

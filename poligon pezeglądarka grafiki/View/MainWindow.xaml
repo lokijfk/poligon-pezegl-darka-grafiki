@@ -248,7 +248,24 @@
                                   <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children, Mode=OneTime}" >
                                             <!-- tu dać wrap panel ikonę do katalogu 
                                             i dalej grid do tekstu-->
-                                       <Grid>                                                
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Kind="Folder" Margin="0,0,3,0" Foreground="Yellow" />
+                                            <!--materialDesign:PackIcon Margin="0,0,3,0" Foreground="Yellow">
+                                                <materialDesign:PackIcon.Style>
+                                                    <Style TargetType="{x:Type materialDesign:PackIcon}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding ElementName=TreeViewX ,Path=Expanded}" Value="true">
+                                                                <Setter Property="Kind" Value="FolderOpen" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding ElementName=TreeViewX ,Path=Expanded}" Value="false">
+                                                                <Setter Property="Kind" Value="Folder" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </materialDesign:PackIcon.Style>
+                                            </materialDesign:PackIcon-->
+
+                                        <Grid>                                                
                                             <TextBlock ToolTip="{Binding Path=Path}">
                                                  <TextBlock.Text>
                                                      <MultiBinding Converter="{StaticResource MBConwerterSTS}">
@@ -278,6 +295,7 @@
                                                 </i:Interaction.Triggers-->
                                             </TextBox>
                                        </Grid>
+                                        </StackPanel>
                                   </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>
                                     
