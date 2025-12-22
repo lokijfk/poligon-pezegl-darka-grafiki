@@ -249,21 +249,25 @@
                                             <!-- tu dać wrap panel ikonę do katalogu 
                                             i dalej grid do tekstu-->
                                         <StackPanel Orientation="Horizontal">
-                                            <materialDesign:PackIcon Kind="Folder" Margin="0,0,3,0" Foreground="Yellow" />
-                                            <!--materialDesign:PackIcon Margin="0,0,3,0" Foreground="Yellow">
+                                        <!--materialDesign:PackIcon Kind="{Binding ElementName=TreeViewX ,Path=IsExpanded ,
+                                            Converter={StaticResource BoolToKindString}}" Margin="0,0,3,0" Foreground="Yellow" /-->
+                                        <!--materialDesign:PackIcon Kind="Folder" Margin="0,0,3,0" Foreground="Yellow" /-->
+                                            <materialDesign:PackIcon Margin="0,0,3,0" Foreground="Yellow">
                                                 <materialDesign:PackIcon.Style>
-                                                    <Style TargetType="{x:Type materialDesign:PackIcon}">
+                                                    <Style TargetType="materialDesign:PackIcon">
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding ElementName=TreeViewX ,Path=Expanded}" Value="true">
+                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                            AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="true">
                                                                 <Setter Property="Kind" Value="FolderOpen" />
                                                             </DataTrigger>
-                                                            <DataTrigger Binding="{Binding ElementName=TreeViewX ,Path=Expanded}" Value="false">
+                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                            AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="false">
                                                                 <Setter Property="Kind" Value="Folder" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
                                                 </materialDesign:PackIcon.Style>
-                                            </materialDesign:PackIcon-->
+                                            </materialDesign:PackIcon>
 
                                         <Grid>                                                
                                             <TextBlock ToolTip="{Binding Path=Path}">
