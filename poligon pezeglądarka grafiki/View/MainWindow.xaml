@@ -252,19 +252,27 @@
                                         <!--materialDesign:PackIcon Kind="{Binding ElementName=TreeViewX ,Path=IsExpanded ,
                                             Converter={StaticResource BoolToKindString}}" Margin="0,0,3,0" Foreground="Yellow" /-->
                                         <!--materialDesign:PackIcon Kind="Folder" Margin="0,0,3,0" Foreground="Yellow" /-->
-                                            <materialDesign:PackIcon Margin="0,0,3,0" Foreground="Yellow">
+                                            <materialDesign:PackIcon Margin="0,0,3,0" >
                                                 <materialDesign:PackIcon.Style>
                                                     <Style TargetType="materialDesign:PackIcon">
-                                                        <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
-                                                            AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="true">
+                                                        <Style.Triggers>                                                            
+                                                            <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                                AncestorType={x:Type TreeViewItem}}, Path=IsSelected }" Value="true">
+                                                            <Setter Property="Foreground"  Value="LightGoldenrodYellow" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                                AncestorType={x:Type TreeViewItem}}, Path=IsSelected}" Value="false">
+                                                            <Setter Property="Foreground" Value="Yellow" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                                AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="true">
                                                                 <Setter Property="Kind" Value="FolderOpen" />
                                                             </DataTrigger>
-                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
-                                                            AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="false">
+                                                            <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                                AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="false">
                                                                 <Setter Property="Kind" Value="Folder" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
+                                                            </DataTrigger>                                                            
+                                                    </Style.Triggers>
                                                     </Style>
                                                 </materialDesign:PackIcon.Style>
                                             </materialDesign:PackIcon>

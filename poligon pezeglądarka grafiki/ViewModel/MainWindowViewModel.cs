@@ -822,6 +822,7 @@ public partial class MainWindowViewModel : ObservableObject
         SwitchTglButton = SwitchToggleButton;
         SwitchThemeMode();
         ButtonRefresh();
+        //tu upewnić się że katalog wyświetlany jak nie ma dzieci  to nie jest expand
         BuildTree(Path.GetDirectoryName(path));//to tu wskazuje katalog ostatnio urzyty i tu jest problem
 
         SelectedView = SelectedViewWindow;
@@ -2004,7 +2005,7 @@ public partial class MainWindowViewModel : ObservableObject
             }
         }
     }
-    //public void ReBuildTree() => BuildTree(); //chwilowo nie potrzebne
+    
     /// <summary>
     /// buduje drzewo aplikacji z zapisanych wczesniej ścieżek
     /// </summary>
@@ -2053,6 +2054,7 @@ public partial class MainWindowViewModel : ObservableObject
             if (select.Contains(path) || (select.ToLower().Contains(path.ToLower())))
             {
                 //Debug.WriteLine($"ScanPath - Select path:{select},path: {path} ");
+                if(select != path)
                 tree.IsExpanded = true;
                 if (select == path)
                 {
