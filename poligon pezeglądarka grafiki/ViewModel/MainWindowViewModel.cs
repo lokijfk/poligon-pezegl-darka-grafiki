@@ -3,11 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.Control;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -730,12 +732,16 @@ public partial class MainWindowViewModel : ObservableObject
     #region toolbar menuitem
 
 
-    public void SortAD(object DC)
+    public async void SortAD(object DC)
     {
         if (DC is MenuRadioButton par)
         {
-            string grupa = par.Grupa;           
-                MenuSort.Where(q => q.Grupa == grupa).ToList().ForEach(x => x.IsChecked = false); 
+            if (cts != null)
+            {
+                cts.Cancel();
+            }
+            string grupa = par.Grupa;
+            MenuSort.Where(q => q.Grupa == grupa).ToList().ForEach(x => x.IsChecked = false);
             par.IsChecked = true;
 
             string kryterium = MenuSort.Where(q => q.IsChecked && q.Grupa == "kryterium").Select(q => q.Name).ToArray()[0].ToString();
@@ -743,7 +749,24 @@ public partial class MainWindowViewModel : ObservableObject
             //tu dodać jeszcze zapisywanie do ini
             // Debug.WriteLine($"kryterium: {kryterium} + kierunek: {kierunek}");
             Sortowanie(kryterium, kierunek);
+            //tu dodać wznowienie łądowania miniaturek o ile nie były załadowane wszystkie
+            if (FileLoaded != FilesToLoad)
+            {
+                cts = new CancellationTokenSource();
+                token = cts.Token;
+                // tu trzeba znaleść sposób na wznowienie ładowania miniaturek
+                // a dokładniej na sprawdzenie które miniaturki nie są załadowane 
 
+                //string path = (Photos[0].Image as BitmapImage).UriSource.AbsolutePath;
+                //string maska = Photos[0].maska;
+                //Debug.WriteLine("przykładowa ścieżka do pliku z miniaturką: " + path+", maska: "+maska); //    /img/g1.png, maska: pack://application:,,,/img/g1.png
+                // i to by grało, ale jeszce nie jestem do kończ pewien czy to jest dobre rozwiązanie
+                // dalej trzeba trzeba by to zakodować ...
+                //List<Photo> PhotosToLoad = Photos.Where(p => ((BitmapImage)p.Image).UriSource.AbsolutePath == "/img/g1.png").ToList();// (... as System.Windows.Media.Imaging.**BitmapImage**) zwrócił null. lub Unable to cast object of type 'System.Windows.Media.Imaging.BitmapFrameEncode' to type 'System.Windows.Media.Imaging.BitmapImage'.
+                //while((BitmapImage)p.Image).UriSource.AbsolutePath == "/img/g1.png")
+                //wracamy do przetważania Photos w PhotosLoadImae
+                await PhotosLoadImae(token);
+            }
         }
     }
 
@@ -1901,6 +1924,7 @@ public partial class MainWindowViewModel : ObservableObject
             }
             if (GalleryView.Contains(View) && !token.IsCancellationRequested)
                 await PhotosLoadImae(token);
+                //await PhotosLoadImae(Photos.ToList(), token);
             // wywala przy zmianie katalogu jak łąduje jeszcze obrazy, ale działi to chyba szybciej i bez problemu
             // brak licznika obrazów, liczy pliki które ładuje a nie obrazy
             //if (SelectedView == "Gallery") PhotosLoadImae(token);
@@ -1914,10 +1938,10 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     /// <param name="token"></param>
     /// <returns></returns>
-    private async Task PhotosLoadImae(CancellationToken token)
+    private async Task PhotosLoadImae(List<Photo> PhotoSKopia, CancellationToken token)
     {
         //Debug.WriteLine($"PhotosLoadImae - token: {token}")
-        if (Photos.Count > 0 && !token.IsCancellationRequested)
+        if (PhotoSKopia.Count > 0 && !token.IsCancellationRequested)
         {
             //może jak tu dam for  to to by przeszło?
             try
@@ -1926,9 +1950,9 @@ public partial class MainWindowViewModel : ObservableObject
                 //foreach (var photo in Photos)
                 //w tym wypadku tylko pętla for ma rację bytu bo wyjątek i if nie są wywoływane
                 //trzeba to doczytać
-                for (var  i = 0; i < Photos.Count && !token.IsCancellationRequested; i++)                
+                for (var  i = 0; i < PhotoSKopia.Count && !token.IsCancellationRequested; i++)                
                 {
-                    var photo = Photos[i];
+                    var photo = PhotoSKopia[i];
                     //wogóle nie jest wywoływane, nie ważne jaka pętla
                     //Debug.WriteLine($"PhotosLoadImae: {photo.Name}");//to działa
                     //if (token.IsCancellationRequested) 
@@ -1951,6 +1975,41 @@ public partial class MainWindowViewModel : ObservableObject
                 //}
             }
             catch(Exception ex)
+            {
+                Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
+            }
+        }
+    }
+
+
+    private async Task PhotosLoadImae(CancellationToken token)
+    {
+        //Debug.WriteLine($"PhotosLoadImae - token: {token}")
+        if (Photos.Count > 0 && !token.IsCancellationRequested)
+        {
+            //może jak tu dam for  to to by przeszło?
+            try
+            {
+                int licznik = 0;                
+                string path = string.Empty;
+                if (!string.IsNullOrEmpty(FileLoaded) && Convert.ToInt32(FileLoaded) > 0) licznik = Convert.ToInt32(FileLoaded);
+
+                for (var i = 0; i < Photos.Count && !token.IsCancellationRequested; i++)
+                {
+                    var photo = Photos[i];
+                    if (photo.Image is BitmapImage BI) 
+                    {
+                        path = BI.UriSource.AbsolutePath.ToString();
+                    }
+                    if (path == "/img/g1.png")
+                    {
+                        FileLoaded = (++licznik).ToString();
+                        await photo.Load(token);
+                    }
+                    path = string.Empty;
+                }
+            }
+            catch (Exception ex)
             {
                 Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
             }

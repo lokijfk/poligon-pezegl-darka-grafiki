@@ -31,6 +31,7 @@ public partial class MainWindow : Window
      * 
      */
     private TreeViewItem? menuSelectedItem = null;
+    private System.Windows.Media.Brush temp;
 
     public MainWindow()
     {
@@ -217,6 +218,19 @@ public partial class MainWindow : Window
     #region Widoki i przyciski główne
 
     /// <summary>
+    /// zdażenie kliknięcia na elementy menu sortowania na pasku narzędziowym
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void MenuItem_ClickSort(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem MI)
+        {
+            (DataContext as MainWindowViewModel).SortAD(MI.DataContext);
+        }
+    }
+
+    /// <summary>
     /// obsługa przycisku dodawania folderu do drzewa
     /// przycisk w oknie drzewa i na pasku narzędziowym
     /// otwiera okno systemowe wyboru folderu
@@ -292,30 +306,96 @@ public partial class MainWindow : Window
 
     #region Tree DragDrop
 
-    private void TreeView_DragEnter(object sender, DragEventArgs e)
+    /// <summary>
+    /// zmiana kolory napisu podczas przeciągania pliku nad elementem drzewa
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void TreeViewItem_DragEnter(object sender, DragEventArgs e)
     {
-        //Debug.WriteLine("TreeView_DragEnter");
-        if (e.Data.GetDataPresent(DataFormats.FileDrop))
-        {
+        Debug.WriteLine("TreeViewItem_DragEnter");
+        var treeViewItem = sender as TreeViewItem;
+        if(treeViewItem.Foreground.ToString() != System.Windows.Media.Brushes.Blue.ToString())            
+        temp = treeViewItem.Foreground;
 
-            if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
-            {
-                e.Effects = DragDropEffects.Copy;
-            }
-            else e.Effects = DragDropEffects.Move;
-        }
-        else
+        treeViewItem.Foreground = System.Windows.Media.Brushes.Blue;
+        //items daje tylko elementy wizualne a nie DataContext, więc tego nie rozwinę
+        TreeModel model = (TreeModel)treeViewItem.DataContext;
+        if(model.Children.Count > 0)
         {
-            e.Effects = DragDropEffects.None;
+            treeViewItem.IsExpanded = true;
         }
+
+
         /*
-        if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
-        {
-            e.Effects = DragDropEffects.Copy;
-        }
-        else e.Effects = DragDropEffects.Move;
+        TextBox text  = (TextBox)treeViewItem.GetCHildTextBox();
+        Debug.WriteLine(text.Text);
+        Debug.WriteLine("kolor 1: "+text.Foreground.ToString());
+        text.Foreground = System.Windows.Media.Brushes.Red;//to nie działa !!
+        Debug.WriteLine("kolor 2: " + text.Foreground.ToString());
         */
     }
+
+
+    /// <summary>
+    /// sprzątaie, czyli przywraca kolor napisu po opuszczeniu elementu drzewa
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void TreeViewItem_DragLeave(object sender, DragEventArgs e)
+    {
+        var treeViewItem = sender as TreeViewItem;
+        
+        treeViewItem.Foreground = temp;
+    }
+
+    
+
+    /// <summary>
+    /// zwraca informację o tym czy można upuścić plik w dane miejsce
+    /// ale nie ogranicza tego co się stanie przy upuszczeniu
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void TreeView_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = DragDropEffects.None;
+        if (e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
+            //Regex regex = new Regex("^-?[0-9]*[\\.,]?[0-9]?[0-9]?$");
+            foreach (var dataString in dataStrings)
+            {
+                if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))
+                {
+                    string ext = Path.GetExtension(dataString).ToLower();
+                    //to jakoś trzeba zamienić na rozszeżenia brane z ustawień
+                    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
+                    {
+                        if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+                        {
+                            e.Effects = DragDropEffects.Copy;
+                        }
+                        else if(e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
+                            e.Effects = DragDropEffects.Move;
+                        //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
+                    }
+                }
+                else if (Directory.Exists(dataString) && !Path.HasExtension(dataString))
+                {
+                    //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
+                    if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+                    {
+                        e.Effects = DragDropEffects.Copy;
+                    }
+                    else if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
+                        e.Effects = DragDropEffects.Move;
+                }
+
+            }
+        }
+    }
+
 
     /// <summary>
     /// to jest efekt upuszczenia pliku na drzewo
@@ -343,10 +423,8 @@ public partial class MainWindow : Window
         //znacznik = 0; // reset znacznik po upuszczeniu pliku
         TreeView treeView = (TreeView)sender;
         TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
-        // rozwiniecie katalogu na który upuszczamy plik, alt to też nie działa
-        //treeViewItem.BringIntoView();
-        //treeViewItem.IsExpanded = true;
-        //treeViewItem.ExpandSubtree();
+        treeViewItem.Foreground = temp;
+        
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
@@ -416,38 +494,7 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>
-    /// zwraca informację o tym czy można upuścić plik w dane miejsce
-    /// ale nie ogranicza tego co się stanie przy upuszczeniu
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    private void TreeView_DragOver(object sender, DragEventArgs e)
-    {
-        e.Effects = DragDropEffects.None;
-        if (e.Data.GetDataPresent(DataFormats.FileDrop))
-        {
-            string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
-            //Regex regex = new Regex("^-?[0-9]*[\\.,]?[0-9]?[0-9]?$");
-            foreach (var dataString in dataStrings)
-            {
-                if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))
-                {
-                    string ext = Path.GetExtension(dataString).ToLower();
-                    //to jakoś trzeba zamienić na rozszeżenia brane z ustawień
-                    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
-                    {
-                        e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
-                    }
-                }
-                else if (Directory.Exists(dataString) && !Path.HasExtension(dataString))
-                {
-                    e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
-                }
-
-            }
-        }
-    }
+    
     #endregion Tree DragDrop
 
 
@@ -591,11 +638,7 @@ public partial class MainWindow : Window
     #endregion
 
 
-    private void MenuItem_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem MI)
-        {
-            (DataContext as MainWindowViewModel).SortAD(MI.DataContext);
-        }
-    }
+    
+
+    
 }
