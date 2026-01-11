@@ -72,6 +72,15 @@ internal class BrokerFile
         return files;
     }
 
+    /// <summary>
+    /// muszę doczytać jaka jest różnica między GetFiles a EnumerateFiles
+    /// to moze powoadować problemy z otwieraniem dużych katalogów
+    /// </summary>
+    /// <param name="folder"></param>
+    /// <param name="kryterium"></param>
+    /// <param name="kierunek"></param>
+    /// <param name="patternArray"></param>
+    /// <returns></returns>
     public static IEnumerable<string> IGetFiles(string folder, string kryterium, string kierunek, string[] patternArray)
     {
         //string[] files = [];
@@ -124,16 +133,17 @@ internal class BrokerFile
 
     /// <summary>
     /// ma zwracać pliki z wybranego katalogu zgodnie z podanym sortowaniem
+    /// Przestarzałe do usunięcia!!
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public static string[] GetFiles(string folder, string kryterium, string kierunek)
-    {
-        //trzeba wymyśleć jak to ma być zrobione żeby brał to z jakiejś zmiennej globalnej
-        string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];
-        return GetFiles(folder, kryterium, kierunek, patternArray);
+    //public static string[] GetFiles(string folder, string kryterium, string kierunek)
+    //{
+    //    //trzeba wymyśleć jak to ma być zrobione żeby brał to z jakiejś zmiennej globalnej
+    //    string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];
+    //    return GetFiles(folder, kryterium, kierunek, patternArray);
         
-    }
+    //}
 
     /// <summary>
     /// sprawdza czy podany katalog nie ma atrybutu "ukryty"

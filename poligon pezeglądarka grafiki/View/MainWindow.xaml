@@ -314,18 +314,19 @@
                             <TreeView.ItemContainerStyle>
                                   <Style TargetType="{x:Type TreeViewItem}"
                                             BasedOn="{StaticResource MaterialDesignTreeViewItem}">
-                                       <Setter Property="materialDesign:TreeViewAssist.ExpanderSize"
+                                        <Setter Property="materialDesign:TreeViewAssist.ExpanderSize"
                                             Value="20" />
-                                       <Setter Property="materialDesign:TreeViewAssist.ShowSelection"
+                                        <Setter Property="materialDesign:TreeViewAssist.ShowSelection"
                                             Value="True" />
-                                       <Setter Property="IsExpanded"
+                                        <Setter Property="IsExpanded"
                                             Value="{Binding IsExpanded,Mode=TwoWay}" />
-                                       <Setter Property="IsSelected"
+                                        <Setter Property="IsSelected"
                                                 Value="{Binding IsSelected, Mode=TwoWay}" />
-                                       <EventSetter Event="PreviewMouseRightButtonDown" 
+                                        <EventSetter Event="PreviewMouseRightButtonDown" 
                                                      Handler="TreeViewItem_PreviewMouseRightButtonDown" />
-                                       <EventSetter Event="DragEnter" Handler="TreeViewItem_DragEnter" />
-                                    <EventSetter Event="DragLeave" Handler="TreeViewItem_DragLeave" />
+                                        <EventSetter Event="DragEnter" Handler="TreeViewItem_DragEnter" />
+                                        <EventSetter Event="DragLeave" Handler="TreeViewItem_DragLeave" />
+                                        <EventSetter Event="Drop" Handler="TreeViewItem_Drop" />
 
                                 </Style>
                              </TreeView.ItemContainerStyle>

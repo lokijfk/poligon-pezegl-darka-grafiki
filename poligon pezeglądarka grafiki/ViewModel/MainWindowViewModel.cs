@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -748,7 +749,7 @@ public partial class MainWindowViewModel : ObservableObject
             string kierunek = MenuSort.Where(predicate: q => q.IsChecked && q.Grupa == "kierunek").Select(q => q.Name).ToArray()[0].ToString();
             //tu dodać jeszcze zapisywanie do ini
             // Debug.WriteLine($"kryterium: {kryterium} + kierunek: {kierunek}");
-            Sortowanie(kryterium, kierunek);
+            Sortowanie(kryterium, kierunek, patternArray);
             //tu dodać wznowienie łądowania miniaturek o ile nie były załadowane wszystkie
             if (FileLoaded != FilesToLoad)
             {
@@ -953,7 +954,7 @@ public partial class MainWindowViewModel : ObservableObject
         get =>iniFile.Sortowaniekierunek;
         set => SetProperty(iniFile.Sortowaniekierunek, value, iniFile, static (u,n) => u.Sortowaniekierunek = n);
     }
-    private void Sortowanie(string kryterium, string kierunek)
+    private void Sortowanie(string kryterium, string kierunek, string[] patternArray)
     {
         //Debug.WriteLine($"sortowanie= ktyterium: {kryterium} + kierunek: {kierunek}");
         //dodać przerwanie ładowania obrazów lub sprawdzanie czy są załadowane
@@ -966,7 +967,8 @@ public partial class MainWindowViewModel : ObservableObject
             //Debug.WriteLine($" aktualny folder: {ViewPath}");
             //string[] files;
             //string[] files = GetFiles(ViewPath, kryterium, kierunek);
-            string[] files =  BrokerFile.GetFiles(ViewPath, kryterium, kierunek);
+            //string[] files =  BrokerFile.GetFiles(ViewPath, kryterium, kierunek, patternArray);
+            var files = BrokerFile.IGetFiles(ViewPath, kryterium, kierunek, patternArray);
             //Debug.WriteLine($" files type: {files.GetType().ToString}");
             Photos.Clear();
             foreach (var file in files)
@@ -1261,7 +1263,20 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-
+    /// <summary>
+    /// sparwdza czy podana ext jest w patternArray
+    /// sprawdza czy obsługiwane rozszerzenie pliku jest obsługiwane
+    /// </summary>
+    /// <param name="Ext"></param>
+    /// <returns></returns>
+    public bool ExtO(string Ext)
+    {
+        if(patternArray.Contains(Ext.ToLower()))
+        {
+            return true;
+        }
+        return false;        
+    }
 
     #endregion Folders and Files
 
@@ -1310,7 +1325,13 @@ public partial class MainWindowViewModel : ObservableObject
 
     #region DragDrop
 
-
+    public Brush GetDropCollor()
+    {
+        //Brush DropCollor = System.Windows.Media.Brushes.Blue;
+        //tu zrobić pobieranie koloru z ini po hekcie lub po nazwie!!
+        Brush x = (Brush)new BrushConverter().ConvertFrom("#459cfc");
+        return x;
+    }
 
     private void MoveFoderToFolder(string folder, string DestinyPath)
     {

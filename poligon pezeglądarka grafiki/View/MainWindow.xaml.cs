@@ -306,6 +306,14 @@ public partial class MainWindow : Window
 
     #region Tree DragDrop
 
+
+    private void TreeViewItem_Drop(object sender, DragEventArgs e)
+    {
+        var treeViewItem = sender as TreeViewItem;
+
+        treeViewItem.Foreground = temp;
+    }
+
     /// <summary>
     /// zmiana kolory napisu podczas przeciągania pliku nad elementem drzewa
     /// </summary>
@@ -313,27 +321,17 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private void TreeViewItem_DragEnter(object sender, DragEventArgs e)
     {
-        Debug.WriteLine("TreeViewItem_DragEnter");
+        //Debug.WriteLine("TreeViewItem_DragEnter");
         var treeViewItem = sender as TreeViewItem;
-        if(treeViewItem.Foreground.ToString() != System.Windows.Media.Brushes.Blue.ToString())            
-        temp = treeViewItem.Foreground;
-
-        treeViewItem.Foreground = System.Windows.Media.Brushes.Blue;
-        //items daje tylko elementy wizualne a nie DataContext, więc tego nie rozwinę
+        var mv = (this.DataContext as MainWindowViewModel);       
+        if (!mv.GetDropCollor().Equals(treeViewItem.Foreground))
+            temp = treeViewItem.Foreground;
+        treeViewItem.Foreground = mv.GetDropCollor();
         TreeModel model = (TreeModel)treeViewItem.DataContext;
         if(model.Children.Count > 0)
         {
             treeViewItem.IsExpanded = true;
         }
-
-
-        /*
-        TextBox text  = (TextBox)treeViewItem.GetCHildTextBox();
-        Debug.WriteLine(text.Text);
-        Debug.WriteLine("kolor 1: "+text.Foreground.ToString());
-        text.Foreground = System.Windows.Media.Brushes.Red;//to nie działa !!
-        Debug.WriteLine("kolor 2: " + text.Foreground.ToString());
-        */
     }
 
 
@@ -369,8 +367,10 @@ public partial class MainWindow : Window
                 if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))
                 {
                     string ext = Path.GetExtension(dataString).ToLower();
+                    var mv = (this.DataContext as MainWindowViewModel);
                     //to jakoś trzeba zamienić na rozszeżenia brane z ustawień
-                    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
+                    //if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
+                    if(mv.ExtO(ext))//sięganie do mv, żeby sprawdzić czy rozszerzenie jest obsługiwane, globalne ustawienia dla progrmu
                     {
                         if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
                         {
@@ -629,6 +629,10 @@ public partial class MainWindow : Window
 
 
 
+
+
+
+
     #endregion Menu Context
 
     #region EndGame
@@ -636,9 +640,6 @@ public partial class MainWindow : Window
 
 
     #endregion
-
-
-    
 
     
 }
