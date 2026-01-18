@@ -3,15 +3,11 @@ using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.Control;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -100,10 +96,10 @@ public partial class MainWindowViewModel : ObservableObject
     private double _MaxHeight = SystemParameters.MaximizedPrimaryScreenHeight;
 
     [ObservableProperty]
-    private string _FilesToLoad = string.Empty;
+    private int _FilesToLoad = 0;
 
     [ObservableProperty]
-    private string _FileLoaded = string.Empty;
+    private int _FileLoaded = 0;
 
 
     /// <summary>
@@ -133,6 +129,12 @@ public partial class MainWindowViewModel : ObservableObject
         set => SetProperty(iniFile.VisibleToolBar, value, iniFile, static (u, n) => u.VisibleToolBar = n);
     }
 
+
+    public Brush DropCollor
+    {
+        get => iniFile.DropCollor;
+        set => SetProperty(iniFile.DropCollor, value, iniFile, static (u, n) => u.DropCollor = n);//nie wiem czy to zadziała
+    }
     public bool VisibleStatusBar
     {
         get => iniFile.VisibleStatusBar;
@@ -476,7 +478,7 @@ public partial class MainWindowViewModel : ObservableObject
     private void MenuPaste()
     {
         //Debug.WriteLine("MenuPaste called.");
-        Match m;
+        //Match m;
         if (Clipboard.ContainsFileDropList())
         {
             var fileList = Clipboard.GetFileDropList();//zwraca StringCollection i taką kolekcję trzeba tam podawać
@@ -486,8 +488,9 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     //Debug.WriteLine("Pasting file: " + file);
                     //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
-                    m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                    if (m.Success)
+                    //m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
+                    //if (m.Success)
+                    if(patternArray.Contains(ext.ToLower()))
                     {
                         if (MenuSelectedTreeItem != null)
                         {
@@ -614,7 +617,7 @@ public partial class MainWindowViewModel : ObservableObject
     public bool RefreshClipboardListenerResoult()
     {
         //Debug.WriteLine("RefreshClipboardListenerResoult called.");
-        Match m;
+        //Match m;
         if (Clipboard.ContainsFileDropList())
         {
             //Debug.WriteLine("Clipboard contains FileDropList data.");//to jest
@@ -625,8 +628,9 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
                     //pattern to zmienne globalna, będzie ustawiana przy starcie z ini, na razie jest to string na stałe
-                    m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                    if (m.Success) { ClipboardListenerResoult = true; return true; }
+                    //m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
+                    //if (m.Success) { ClipboardListenerResoult = true; return true; }
+                    if (ExtO(ext)) { ClipboardListenerResoult = true; return true; }
                 }
             }
         }
@@ -751,22 +755,12 @@ public partial class MainWindowViewModel : ObservableObject
             // Debug.WriteLine($"kryterium: {kryterium} + kierunek: {kierunek}");
             Sortowanie(kryterium, kierunek, patternArray);
             //tu dodać wznowienie łądowania miniaturek o ile nie były załadowane wszystkie
-            if (FileLoaded != FilesToLoad)
+            //Debug.WriteLine($"SortAD - FilesToLoad: {FilesToLoad}, FileLoaded: {FileLoaded}");
+            if (FileLoaded < FilesToLoad)
             {
                 cts = new CancellationTokenSource();
-                token = cts.Token;
-                // tu trzeba znaleść sposób na wznowienie ładowania miniaturek
-                // a dokładniej na sprawdzenie które miniaturki nie są załadowane 
-
-                //string path = (Photos[0].Image as BitmapImage).UriSource.AbsolutePath;
-                //string maska = Photos[0].maska;
-                //Debug.WriteLine("przykładowa ścieżka do pliku z miniaturką: " + path+", maska: "+maska); //    /img/g1.png, maska: pack://application:,,,/img/g1.png
-                // i to by grało, ale jeszce nie jestem do kończ pewien czy to jest dobre rozwiązanie
-                // dalej trzeba trzeba by to zakodować ...
-                //List<Photo> PhotosToLoad = Photos.Where(p => ((BitmapImage)p.Image).UriSource.AbsolutePath == "/img/g1.png").ToList();// (... as System.Windows.Media.Imaging.**BitmapImage**) zwrócił null. lub Unable to cast object of type 'System.Windows.Media.Imaging.BitmapFrameEncode' to type 'System.Windows.Media.Imaging.BitmapImage'.
-                //while((BitmapImage)p.Image).UriSource.AbsolutePath == "/img/g1.png")
-                //wracamy do przetważania Photos w PhotosLoadImae
-                await PhotosLoadImae(token);
+                token = cts.Token;                
+                await PhotosLoadImae(token);                
             }
         }
     }
@@ -787,8 +781,9 @@ public partial class MainWindowViewModel : ObservableObject
     /// <returns></returns>
     private int GetCountSelectedItem()
     {
-        Photo[] photos = [.. Photos.Where(static p => p.IsSelected)];
-        return photos.Length;
+        //Photo[] photos = [.. Photos.Where(static p => p.IsSelected)];
+        //return photos.Length;
+        return ((Photo[]) [.. Photos.Where(static p => p.IsSelected)]).Length;
     }
 
 
@@ -800,7 +795,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if (selectedItem != null)
         {
-            string x = GetCountFiles(selectedItem.Path).ToString();
+            int x = GetCountFiles(selectedItem.Path);
             //selectedItem.CountFiles = x;
             FilesToLoad = x;
             FileLoaded = x;
@@ -835,6 +830,8 @@ public partial class MainWindowViewModel : ObservableObject
     }
     private void _init(string path)
     {
+        
+
         if (CurMainWindowState == WindowState.Minimized)
             CurMainWindowState = WindowState.Normal;
 
@@ -850,12 +847,16 @@ public partial class MainWindowViewModel : ObservableObject
         BuildTree(Path.GetDirectoryName(path));//to tu wskazuje katalog ostatnio urzyty i tu jest problem
 
         SelectedView = SelectedViewWindow;
-        if (SelectedView == String.Empty)
-        {
-            SelectedView = "Hello";
-        }
+        //if (SelectedView == String.Empty)
+        //{
+        //    SelectedView = "Welcome";// to tylko zabezpieczenie nie powinno dojść do takiej sytuacji
+        //    // w sumie to można tu wywołać wyjątek
+        //    //SelectedView = DefaultSettings.SelectedView;
+        //    //SelectedViewWindow = SelectedView;
+        //}
+        Debug.Assert(!string.IsNullOrEmpty(SelectedView), "SelectedView is null or empty in MainWindowViewModel _init");
         SelectedViewModel = CallMethod(SelectedView);
-
+        //Debug.WriteLine("SelectedView:" + SelectedView);
         try
         {
             cts = new CancellationTokenSource();
@@ -876,45 +877,31 @@ public partial class MainWindowViewModel : ObservableObject
         {
             Debug.WriteLine(ex.ToString());
         }
+
+        
+        //DropCollor = Brushes.Red;
+        //Debug.WriteLine($"DropCollor set to: {DropCollor.ToString()}");
+
     }
 
     #endregion
 
     #region wywołania Control
 
-
-
     private object CallMethod(string p, object?[]? x = null)
     {
-        Debug.WriteLine("CallMethod: " + p);
         Type thisType = GetType();
         if (thisType != null)
         {
             if ((thisType.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Instance) is MethodInfo theMethod)
                 && (theMethod != null))
-            //MethodInfo theMethod = thisType.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Instance);
-            //bez parametrów
-            //if (theMethod != null)
             {
-                // Debug.WriteLine($"CallMethod - wywołanie poprawne thisType : {thisType} && theMethod: {theMethod}");
                 var ret = theMethod?.Invoke(this, x);
-
                 if (ret != null)
                 {
-                    //Debug.WriteLine($"{p} {ret.GetType}");
                     return ret;
                 }
-                //else
-                //{
-                //    Debug.WriteLine("CallMethod - tu jest problem");
-                //}
             }
-            //else
-            //{
-            //    Debug.WriteLine($"CallMethod - tu jest problem thisType.GetMethod... == null?: {thisType} && theMethod: {thisType.GetMethod(p, BindingFlags.NonPublic | BindingFlags.Instance)}");
-            //}
-            // z  parametrami
-            //theMethod.Invoke(this, userParameters);
         }
         else
         {
@@ -955,21 +942,13 @@ public partial class MainWindowViewModel : ObservableObject
         set => SetProperty(iniFile.Sortowaniekierunek, value, iniFile, static (u,n) => u.Sortowaniekierunek = n);
     }
     private void Sortowanie(string kryterium, string kierunek, string[] patternArray)
-    {
-        //Debug.WriteLine($"sortowanie= ktyterium: {kryterium} + kierunek: {kierunek}");
-        //dodać przerwanie ładowania obrazów lub sprawdzanie czy są załadowane
-        // dodać pobieranie plików zgodne z aktualnym wybranym sortowaniem
+    {        
         List<Photo> PhotoSKopia = Photos.ToList();
         if (PhotoSKopia.Count == Photos.Count)
         {
             //Debug.WriteLine("sortowanie, ok liczba się zgadza");
-            string ViewPath = SelectedTreePath;
-            //Debug.WriteLine($" aktualny folder: {ViewPath}");
-            //string[] files;
-            //string[] files = GetFiles(ViewPath, kryterium, kierunek);
-            //string[] files =  BrokerFile.GetFiles(ViewPath, kryterium, kierunek, patternArray);
-            var files = BrokerFile.IGetFiles(ViewPath, kryterium, kierunek, patternArray);
-            //Debug.WriteLine($" files type: {files.GetType().ToString}");
+            string ViewPath = SelectedTreePath;            
+            var files = BrokerFile.IGetFiles(ViewPath, kryterium, kierunek, patternArray);            
             Photos.Clear();
             foreach (var file in files)
             {
@@ -998,50 +977,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     }
     #endregion
-
-    /*
-    private string[] GetFiles(string folder, string kryterium, string kierunek)
-    {
-        string[] files = [];
-        if (kierunek == "Rosnąco")
-        {  
-            if (kryterium == "Nazwa")
-            {                
-               return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(  new FileInfo(f).Extension.ToLower()) ).OrderBy(f => new FileInfo(f).Name).ToArray();
-            }
-            else if (kryterium == "Data")
-            {
-                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
-                    .OrderBy(f => new FileInfo(f).CreationTime).ToArray();//Select(static fn => new FileInfo(fn)).OrderBy(f => f.CreationTime);
-            }
-            else if (kryterium == "Wielkość")
-            {
-                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
-                    .OrderBy(f => new FileInfo(f).Length).ToArray();
-            }
-        }
-        else
-        {
-            if (kryterium == "Nazwa")
-            {
-                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
-                    .OrderByDescending(f => new FileInfo(f).Name).ToArray();
-            }
-            else if (kryterium == "Data")
-            {
-                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
-                    .OrderByDescending(f => new FileInfo(f).CreationTime).ToArray();//Select(static fn => new FileInfo(fn)).OrderBy(f => f.CreationTime);
-            }
-            else if (kryterium == "Wielkość")
-            {
-                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
-                    .OrderByDescending(f => new FileInfo(f).Length).ToArray();
-            }
-            //return files = Directory.GetFiles(folder).OrderByDescending(f => new FileInfo(f).Name).ToArray();//OrderByDescending(f => f.Name);
-        }
-        return files;
-    }
-    */
+       
     public void RenameFile(Photo photo, string newName)
     {
         newName = photo.Path.Substring(0, photo.Path.LastIndexOf('\\') + 1) + newName;
@@ -1143,10 +1079,8 @@ public partial class MainWindowViewModel : ObservableObject
             i++;
         }
         try
-        {
-            //Directory.CreateDirectory(newPath);
-            BrokerFile.CreateDirectory(newPath);
-            //Debug.WriteLine("AddFolder: " + newPath);
+        {            
+            BrokerFile.CreateDirectory(newPath);            
             return cat;
         }
         catch (Exception ex)
@@ -1167,30 +1101,12 @@ public partial class MainWindowViewModel : ObservableObject
         {
             string x = AddFolder(treeModel.Path);//dodaje "nowy folder" do podanej ścieżki
             if (x != string.Empty)// jeżeli się udało to...
-            {
-                /*
-                if ((treeModel.GetSelfFromParent() is TreeModel xuz) && (xuz != null))
-                {
-                    xuz.Children.Clear();
-                    xuz.Addchild(ScanPath(xuz.Path).Children);
-                    xuz.IsExpanded = true;
-                    if ((xuz.FindChild(x) is TreeModel newItem) && (newItem != null))
-                    {
-                        newItem.IsExpanded = true;
-                        return newItem;
-                    }
-                }
-                else if (treeModel.Parent == null)
-                {*/
-                //jest reochę problemów z aktualizacją drzewa ;(
-                //Debug.WriteLine($"tree path:{treeModel.Path} ");
+            {                
                 treeModel.Children.Clear();
                 treeModel.Addchild(ScanPath(treeModel.Path).Children);
                 treeModel.IsExpanded = true;
-
-                //}
             }
-            return null;
+            //return null;
         }
         return null;
     }
@@ -1226,8 +1142,7 @@ public partial class MainWindowViewModel : ObservableObject
         if (!Directory.Exists(folder)) return false;
         try
         {
-            BrokerFile.DeleteDirectory(folder);
-            //Debug.WriteLine("DeleteFolder: " + folder);
+            BrokerFile.DeleteDirectory(folder);            
             return true;
         }
         catch (Exception ex)
@@ -1327,34 +1242,26 @@ public partial class MainWindowViewModel : ObservableObject
 
     public Brush GetDropCollor()
     {
-        //Brush DropCollor = System.Windows.Media.Brushes.Blue;
-        //tu zrobić pobieranie koloru z ini po hekcie lub po nazwie!!
-        Brush x = (Brush)new BrushConverter().ConvertFrom("#459cfc");
-        return x;
+        //Debug.WriteLine($"GetDropCollor called: {DropCollor}");
+        //return DefaultSettings.DropCollor;
+        return DropCollor;
     }
 
     private void MoveFoderToFolder(string folder, string DestinyPath)
     {
-        //Debug.WriteLine($"MoveFoderToFolder: Source: {folder}, Destiny: {DestinyPath}");
-        //tu brakuje testowania czy plik nie jest empty itd...
-        // tu powinny być wywołane wyjatki jeżeli coś jest nie tak i obsłużone wyżej
         if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(DestinyPath))
         {
-            //Debug.WriteLine("MoveFoderToFolder: brak ścieżki źródłowej lub docelowej");
             throw new FileNotFoundException(@"[Katalog żródłowy lub docelowy nie istnieje]");
-            //return;
         }
         if (folder == DestinyPath)
         {
             Debug.WriteLine("MoveFoderToFolder: ścieżka źródłowa i docelowa są takie same");
             return;
         }
-        string newDestinyPath = Path.Combine(DestinyPath, folder.Substring(folder.LastIndexOf('\\') + 1));
-        //Debug.WriteLine($"{newDestinyPath}");
+        string newDestinyPath = Path.Combine(DestinyPath, folder.Substring(folder.LastIndexOf('\\') + 1));        
         if ((!File.Exists(folder)) && (Directory.Exists(folder)) && (Directory.Exists(DestinyPath))
             && (!Directory.Exists(newDestinyPath)))
         {
-
             try
             {
                 Debug.WriteLine($"deftiny: {newDestinyPath}" + $" Source: {folder}");
@@ -1365,14 +1272,10 @@ public partial class MainWindowViewModel : ObservableObject
                     //Debug.WriteLine("MoveFoderToFolder: Waiting for cancellation");
                     while (!cts.IsCancellationRequested)
                     {
-                        Debug.WriteLine("MoveFoderToFolder: still waiting...");
-                        //Thread.SpinWait(50000);
+                        Debug.WriteLine("MoveFoderToFolder: still waiting...");                        
                         Thread.SpinWait(5000);
                     }
-                    //cts.Dispose();
-                    //Debug.WriteLine("MoveFoderToFolder: Canceled");
                 }
-
                 Directory.Move(folder, newDestinyPath);
                 TreeModel? TreeFoldr = null, TreeDestinyPath = null;
                 foreach (var tree in Tree)
@@ -1388,21 +1291,13 @@ public partial class MainWindowViewModel : ObservableObject
                         ) break;
                     else
                     {
-                        //to na wypadek gdyby coś zostało znalezione ale ścieżki się nie zgadzały
-                        //co nie powinno się zdażyć, tu powinien być wywołany wyjątek!!
                         TreeFoldr = null;
                         TreeDestinyPath = null;
                     }
                 }
-                //Debug.WriteLine("TreeFoldr.Path: " + TreeFoldr.Path + ", TreeDrstinyPath.Path: "
-                // + TreeDestinyPath.Path+ ", DestinyPath: "+ DestinyPath);
-
-                //dobra to się nie wykonuje tu coś namieszałem
-
                 if ((TreeFoldr != null) && (TreeDestinyPath != null) && (TreeFoldr.Path != string.Empty)
                     && (TreeDestinyPath.Path != string.Empty))
                 {
-                    //Debug.WriteLine("MoveFoderToFolder: Refreshing trees");
                     var xuz = TreeFoldr.GetParent();
                     Debug.Assert(xuz != null);
                     TreeDestinyPath.Children.Clear();
@@ -1451,10 +1346,8 @@ public partial class MainWindowViewModel : ObservableObject
         //odejmować też pliki z "kolejki" znacznika plików na pasku statusu - statusbar
         // zwrócić uwagę na zmiany ilości plików
         if (cts != null)
-        {
-            Debug.WriteLine("RemoveFileFromPhotos - cts.Cancel() ...");
-            cts.Cancel();
-            //cts.Dispose();
+        {            
+            cts.Cancel();            
         }
         photos.ForEach(photo => { Photos.Remove(photo); });
     }
@@ -1467,21 +1360,17 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="file"></param>
     /// <param name="copy"></param>
     public void MoveFileToFolder(string file, bool copy = false)
-    {
-        Debug.WriteLine("MoveFileToFolder(string file, bool copy = false)");
+    {        
         if (string.IsNullOrEmpty(file)) return;
         if (!File.Exists(file)) return;
         string ViewPath = SelectedTreePath;
         MoveFileToFolder(file, ViewPath, copy);
-
     }
 
     public void MoveFileToFolder(string file, TreeModel path, bool copy = false)
-    {
-        //Debug.WriteLine($"MoveFileToFolder: File: {file}, DestinyPath: {path.Path}, Copy: {copy}");
+    {        
         if ((file == String.Empty) && (path == null) && !copy)
-        {
-            //czyszczenie kolekcji po przeniesieniu pliku do np explorera plików
+        {            
             RefreshFileList();
             return;
         }
@@ -1494,20 +1383,15 @@ public partial class MainWindowViewModel : ObservableObject
             }
             return;
         }
-
         //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
-        string ext = Path.GetExtension(file).ToLower();
-        Match m;
-        m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-        if (m.Success)
+        //to poniżej poprawić na metodęz brokerfile, ale metoda z brokerfile musi i tak pobierać tablicę rozszeżeń z mv to błędne koło        
+        if (ExtO(Path.GetExtension(file).ToLower()))
         {
             string newFilePath = FileMove(file, path.Path, copy);
             string pathFile = System.IO.Path.GetDirectoryName(file);
-
             path.CountFiles = GetCountFiles(path.Path);//dodaje liczbę plików w katalogu docelowym
             selectedItem.CountFiles = GetCountFiles(selectedItem.Path);
             RefreshStatusBarFileCount();
-
             if (!copy)
                 _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
             //usuwamy go z FilesList o ile tam istnieje
@@ -1517,6 +1401,7 @@ public partial class MainWindowViewModel : ObservableObject
                     _ = FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
             }
 
+            //kurde co ja tu miałem na myśli ://////
             if (SelectedTreePath == path.Path)
             {
                 //to trzeba przerobić bo przy 1000 plików jest to bardzo widoczne i uciążliwe
@@ -1540,9 +1425,8 @@ public partial class MainWindowViewModel : ObservableObject
                 //else ReloadFileList(SelectedItem);//to jako ostateczność
                 if (!newPhoto(newFilePath)) ReloadFileList(SelectedItem);//to jako ostateczność
             }
-
         }
-        else Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + ext);
+        else Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
     }
 
 
@@ -1571,10 +1455,8 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
         //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
-        string ext = Path.GetExtension(file).ToLower();
-        Match m;
-        m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-        if (m.Success)
+
+        if(ExtO(Path.GetExtension(file).ToLower()))
         {
             string newFilePath = FileMove(file, path, copy);
 
@@ -1627,7 +1509,7 @@ public partial class MainWindowViewModel : ObservableObject
                 }//to jako ostateczność
             }
         }
-        else Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + ext);
+        else Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
     }
 
     /// <summary>
@@ -1800,18 +1682,10 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if (Directory.Exists(path))
         {
-            SelectedTreeItem = path;
-            var imFiles = Directory.EnumerateFiles(path);
-            string ext;
-            Match m;
+            SelectedTreeItem = path;//??
+            var imFiles = Directory.EnumerateFiles(path);            
             int i = 0;
-            //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
-            foreach (var imFile in imFiles)
-            {
-                ext = System.IO.Path.GetExtension(imFile);
-                m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                if (m.Success) i++;
-            }
+            i = imFiles.Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower())).Aggregate(0, (count, f) =>  count +1 );            
             return i;
         }
         return 0;
@@ -1819,6 +1693,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void ReloadFileList(TreeModel treeModel)
     {
+        Debug.WriteLine("ReloadFileList");
         if (cts != null)
         {
             try
@@ -1873,9 +1748,8 @@ public partial class MainWindowViewModel : ObservableObject
         //Debug.WriteLine("FileListLoad");
         //SelectedTreePath
         FilesList.Clear();
-
         Photos.Clear();
-        GC.Collect();
+        //GC.Collect();
         //Debug.WriteLine("skanowanie z: "+path);
         if (Directory.Exists(path))
         {
@@ -1888,7 +1762,7 @@ public partial class MainWindowViewModel : ObservableObject
             string maska = @"pack://application:,,,/img/g1.png";
             
             string View = SelectedView.Split('.').Last();
-            FilesToLoad = GetCountFiles(path).ToString();
+            FilesToLoad = GetCountFiles(path);
             int licznik = 0;
             
             foreach (var imFile in imFiles)
@@ -1918,9 +1792,6 @@ public partial class MainWindowViewModel : ObservableObject
                         //if ((View.ToLower().Contains("gallery") || View.Contains("Gallery2")) && !token.IsCancellationRequested)
                         if (GalleryView.Contains(View) && !token.IsCancellationRequested)
                         {
-                            // Debug.WriteLine("load file: " + imFile.value);
-
-                            //Photo p = new Photo(imFile.value);
                             Photo p = new Photo(imFile);
                             p.maska = maska;
                             p.Image = back;
@@ -1929,10 +1800,6 @@ public partial class MainWindowViewModel : ObservableObject
                             {
                                 p.IsSelected = true;
                             }
-                            //p.AddToken(token);
-                            //jak zrobić żeby to było odpalane przez interfejs? a nie tutaj
-                            //await p.Load(token);
-                            //_ = p.Load(token);
                         }
 
                     }
@@ -1944,13 +1811,12 @@ public partial class MainWindowViewModel : ObservableObject
                 counter = false;
             }
             if (GalleryView.Contains(View) && !token.IsCancellationRequested)
+            {
+               // Debug.WriteLine("FileListLoad Starting PhotosLoadImae...");
+                FileLoaded = 0;//teraz jest to wymagane żeby liczyć od początku
                 await PhotosLoadImae(token);
-                //await PhotosLoadImae(Photos.ToList(), token);
-            // wywala przy zmianie katalogu jak łąduje jeszcze obrazy, ale działi to chyba szybciej i bez problemu
-            // brak licznika obrazów, liczy pliki które ładuje a nie obrazy
-            //if (SelectedView == "Gallery") PhotosLoadImae(token);
-
-            if (imFiles.Count() == 0) FileLoaded = "0";
+            }
+            if (imFiles.Count() == 0) FileLoaded = 0;
         }
     }
 
@@ -1983,7 +1849,7 @@ public partial class MainWindowViewModel : ObservableObject
                     //    token.ThrowIfCancellationRequested();
                     //    return; 
                     //}
-                    FileLoaded = (++licznik).ToString();
+                    FileLoaded = i+1;//++licznik;
                     await photo.Load(token);
                 }
                 //to poniżej to tylko test i nie ma większego sęsu dla kodu i znaczenia o tyle że wywołuje wyjątek
@@ -2011,10 +1877,13 @@ public partial class MainWindowViewModel : ObservableObject
             //może jak tu dam for  to to by przeszło?
             try
             {
-                int licznik = 0;                
+                //int licznik = 0;                
                 string path = string.Empty;
-                if (!string.IsNullOrEmpty(FileLoaded) && Convert.ToInt32(FileLoaded) > 0) licznik = Convert.ToInt32(FileLoaded);
-
+                //if (!string.IsNullOrEmpty(FileLoaded) && Convert.ToInt32(FileLoaded) > 0) licznik = Convert.ToInt32(FileLoaded);
+                //if ( FileLoaded > 0) licznik = FileLoaded;
+                //hmmm  to jest dwa razy wywoływane?? jakiś bubel  tu jest ...
+                //Debug. WriteLine($"PhotosLoadImae - start from: {licznik}, FileLoaded: {FileLoaded}");
+                //FileLoaded = 0;//teraz jest to wymagane żeby liczyć od początku
                 for (var i = 0; i < Photos.Count && !token.IsCancellationRequested; i++)
                 {
                     var photo = Photos[i];
@@ -2024,7 +1893,8 @@ public partial class MainWindowViewModel : ObservableObject
                     }
                     if (path == "/img/g1.png")
                     {
-                        FileLoaded = (++licznik).ToString();
+                        FileLoaded++; //=++licznik;//gdzieś następuje dodanie kolejnych liczb do FileLoaded, trzeba to sprawdzićS
+                        //Debug.WriteLine($"PhotosLoadImae: Loading {photo.Name}, FileLoaded: {FileLoaded}, i: {i}, licznik: {licznik}");
                         await photo.Load(token);
                     }
                     path = string.Empty;

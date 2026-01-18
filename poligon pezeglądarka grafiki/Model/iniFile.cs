@@ -1,24 +1,18 @@
 ﻿using System.Collections;
 using System.IO;
-using System.Windows.Documents;
-using System.Xml.Linq;
-
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
 internal class IniFile : IDisposable
 {
-    /// <summary>
-    /// klasa do obsługi plików ini, zapis odczyt, modyfikacja
-    /// nie obsługuje komentarzy i pustych linii - są usuwane
-    /// przewidziane są pliki które zawierają sekcje
-    /// pliki bez sekcji są nie obsługiwane
-    /// 
-    /// </summary>
-
+   
     #region ToDo
     /*
      * ToDo
+     * 
+     * kod do poprawy  i prepisać, wprowadzić linq
+     * 
+     * 
      * zmiana nazewnictwa Add, Remove, count, Contains, GetValue, GetKeys, GetSections,write (do zapisu na plik), Load i read, save
      * -zrobione-ifExist - tu sekcja lub klucz
      * -zrobione-dodać findSection i findkey - ma zwracać faktyczną nazwę klucza, chodzi o pominięcie wielkości liter
@@ -237,22 +231,7 @@ internal class IniFile : IDisposable
         {
             return true;
         }
-        /*
-        if (ListAdw.ContainsKey(search))
-        {
-            return true;
-        }
-        else
-        {
-            var sekcje = GetSectionList();
-            foreach(var sekcja in sekcje){
-                if (ListAdw[sekcja].ContainsKey(search))
-                {
-                    return true;
-                }
-            }
-        }
-        */
+      
         return false;
     }
     /// <summary>

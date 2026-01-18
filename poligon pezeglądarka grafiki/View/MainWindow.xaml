@@ -81,102 +81,114 @@
                         </Grid.RowDefinitions>                        
                         <Separator Grid.Row="0" Visibility="{Binding VisibleSeparator, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                Foreground="{DynamicResource WindowTextBrush}"/>
-                        <ToolBar  Grid.Row="0" Visibility="{Binding VisibleToolBar, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <!-- tu przerobić na Behawior zamiast zdarzeń-->
-                            <Button   ToolTip="Widok miniatur" Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery">
-                                <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
-                                <materialDesign:PackIcon Kind="ViewGrid" />
-                            </Button>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
 
-                            <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="FList" ToolTip="widok listy, w trakcie...">
-                                <materialDesign:PackIcon Kind="ViewList" />
-                            </Button>
-                            <ToggleButton
-                                  x:Name="VieWFiles"
-                                  materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=Variable}"
-                                  Content="{materialDesign:PackIcon Kind=VariableBox,Size=21}"
-                                  IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"                                  
-                                  Style="{StaticResource MaterialDesignActionToggleButton}"
-                                  ToolTip="Pokaż ilkość plików w katalogu"
-                              />
 
-                            <ToggleButton
-                                Margin="10,0,0,0"
-                                  materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=EyeOutline}"
-                                  Content="{materialDesign:PackIcon Kind=EyeOff}"
-                                  Style="{StaticResource MaterialDesignActionToggleButton}"
-                                  IsChecked="{Binding Writings, Mode=TwoWay}"
-                                  ToolTip="pokaż/ukryj napisy"
-                            />
-
-                            <!--Viewbox  Height="20">
-                                <ToggleButton  Style="{StaticResource MaterialDesignSwitchToggleButton}" 
-                                           WindowChrome.IsHitTestVisibleInChrome ="True" 
-                                           IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"                                      
-                                           >
-                                    <materialDesign:PackIcon Kind="WhiteBalanceSunny" />
-                                    <materialDesign:ToggleButtonAssist.OnContent>
-                                        <materialDesign:PackIcon Kind="MoonWaxingCrescent" />
-                                    </materialDesign:ToggleButtonAssist.OnContent>
-                                </ToggleButton>
-                            </Viewbox-->
-                            <Button   Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Settings">
-                                <materialDesign:PackIcon Kind="CogOutline" />
-                            </Button>
-                            <Button 
-                                ToolTip="Dodaj katalogi do drzewa przeglądania"
-                                Click="Button_AddFolder" >                        
-                                <materialDesign:PackIcon Kind="PlusCircleOutline" />
-                            </Button>
-                            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
-                            <Button  Command="{Binding Path=SelectionChangedCommand}" CommandParameter="GalleryCan"  
-                                    ToolTip="Widok miniatur Canvas, eksperymentalny">
-                                <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
-                                <materialDesign:PackIcon Kind="ViewGrid" />
-                            </Button>
-                            
-                            
-                            <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery2"
-                                    ToolTip="widok miniatur, starszy, nie dokończony" >
-                                <materialDesign:PackIcon Kind="ViewGrid" />
-                            </Button>
-                            <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="FDataGrid" 
-                                    ToolTip="widok listy, starszy, nie dokończony">
-                                <materialDesign:PackIcon Kind="ViewList" />
-                            </Button>
-                            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
-                            <Viewbox Width="20">
-                                <Button  Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Welcome" 
-                                         ToolTip="About"                                  
-                                      Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" 
-                                         Background="#6598fa"
-                                         >
-                                    <materialDesign:PackIcon                            
-                                        Kind="HelpCircleOutline"
-                                        />
+                        <!--StackPanel  Grid.Row="0" Orientation="Horizontal" -->
+                            <ToolBar  Visibility="{Binding VisibleToolBar, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <!-- tu przerobić na Behawior zamiast zdarzeń-->
+                                <Button   ToolTip="Widok miniatur" Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery">
+                                    <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
+                                    <materialDesign:PackIcon Kind="ViewGrid" />
                                 </Button>
-                            </Viewbox>
-                            <!--Label VerticalAlignment="Center" Content="sortowanie w/g:" />
-                            <ComboBox ItemsSource="{Binding Path=TypSotowania}" IsSynchronizedWithCurrentItem="True"
-                                   
-                                      >
-                                        
-                                </ComboBox-->
 
-                            <Menu>
-                                <MenuItem Header="Sortowanie" ItemsSource="{Binding MenuSort}">
-                                    <MenuItem.ItemContainerStyle>
-                                        <Style TargetType="MenuItem">
-                                            <Setter Property="Header" Value="{Binding Name}" />
-                                            <Setter Property="IsCheckable" Value="True" />
-                                            <Setter Property="IsChecked" Value="{Binding IsChecked}" />
-                                        <EventSetter Event="Click" Handler="MenuItem_ClickSort" />
-                                        </Style>
-                                    </MenuItem.ItemContainerStyle>
+                                <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="FList" ToolTip="widok listy, w trakcie...">
+                                    <materialDesign:PackIcon Kind="ViewList" />
+                                </Button>
+                                <ToggleButton
+                                      x:Name="VieWFiles"
+                                      materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=Variable}"
+                                      Content="{materialDesign:PackIcon Kind=VariableBox,Size=21}"
+                                      IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"                                  
+                                      Style="{StaticResource MaterialDesignActionToggleButton}"
+                                      ToolTip="Pokaż ilkość plików w katalogu"
+                                  />
+
+                                <ToggleButton
+                                    Margin="10,0,0,0"
+                                      materialDesign:ToggleButtonAssist.OnContent="{materialDesign:PackIcon Kind=EyeOutline}"
+                                      Content="{materialDesign:PackIcon Kind=EyeOff}"
+                                      Style="{StaticResource MaterialDesignActionToggleButton}"
+                                      IsChecked="{Binding Writings, Mode=TwoWay}"
+                                      ToolTip="pokaż/ukryj napisy"
+                                />
+
+                                <!--Viewbox  Height="20">
+                                    <ToggleButton  Style="{StaticResource MaterialDesignSwitchToggleButton}" 
+                                               WindowChrome.IsHitTestVisibleInChrome ="True" 
+                                               IsChecked="{Binding VisibleFilesInTree, Mode=TwoWay}"                                      
+                                               >
+                                        <materialDesign:PackIcon Kind="WhiteBalanceSunny" />
+                                        <materialDesign:ToggleButtonAssist.OnContent>
+                                            <materialDesign:PackIcon Kind="MoonWaxingCrescent" />
+                                        </materialDesign:ToggleButtonAssist.OnContent>
+                                    </ToggleButton>
+                                </Viewbox-->
+                                <Button   Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Settings">
+                                    <materialDesign:PackIcon Kind="CogOutline" />
+                                </Button>
+                                <Button 
+                                    ToolTip="Dodaj katalogi do drzewa przeglądania"
+                                    Click="Button_AddFolder" >
+                                    <materialDesign:PackIcon Kind="PlusCircleOutline" />
+                                </Button>
+                                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                                <Button  Command="{Binding Path=SelectionChangedCommand}" CommandParameter="GalleryCan"  
+                                        ToolTip="Widok miniatur Canvas, eksperymentalny">
+                                    <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
+                                    <materialDesign:PackIcon Kind="ViewGrid" />
+                                </Button>
+
+
+                                <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery2"
+                                        ToolTip="widok miniatur, starszy, nie dokończony" >
+                                    <materialDesign:PackIcon Kind="ViewGrid" />
+                                </Button>
+                                <Button Command="{Binding Path=SelectionChangedCommand}" CommandParameter="FDataGrid" 
+                                        ToolTip="widok listy, starszy, nie dokończony">
+                                    <materialDesign:PackIcon Kind="ViewList" />
+                                </Button>
+                                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
                                 
-                            </MenuItem>
-                            </Menu>
+                                <!--Label VerticalAlignment="Center" Content="sortowanie w/g:" />
+                                <ComboBox ItemsSource="{Binding Path=TypSotowania}" IsSynchronizedWithCurrentItem="True"
+                                   
+                                          >
+                                        
+                                    </ComboBox-->
+
+                                <Menu>
+                                    <MenuItem Header="Sortowanie" ItemsSource="{Binding MenuSort}">
+                                        <MenuItem.ItemContainerStyle>
+                                            <Style TargetType="MenuItem">
+                                                <Setter Property="Header" Value="{Binding Name}" />
+                                                <Setter Property="IsCheckable" Value="True" />
+                                                <Setter Property="IsChecked" Value="{Binding IsChecked}" />
+                                                <EventSetter Event="Click" Handler="MenuItem_ClickSort" />
+                                            </Style>
+                                        </MenuItem.ItemContainerStyle>
+
+                                    </MenuItem>
+                                </Menu>
+                            </ToolBar>
+                            <ToolBar Visibility="{Binding VisibleToolBar, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                    HorizontalAlignment="Right" >
+                                <Viewbox Width="20">
+                                    <Button  Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Welcome" 
+                                        ToolTip="About" Style="{StaticResource MaterialDesignFloatingActionMiniDarkButton}" 
+                                            Background="#6598fa" >
+                                        <materialDesign:PackIcon                            
+                                            Kind="HelpCircleOutline"
+                                            />
+                                    </Button>
+                                </Viewbox>
                         </ToolBar>
+                        <!--/StackPanel-->
+                        </Grid>
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition  Width="auto"/>
@@ -345,8 +357,7 @@
                             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Cursor="SizeWE"  />
                             <ContentControl Grid.Column="2" x:Name="Pages"  Content="{Binding SelectedViewModel}"/>
                         </Grid>
-                        <!-- czy wogóle dawać status bar , nie ma stylu dla niego
-                    i chyba bym musiałcoś sam kombinować-->
+                        
                         <StatusBar Grid.Row="2" Background="{DynamicResource MaterialDesignToolBarBackground}"
                                    Visibility="{Binding VisibleStatusBar, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                      >
@@ -408,12 +419,7 @@
                                 </StackPanel>
                             </Grid>
 
-                        </StatusBarItem>
-                            <!--StatusBarItem>
-                                <TextBlock Style="{StaticResource MaterialDesignButtonTextBlock}"
-                                       Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                       Text="ala ma kota"/>
-                            </StatusBarItem-->
+                        </StatusBarItem>                          
 
                         </StatusBar >
                     </Grid>

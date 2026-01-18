@@ -21,6 +21,8 @@ namespace poligon_pezeglądarka_grafiki;
 public partial class MainWindow : Window
 {
     /*NOTATKI
+     * !!! dodać startowe ustawienie w ini oraz w ustawieniach programu przycisk przywracania do ustawień starowych
+     * niby są ale każde jest poustawiane gdzieś indziej, można je zostawić jako awaryjne ale nadal się przydzadzą opowiednio zbudowane
      * dodać resztę skrótów klawiszowych do tego okna
      * trzeba dodać obsługę błędów przy dodawaniu folderu do drzewa
      * dodać obsługę błędów przy przenoszeniu plików
@@ -360,8 +362,7 @@ public partial class MainWindow : Window
         e.Effects = DragDropEffects.None;
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
-            string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
-            //Regex regex = new Regex("^-?[0-9]*[\\.,]?[0-9]?[0-9]?$");
+            string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);            
             foreach (var dataString in dataStrings)
             {
                 if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))

@@ -455,7 +455,7 @@ public partial class Gallery : UserControl
         if (e.Data.GetDataPresent(DataFormats.FileDrop) && (e.Effects != DragDropEffects.None))
         {
             //Debug.WriteLine("orginal source: "+e.Source.GetType().Name);
-            Debug.WriteLine("ListBox_Drop - upuszczono plik(effects != none): "+e.Effects.ToString());
+            //Debug.WriteLine("ListBox_Drop - upuszczono plik(effects != none): "+e.Effects.ToString());
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
             MainWindowViewModel mv = (MainWindowViewModel)this.DataContext;
             foreach (var dataString in dataStrings)

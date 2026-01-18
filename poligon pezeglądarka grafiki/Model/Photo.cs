@@ -11,10 +11,14 @@ using System.Windows.Media.Imaging;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-public partial class Photo : ObservableObject//,IDisposable
+public partial class Photo : ObservableObject
 {
-    //private readonly Uri _source;
-    //private readonly Stream _streamSource;
+    /*jak by to działało jak bym zrobił do tego helpera?
+     * - przeniesć tam wszystkie metody
+     * zintegrować Ohoto Z FilesIO
+     * - uzupełnić o brakujące pola
+     * -uzupełnić helper o brakujące metody
+     */
     public string Path { get; private set; }
 
     [ObservableProperty]
@@ -26,9 +30,11 @@ public partial class Photo : ObservableObject//,IDisposable
     [ObservableProperty]
     private bool isSelected = false;
 
-    //public override string ToString() => _source.ToString();
+    
     public override string ToString() => Path;
     private CancellationToken ctoken;
+
+    //public override string ToString() => _source.ToString();
     //private bool isLoaded = false;
     //public ExifMetadata Metadata { get; } tu trzeba zbudować właśną klasę do odczytu metadanych
     // test jest po to żeby załadować w odpowiedniej kolejności pliki ale bez grafiki
@@ -248,6 +254,12 @@ public partial class Photo : ObservableObject//,IDisposable
         }
     }
 
+    /// <summary>
+    /// próba odczytania z exif komentarza
+    /// przenieść do brokera?
+    /// </summary>
+    /// <param name="inFullPath"></param>
+    /// <returns></returns>
     private String getComment(string inFullPath)
     {
         //DateTime returnDateTime = DateTime.MinValue;

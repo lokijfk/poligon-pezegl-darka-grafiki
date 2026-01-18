@@ -12,6 +12,10 @@ namespace poligon_pezeglądarka_grafiki.View;
 /// </summary>
 public partial class ViewWindow : Window //czemu musi być partial ??
 {
+    /*
+     * dodać ogranicnie miejszania bo wywala błędy
+     * 
+     */
     private Point mousePositionAfterCapture;
 
     public double CanvasLeft { get; set; } = 30;

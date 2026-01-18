@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Config\default.ini" />
     <None Remove="img\g1.png" />
   </ItemGroup>
 
@@ -19,7 +20,12 @@
     <EmbeddedResource Include="img\73042biohazard_109537%281%29.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Content Include="img\73042biohazard_109537(1).ico" />
+    <Content Include="Config\default.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="img\73042biohazard_109537(1).ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="img\g1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

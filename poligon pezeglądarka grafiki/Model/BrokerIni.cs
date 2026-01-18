@@ -4,8 +4,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Navigation;
-//using System.Drawing;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
@@ -15,10 +13,19 @@ class BrokerIni
     // a tu zostawić taki na tylko to 
     //na pewno dojedzie ini z kolorami ustawianymi przez urzytkownika 
     // i może drugi ze schematami bazy danych, co też będzie mógł modyfikować urzytkownik
+
+    //dodać ładowanie default.ini z zasobów programu jak nie ma pliku ini w katalogu aplikacji
+    /*
+    string env = BrokerFile.GetUserAppDataPath;
+    string PathToExe = Path.Combine(env, "poligon pezeglądarka grafiki.exe");
+    string PathToIco = Path.Combine(env, @"img\73042biohazard_109537(1).ico");
+    */
     private readonly IniFile iniFile;
     private static BrokerIni brokerini;
-
+    //private static bool FirstRunKey = false;
     #region HEAD
+    //public static bool IsFirstRun() => FirstRunKey;
+
     public static IniFile LoadIni(string inis)
     {
         IniFile ini;
@@ -28,7 +35,22 @@ class BrokerIni
         }
         else
         {
-            ini = new IniFile(BrokerFile.GetUserAppDataPath + "\\" + inis);
+            string katalog = BrokerFile.GetUserAppDataPath;
+            string path = Path.Combine(katalog, inis);
+            if (!Directory.Exists(katalog) || (Directory.Exists(katalog) && !File.Exists(path)))
+            {
+                //ini = new IniFile(path);
+                //FirstRunKey = true;
+               // Debug.WriteLine("pierwsze uruchomienie programu - ładuję ustawienia domyślne");                
+                //IniFile defaultIni = new IniFile(Path.Combine(BrokerFile.GetUserAppDataPath, @"Config\\default.ini"));
+                //Debug.WriteLine(Path.Combine(Directory.GetCurrentDirectory(), "Config\\default.ini"));
+                ini = new IniFile(Path.Combine(Directory.GetCurrentDirectory(), "Config\\default.ini"));
+                ini.SaveAs(path);
+            }
+            else
+            {
+                ini = new IniFile(path);
+            }               
         }
         //Debug.WriteLine(Tools.GetUserAppDataPath);
         return ini;
@@ -246,6 +268,14 @@ class BrokerIni
     {
         get => GetStringValue(GetCurrentMethod(), "Sortowanie") == string.Empty ? "Rosnąco" : GetStringValue(GetCurrentMethod(), "Sortowanie");
         set => SetStringValue(GetCurrentMethod(), value, "Sortowanie");
+    }
+
+    public Brush DropCollor
+    {
+        get => GetStringValue(GetCurrentMethod(), "Color") == string.Empty ?
+            (Brush)new BrushConverter().ConvertFrom("#459cfc") : 
+            (Brush)new BrushConverter().ConvertFrom(GetStringValue(GetCurrentMethod(), "Color"));
+        set => SetStringValue(GetCurrentMethod(), value.ToString(), "Color");            
     }
 
     #endregion
