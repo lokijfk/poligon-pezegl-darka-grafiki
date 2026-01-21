@@ -12,21 +12,21 @@
 
   <ItemGroup>
     <None Remove="Config\default.ini" />
-    <None Remove="img\g1.png" />
+    <None Remove="Img\g1.png" />
   </ItemGroup>
 
 
   <ItemGroup>
-    <EmbeddedResource Include="img\73042biohazard_109537%281%29.ico">
+    <EmbeddedResource Include="Img\73042biohazard_109537%281%29.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <Content Include="Config\default.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="img\73042biohazard_109537(1).ico">
+    <Content Include="Img\73042biohazard_109537(1).ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="img\g1.png">
+    <Content Include="Img\g1.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -43,7 +43,7 @@
     <Folder Include="Style\" />
   </ItemGroup>
 	<ItemGroup>
-		<Resource Include="img\73042biohazard_109537(1).ico" />
+		<Resource Include="Img\73042biohazard_109537(1).ico" />
 	</ItemGroup>
 	
 </Project>

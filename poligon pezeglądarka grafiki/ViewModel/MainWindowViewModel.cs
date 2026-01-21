@@ -14,9 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 
-
-
-
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
 public partial class MainWindowViewModel : ObservableObject
@@ -183,59 +180,58 @@ public partial class MainWindowViewModel : ObservableObject
     /// albo zrobić osobny przycisk aktualizacji
     /// dodać automatyczne uruchomienie wersji z katalogu docelowego i zamknięcie tej wersji - dodane!!
     /// </summary>
-    [RelayCommand(CanExecute = nameof(InstallCanExecute))]
+    [RelayCommand(CanExecute = nameof(InstallCanExecute))]    
     private void Install()
-    {
-        //Debug.WriteLine("install to: " + BrokerFile.GetUserAppDataPath + " from: " + Directory.GetCurrentDirectory());        
+    {                
         string sourcedir = Directory.GetCurrentDirectory();
         string destinyDir = BrokerFile.GetUserAppDataPath;
-        string[] dir = Directory.GetDirectories(sourcedir);
-        string destDirImg = string.Empty, dirName, subDirectory = string.Empty, pathExe = string.Empty;
-        /*
-        foreach (string directory in dir)
+        string pathExe = string.Empty;
+
+        pathExe = CopyFiles(sourcedir, destinyDir);
+        string[] subdirectories = Directory.GetDirectories(sourcedir);
+        foreach (string directory in subdirectories)
         {
-            dirName = Path.GetFileName(directory);            
-            if (dirName == "img")
+            string dirNam = directory.Substring(directory.LastIndexOf(Path.DirectorySeparatorChar) + 1);            
+            if (dirNam == "Img" || dirNam == "Config")
             {
-                destDirImg = Path.Combine(destinyDir, dirName);
-                _ = Directory.CreateDirectory(destDirImg);
-                subDirectory = directory;                
-                break;
+                string destSubDir = Path.Combine(destinyDir, dirNam);
+                _ = Directory.CreateDirectory(destSubDir);
+                _ = CopyFiles(directory, destSubDir);
             }
-        }*/
-        destDirImg = Path.Combine(destinyDir, "img");
-        subDirectory = Path.Combine(sourcedir, "img");
-        _ = Directory.CreateDirectory(destDirImg);
-        string[] files = Directory.GetFiles(sourcedir);
+        }
+ 
+        if (pathExe != string.Empty)
+        {
+            StartExe(pathExe);
+            Application.Current.Shutdown();
+        }
+    }
+
+    private string CopyFiles(string sourceDir, string destDir, bool overwrite = false)
+    {
+        string result = string.Empty;
+        string[] files = Directory.GetFiles(sourceDir);
+        string[] extDest = [".exe", ".dll", ".json", ".ico", ".ini", ".png"];
         foreach (string file in files)
         {
             if (File.Exists(file))
             {
                 string ext = Path.GetExtension(file);
                 //string fileName = Path.GetFileName(file);
-                if (ext == ".exe" || ext == ".dll" || ext == ".json")
+                //if (ext == ".exe" || ext == ".dll" || ext == ".json" || ext == ".ico" || ext == ".ini" || ext == ".png")
+                if (extDest.Contains(ext.ToLower()))
                 {
-                    _ = FileMove(file, destinyDir, true);
-                    if (ext == ".exe")
-                    {
-                        pathExe = Path.Combine(destinyDir, Path.GetFileName(file));
-                    }
+                    _ = FileMove(file, destDir, true,overwrite);
+                }
+                if (ext == ".exe")
+                {
+                    result = Path.Combine(destDir, Path.GetFileName(file));
                 }
             }
         }
-        if (!string.IsNullOrEmpty(subDirectory) && !string.IsNullOrEmpty(destDirImg))
-        {
-            files = Directory.GetFiles(subDirectory);
-            foreach (string file in files)
-            {
-                _ = FileMove(file, destDirImg, true);
-            }
-            if (pathExe != string.Empty) StartExe(pathExe);
-            Application.Current.Shutdown();
-        }//tu dodać info o błędzie w kopiowaniu
-
-
+        return result;
     }
+
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(InstallCommand))]
@@ -283,19 +279,20 @@ public partial class MainWindowViewModel : ObservableObject
     {
         //Debug.WriteLine("update");
         //tu jakoś muszę jeszcze zrobić sprawdzanie wersji
-        string DestFolder = BrokerFile.GetUserAppDataPath;
+        string destinyDir = BrokerFile.GetUserAppDataPath;
         string sourcedir = Directory.GetCurrentDirectory();
-        if (Directory.Exists(DestFolder) && (DestFolder != sourcedir))
+        
+        _ = CopyFiles(sourcedir, destinyDir,true);
+        string[] subdirectories = Directory.GetDirectories(sourcedir);
+        foreach (string directory in subdirectories)
         {
-            var files = Directory.GetFiles(DestFolder);
-            var sourceFiles = Directory.GetFiles(sourcedir);
-            if (files.Length > 1)
+            string dirNam = directory.Substring(directory.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+            //Debug.WriteLine("Katalog do skopiowania: " + dirNam);
+            if (dirNam == "img" || dirNam == "Config")
             {
-                foreach (var file in sourceFiles)
-                {
-                    var filename = Path.GetFileName(file);
-                    File.Copy(file, Path.Combine(DestFolder, filename), true);
-                }
+                string destSubDir = Path.Combine(destinyDir, dirNam);
+                _ = Directory.CreateDirectory(destSubDir);
+                _ = CopyFiles(directory, destSubDir,true);
             }
         }
     }
@@ -419,29 +416,24 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if ((sel is string sx) && (!string.IsNullOrEmpty(sx)))
         {
-            // Debug.WriteLine($"Selection Changed: {sx} ");
+             //Debug.WriteLine($"Selection Changed: {sx} ");
             //SelectedView = sx;
-            if (sx != "Settings")
-            {
+            if (!sx.Equals("Settings") && !sx.Equals("Welcome"))
+            {                
                 SelectedViewWindow = sx;//zapis do ini
-                if (SelectedViewModel != null) SelectedViewModel = null;
-                SelectedViewModel = CallMethod(sx);
-                SelectedView = sx;//to na wszelki wypadek
+            }
+            if (SelectedView == sx)
+            {
+                SelectedView = SelectedViewWindow;
+                SelectedViewModel = CallMethod(SelectedView);
             }
             else
             {
-                if (SelectedView == sx)
-                {
-                    SelectedView = SelectedViewWindow;
-                    SelectedViewModel = CallMethod(SelectedView);
-                }
-                else
-                {
-                    if (SelectedViewModel != null) SelectedViewModel = null;
-                    SelectedView = sx;
-                    SelectedViewModel = CallMethod(sx);
-                }
+                if (SelectedViewModel != null) SelectedViewModel = null;
+                SelectedView = sx;
+                SelectedViewModel = CallMethod(sx);
             }
+            
             if (SelectedViewWindow == "Gallery") ReloadFileList(SelectedItem);
         }
     }
@@ -1562,7 +1554,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="path">ścieżka docelowa</param>
     /// <param name="copy">true - kopiowanie, false - przenoszenie</param>
     /// <returns>string: zwraca nowąścieżkę pliku z nazwą lub String.Empty jak pojawią się błędy</returns>
-    private string FileMove(string file, string path, bool copy = false)
+    private string FileMove(string file, string path, bool copy = false, bool overwrite = false)
     {
         //tu dodać wywoływanie wyjątków w razie błędów
         if (string.IsNullOrEmpty(path))
@@ -1583,7 +1575,7 @@ public partial class MainWindowViewModel : ObservableObject
         //Debug.WriteLine("MoveFileToFolder: path: " + path + " , file: " + file);
         string fileName = System.IO.Path.GetFileName(file);
         string newPath = System.IO.Path.Combine(path, fileName);
-        if (File.Exists(newPath))
+        if (File.Exists(newPath) && !overwrite)
         {
             string ext = Path.GetExtension(file);
             string filenameX = Path.GetFileNameWithoutExtension(file);
@@ -1606,7 +1598,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             //tu dodać sprawdzanie czy w miejscu docelowym istnieje już pliko podanej nazwie
             //jak istnieje to modyfikujemy ścieżkę (1) lub (x) i przenosimy wskazany
-            if (copy) File.Copy(file, newPath);
+            if (copy) File.Copy(file, newPath,overwrite);
             else File.Move(file, newPath);
             return newPath;
         }
@@ -1655,15 +1647,23 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="parameter"></param>
     private void TreeModelLBMClick(TreeModel parameter)
     {
-        //Debug.WriteLine("TreeModelLBMClick");
+        //SelectedItemChanged
+        //PreviewMouseLeftButtonDown        
+        string View = SelectedViewModel.ToString().Split('.').Last();        
         if (parameter != null)
         {
-            if (selectedItem == parameter)
+            //zmiana katalogu tylko jeżeli jest inny niż aktualny
+            //SelectedItemChanged
+            if (SelectedItem != parameter)
             {
-                //tu zrobić tak żey odpalać okno zapisane (gallery itd) zamiast na przykład settings czy welcome
+                SelectedItem = parameter;
+                ReloadFileList(parameter);
+            }else if (SelectedViewWindow != View)
+            {
+                //może to rozbudować tak żeby pominąć reload ??
+                //albo tam dodać parametr wykluczający reload
+                SelectionChanged(SelectedViewWindow);//aaa bo tu też jest reload :/
             }
-            SelectedItem = parameter;
-            ReloadFileList(parameter);
         }
     }
 
