@@ -32,7 +32,7 @@ public partial class FileList : UserControl
             Debug.WriteLine("MouseDoubleClick: invalid index");
             return;
         }
-        var FList = (this.DataContext as MainWindowViewModel)?.FilesList;
+        var FList = (this.DataContext as MainWindowViewModel)?.Photos;
         var p = FList[index].Path + "\\" + FList[index].Name;
         ViewWindow viewWindow = new ViewWindow { DataContext = new ViewWindowViewModel(p) };
         viewWindow.Show();

@@ -26,7 +26,7 @@ ale za to może będzie bardziej elastyczne
 
 - dodać mini edytor czyli obracanie pliku i zmiana rozmiaru, jak bedę wiedział już jak to może przycinanie według zaznaczenia
 - jak zrobić zaznaczenia wielu plików w galerii poprzez przeciąganie myszką - to może być trudne, tworzenie  "ramki" zaznaczenia
-- dodać buforowanie miniatur i ich zapis do plików w katalogu urzytkownika, tam gdzie ini, osobny katalog
+- dodać buforowanie miniatur i ich zapis do bazy w katalogu urzytkownika, tam gdzie ini, osobny katalog
 - dodać do tego opcje w ustawieniach włącz/wyłącz
 - dodać przetrzymywanie miniaturek w bazie danych SQlite,
 	w trakcie ładowania ma porównywać czy plik nie był zmieniony i jeśli nie to brać miniaturkę z bazy

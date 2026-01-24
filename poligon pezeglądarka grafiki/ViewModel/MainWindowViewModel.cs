@@ -33,7 +33,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>
     /// kolekcja przechowująca tablicę obrazów w katalogu do widoków tabelarycznych
     /// </summary>
-    public ObservableCollection<FilesIO> FilesList { get; set; } = [];
+    //public ObservableCollection<FilesIO> FilesList { get; set; } = [];
 
     /// <summary>
     /// lista wyliczeniowa możliwości sortowania
@@ -976,7 +976,7 @@ public partial class MainWindowViewModel : ObservableObject
         bool x = BrokerFile.RenameFile(photo.Path, newName);
         if (x)
         {
-            photo.rename(newName);
+            PhotoHelper.Rename(photo,newName);
         }
     }
 
@@ -1387,11 +1387,12 @@ public partial class MainWindowViewModel : ObservableObject
             if (!copy)
                 _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
             //usuwamy go z FilesList o ile tam istnieje
+            /*
             if ((FilesList != null) && (FilesList.Count > 0))
             {
                 if (FilesList.Any(i => i.Path == file))
                     _ = FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
-            }
+            }*/
 
             //kurde co ja tu miałem na myśli ://////
             if (SelectedTreePath == path.Path)
@@ -1467,11 +1468,12 @@ public partial class MainWindowViewModel : ObservableObject
             if (!copy)
                 _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
             //usuwamy go z FilesList o ile tam istnieje
+            /*
             if ((FilesList != null) && (FilesList.Count > 0))
             {
                 if (FilesList.Any(i => i.Path == file))
                     _ = FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
-            }
+            }*/
 
             if (SelectedTreePath == path)
             {
@@ -1540,6 +1542,7 @@ public partial class MainWindowViewModel : ObservableObject
                                           //jak zrobić żeby to było odpalane przez interfejs? a nie tutaj
                 }
                 _ = p.Load(token);
+                //_= PhotoHelper.Load(p,token);
                 return true;
             }
         }
@@ -1698,13 +1701,10 @@ public partial class MainWindowViewModel : ObservableObject
         {
             try
             {
-                // wywala bład jak próbuję użyć cancel na cts  który został dispose ... szukam rozwiązania
-                //cts.Token.ThrowIfCancellationRequested();
                 cts.Cancel();
                 while (!cts.IsCancellationRequested && counter)
                 {
                     Debug.WriteLine("ReloadFileList: still waiting...");
-                    //Thread.SpinWait(50000);
                     Thread.SpinWait(5000);
                 }
                 cts.Dispose();
@@ -1718,11 +1718,9 @@ public partial class MainWindowViewModel : ObservableObject
         }
         try
         {
-
             if (treeModel != null)
             {
                 string path = treeModel.Path;
-                //Debug.WriteLine("LBM klik - ReloadFileList, path:" + path);
                 SelectedTreePath = path;
                 if (cts == null) cts = new CancellationTokenSource();
                 FileListLoad(path, cts.Token);
@@ -1745,25 +1743,19 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="token"></param>
     private async void FileListLoad(string path, CancellationToken token)
     {
-        //Debug.WriteLine("FileListLoad");
-        //SelectedTreePath
-        FilesList.Clear();
+        //FilesList.Clear();
         Photos.Clear();
-        //GC.Collect();
-        //Debug.WriteLine("skanowanie z: "+path);
         if (Directory.Exists(path))
         {
             SelectedTreeItem = path;
-            //var imFiles = Directory.EnumerateFiles(path);//to może powodować problemy, tu zmienić na dostep z BrokerFile
             var imFiles = BrokerFile.IGetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
             FileInfo finfo;
-            //string ext, name;
             var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
             string maska = @"pack://application:,,,/img/g1.png";
             
             string View = SelectedView.Split('.').Last();
             FilesToLoad = GetCountFiles(path);
-            int licznik = 0;
+
             
             foreach (var imFile in imFiles)
             {
@@ -1778,7 +1770,7 @@ public partial class MainWindowViewModel : ObservableObject
                     try
                     {                        
                         finfo = new FileInfo(imFile);
-
+                        /*
                         FilesList.Add(new FilesIO()
                         {
                             Name = System.IO.Path.GetFileName(imFile),
@@ -1787,12 +1779,15 @@ public partial class MainWindowViewModel : ObservableObject
                             Icon = BlinkIcom,
                             Size = BrokerFile.Prdouble(finfo.Length),
                             RealSize = finfo.Length.ToString()
-                        });
+                        });*/
                         //to jakoś zmienić, dać jakiś parametr bool zamiast uzależniać to od ładowanego widoku
                         //if ((View.ToLower().Contains("gallery") || View.Contains("Gallery2")) && !token.IsCancellationRequested)
                         if (GalleryView.Contains(View) && !token.IsCancellationRequested)
                         {
                             Photo p = new Photo(imFile);
+                            p.Size = BrokerFile.Prdouble(finfo.Length);
+                            p.RealSize = finfo.Length.ToString();
+                            p.Icon = BlinkIcom;
                             p.maska = maska;
                             p.Image = back;
                             Photos.Add(p);
@@ -1801,7 +1796,6 @@ public partial class MainWindowViewModel : ObservableObject
                                 p.IsSelected = true;
                             }
                         }
-
                     }
                     catch (Exception ex)
                     {
@@ -1830,36 +1824,15 @@ public partial class MainWindowViewModel : ObservableObject
         //Debug.WriteLine($"PhotosLoadImae - token: {token}")
         if (PhotoSKopia.Count > 0 && !token.IsCancellationRequested)
         {
-            //może jak tu dam for  to to by przeszło?
             try
             {
-                int licznik = 0;
-                //foreach (var photo in Photos)
-                //w tym wypadku tylko pętla for ma rację bytu bo wyjątek i if nie są wywoływane
-                //trzeba to doczytać
                 for (var  i = 0; i < PhotoSKopia.Count && !token.IsCancellationRequested; i++)                
                 {
                     var photo = PhotoSKopia[i];
-                    //wogóle nie jest wywoływane, nie ważne jaka pętla
-                    //Debug.WriteLine($"PhotosLoadImae: {photo.Name}");//to działa
-                    //if (token.IsCancellationRequested) 
-                    //{
-                    //    //to wogóle nie jest wywoływane !! jakby token nie był ustawiany!!
-                    //    Debug.WriteLine($"Could not load {photo}");
-                    //    token.ThrowIfCancellationRequested();
-                    //    return; 
-                    //}
-                    FileLoaded = i+1;//++licznik;
+                    FileLoaded = i+1;
                     await photo.Load(token);
+                    //_= PhotoHelper.Load(photo, token);
                 }
-                //to poniżej to tylko test i nie ma większego sęsu dla kodu i znaczenia o tyle że wywołuje wyjątek
-                //if (token.IsCancellationRequested)
-                //{
-                //    //to wogóle nie jest wywoływane !! jakby token nie był ustawiany!!
-                //    Debug.WriteLine($"Could not load photo");
-                //    token.ThrowIfCancellationRequested();
-                //    return;
-                //}
             }
             catch(Exception ex)
             {
@@ -1871,19 +1844,11 @@ public partial class MainWindowViewModel : ObservableObject
 
     private async Task PhotosLoadImae(CancellationToken token)
     {
-        //Debug.WriteLine($"PhotosLoadImae - token: {token}")
         if (Photos.Count > 0 && !token.IsCancellationRequested)
-        {
-            //może jak tu dam for  to to by przeszło?
+        {  
             try
-            {
-                //int licznik = 0;                
+            {                   
                 string path = string.Empty;
-                //if (!string.IsNullOrEmpty(FileLoaded) && Convert.ToInt32(FileLoaded) > 0) licznik = Convert.ToInt32(FileLoaded);
-                //if ( FileLoaded > 0) licznik = FileLoaded;
-                //hmmm  to jest dwa razy wywoływane?? jakiś bubel  tu jest ...
-                //Debug. WriteLine($"PhotosLoadImae - start from: {licznik}, FileLoaded: {FileLoaded}");
-                //FileLoaded = 0;//teraz jest to wymagane żeby liczyć od początku
                 for (var i = 0; i < Photos.Count && !token.IsCancellationRequested; i++)
                 {
                     var photo = Photos[i];
@@ -1896,6 +1861,7 @@ public partial class MainWindowViewModel : ObservableObject
                         FileLoaded++; //=++licznik;//gdzieś następuje dodanie kolejnych liczb do FileLoaded, trzeba to sprawdzićS
                         //Debug.WriteLine($"PhotosLoadImae: Loading {photo.Name}, FileLoaded: {FileLoaded}, i: {i}, licznik: {licznik}");
                         await photo.Load(token);
+                        //_= PhotoHelper.Load(photo,token,true);
                     }
                     path = string.Empty;
                 }
@@ -1905,15 +1871,6 @@ public partial class MainWindowViewModel : ObservableObject
                 Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
             }
         }
-    }
-
-    /// <summary>
-    /// dodanie folderu do aktywnego drzewa według ścieżki
-    /// </summary>
-    /// <param name="folder"></param>
-    public void AddFolderToTree(String folder)
-    {
-        //   AddRootFolderToTree(folder);
     }
 
     /// <summary>
@@ -1944,8 +1901,7 @@ public partial class MainWindowViewModel : ObservableObject
         var x = TreePath.Split(';').ToList();
         _ = x.Remove(folder);// a tu chyba jest tworzony pusty string zamiast usuwać komurkę
         TreePath = string.Join(";", x);// to chyba dodaje nam pusty string na końcu
-        //DirPath.Clear();
-        //TreePath.Split(';').ToList().ForEach(path => DirPath.Add(path));
+
         foreach (var reTree in Tree)
         {
             if ((reTree.Path == folder) || string.IsNullOrEmpty(reTree.Path))
@@ -1973,8 +1929,7 @@ public partial class MainWindowViewModel : ObservableObject
                 if (!string.IsNullOrWhiteSpace(path))
                 {
                     if (!string.IsNullOrWhiteSpace(pathEx))
-                    {
-                        //Debug.WriteLine($"BuildTree - pathEX: {pathEx}");
+                    {                        
                         Tree.Add(ScanPath(path, pathEx));
                     }
                     else
@@ -1982,8 +1937,7 @@ public partial class MainWindowViewModel : ObservableObject
                         Tree.Add(ScanPath(path, SelectedTreePath));
                     }
                 }
-            }
-            //.ForEach(path => Tree.Add(ScanPath(path, SelectedTreePath)));
+            }            
         }
     }
 
@@ -2014,8 +1968,7 @@ public partial class MainWindowViewModel : ObservableObject
                 }
             }
         }
-
-        //var files = Directory.EnumerateFiles(path);
+        
         if (!string.IsNullOrWhiteSpace(path))
         {
             path = path.Trim();
@@ -2099,29 +2052,21 @@ public partial class MainWindowViewModel : ObservableObject
     private void SwitchThemeMode()
     {
         PaletteHelper palette = new PaletteHelper();
-        //var A = Colors.Red.A;
-
         var theme = palette.GetTheme();
-
         if (SwitchTglButton)
         {
-
             Color primaryColor = Colors.Blue;
             theme.SetPrimaryColor(primaryColor);
-
             Color secondaryColor = Colors.Violet;
             theme.SetSecondaryColor(secondaryColor);
-
             theme.SetBaseTheme(BaseTheme.Dark);
         }
         else
         {
             Color primaryColor = Colors.Red;
             theme.SetPrimaryColor(primaryColor);
-
             Color secondaryColor = Colors.Yellow;
             theme.SetSecondaryColor(secondaryColor);
-
             theme.SetBaseTheme(BaseTheme.Light);
         }
         palette.SetTheme(theme);
@@ -2132,8 +2077,7 @@ public partial class MainWindowViewModel : ObservableObject
     private bool SwitchToggleButton
     {
         get => iniFile.SwitchToggleButton;
-        set => SetProperty(iniFile.SwitchToggleButton, value, iniFile, static (u, n) => u.SwitchToggleButton = n);
-        //Debug.WriteLine("SwitchToggleButton zmiana na : "+value);
+        set => SetProperty(iniFile.SwitchToggleButton, value, iniFile, static (u, n) => u.SwitchToggleButton = n);        
     }
 
 
@@ -2194,7 +2138,6 @@ public partial class MainWindowViewModel : ObservableObject
         if (CurMainWindowState == WindowState.Normal)
         {
             RestoreButton = false;
-
             MaximizeButton = true;
         }
         else if (CurMainWindowState == WindowState.Maximized)

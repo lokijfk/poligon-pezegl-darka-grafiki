@@ -13,7 +13,7 @@
     <Grid>
         <!--TextBlock Text="{Binding SelectedTreeItem}"/-->
 
-        <ListView Margin="10" Grid.Row="1"  x:Name="Lista" ItemsSource="{Binding FilesList}"
+        <ListView Margin="10" Grid.Row="1"  x:Name="Lista" ItemsSource="{Binding Photos}"
                   MouseDoubleClick="ListBox_MouseDoubleClick">
             <ListView.View>
                 <GridView>

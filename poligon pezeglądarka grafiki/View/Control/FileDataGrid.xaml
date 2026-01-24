@@ -15,7 +15,7 @@
               AutoGenerateColumns="False"
               CanUserAddRows="False"
               HeadersVisibility="All"
-              ItemsSource="{Binding FilesList}"
+              ItemsSource="{Binding Photos}"
             MouseDoubleClick="DataGrid_MouseDoubleClick"
             >
             <DataGrid.Columns>
@@ -38,6 +38,7 @@
                 </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Nazwa" Binding="{Binding Name}"/>
                 <DataGridTextColumn Header="ścieżka" Binding="{Binding Path}" IsReadOnly="True"/>
+                <!-- do sice dać konwerter-->
                 <DataGridTextColumn Header="rozmiar" Binding="{Binding Size}" IsReadOnly="True"/>
             </DataGrid.Columns>
             <DataGrid.InputBindings>

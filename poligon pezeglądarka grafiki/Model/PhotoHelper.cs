@@ -1,13 +1,44 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml.Linq;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
+
+
 static internal class PhotoHelper
 {
+
+    /// <summary>
+    /// próba odczytania z exif komentarza
+    /// przenieść do brokera?
+    /// </summary>
+    /// <param name="inFullPath"></param>
+    /// <returns></returns>
+    public static String getComment(string inFullPath)
+    {
+        //DateTime returnDateTime = DateTime.MinValue;
+        string Comment = string.Empty;
+        try
+        {
+            FileStream picStream = new FileStream(inFullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            BitmapSource bitSource = BitmapFrame.Create(picStream);
+            picStream.Close();
+            BitmapMetadata metaData = (BitmapMetadata)bitSource.Metadata;
+            //returnDateTime = DateTime.Parse(metaData.DateTaken);
+            Comment = metaData.Comment;
+        }
+        catch
+        {
+            //do nothing  
+        }
+        return Comment;
+    }
+
     public static BitmapSource CreateEmtpyBitmapSource()
     {
         try
@@ -82,4 +113,93 @@ static internal class PhotoHelper
         return null;
     }
 
+    
+    //trzeba pomysleć co zrobić z Path skoro zrobiłem ją właściwość tylko do odczytu
+    public static void Rename(Photo myImage,string newName)
+    {
+        myImage.Path = newName;
+        myImage.Name = newName.Substring(newName.LastIndexOf("\\") + 1);
+        _ = myImage.Load(new(), false);
+    }
+    
+    /// <summary>
+    /// to sie tu nie sprawdza, będzie do usinięcia z tego miejsca
+    /// </summary>
+    /// <param name="myImage"></param>
+    /// <param name="token"></param>
+    /// <param name="x"></param>
+    /// <returns></returns>
+    /*
+    public static async Task Load(Photo myImage,CancellationToken token = default(CancellationToken), bool x = true)
+    {
+        bool errored = false;
+        if (token.IsCancellationRequested && x)
+        {
+            //Debug.WriteLine("Load cancelled");
+            token.ThrowIfCancellationRequested();
+            return;
+        }
+
+        if (token == default(CancellationToken) && myImage.Ctoken != default(CancellationToken))
+        {
+            token = myImage.Ctoken;
+        }
+        //this.token = token;
+        try
+        {
+            myImage.Image = await Task.Run(() =>
+            {
+                using (var fileStream = new FileStream(
+                    myImage.Path, FileMode.Open, FileAccess.Read))
+                {
+                    try
+                    {
+                        return Task.FromResult(BitmapFrame.Create(
+                            fileStream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad));
+                    }
+                    catch (FileFormatException)
+                    {
+                        errored = true;
+                        return Task.FromResult(BitmapFrame.Create(
+                            new Uri(myImage.maska), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None));
+
+                    }
+                    catch (ArgumentException)
+                    {
+                        errored = true;
+                        return Task.FromResult(BitmapFrame.Create(
+                           new Uri(myImage.maska), BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None));
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                        return null;
+                    }
+
+                }
+            });
+
+            if (errored)
+            {
+                var UriX = new Uri(myImage.Path, UriKind.RelativeOrAbsolute);
+                BitmapImage MyBitmapImage = new();
+                MyBitmapImage.BeginInit();
+                MyBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                MyBitmapImage.UriSource = UriX;
+                MyBitmapImage.DecodePixelHeight = 200;
+                MyBitmapImage.EndInit();
+                //MyBitmapImage.getQuery()
+                myImage.Image = MyBitmapImage;
+            }
+            //BitmapMetadata MyMeta = (BitmapMetadata)Image.Frames[0].Metadata;
+            myImage.Image = PhotoHelper.CreateResizedImage(myImage.Image, (int)((200 / myImage.Image.Height) * myImage.Image.Width), (int)200, 0);
+            //Debug.WriteLine($"komentarz: {getComment(Path)}");
+        }
+        catch (OperationCanceledException ex)
+        {
+            Debug.WriteLine($"zadanie wstrzymane (Task): {ex.Message}");
+            //return null; // Return null if loading fails
+        }
+    }
+    */
 }
