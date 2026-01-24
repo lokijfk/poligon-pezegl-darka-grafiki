@@ -27,7 +27,7 @@
                                     <Grid>
                                         <TextBox Text="{Binding Name}"  x:Name="EditBox" Background="DarkRed" Visibility="Collapsed"/> 
                                         <!-- błąd który tu występuje prawdopodobnie jest z material design-->
-                                        <TextBlock Text="{Binding Name}" x:Name="LabelBlock"  Background="Blue" />
+                                        <TextBlock Text="{Binding Name}" x:Name="LabelBlock"  Background="Green" />
                                     </Grid>
                                     <!--TextBlock Text="{Binding Name}" /-->
                                     <!-- tu był textblock zmiana żeby był edytowalny, 

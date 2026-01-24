@@ -434,7 +434,8 @@ public partial class MainWindowViewModel : ObservableObject
                 SelectedViewModel = CallMethod(sx);
             }
             
-            if (SelectedViewWindow == "Gallery") ReloadFileList(SelectedItem);
+            //if (SelectedViewWindow == "Gallery")
+            ReloadFileList(SelectedItem);
         }
     }
 
@@ -1696,7 +1697,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void ReloadFileList(TreeModel treeModel)
     {
-        Debug.WriteLine("ReloadFileList");
+        //Debug.WriteLine("ReloadFileList");
         if (cts != null)
         {
             try
@@ -1742,8 +1743,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="path"></param>
     /// <param name="token"></param>
     private async void FileListLoad(string path, CancellationToken token)
-    {
-        //FilesList.Clear();
+    {        
         Photos.Clear();
         if (Directory.Exists(path))
         {
@@ -1751,12 +1751,9 @@ public partial class MainWindowViewModel : ObservableObject
             var imFiles = BrokerFile.IGetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
             FileInfo finfo;
             var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
-            string maska = @"pack://application:,,,/img/g1.png";
-            
+            string maska = @"pack://application:,,,/img/g1.png";            
             string View = SelectedView.Split('.').Last();
-            FilesToLoad = GetCountFiles(path);
-
-            
+            FilesToLoad = GetCountFiles(path);            
             foreach (var imFile in imFiles)
             {
                 if (token.IsCancellationRequested)
@@ -1769,33 +1766,18 @@ public partial class MainWindowViewModel : ObservableObject
                 {                    
                     try
                     {                        
-                        finfo = new FileInfo(imFile);
-                        /*
-                        FilesList.Add(new FilesIO()
+                        finfo = new FileInfo(imFile);                        
+                        Photo p = new Photo(imFile);
+                        p.Size = BrokerFile.Prdouble(finfo.Length);
+                        p.RealSize = finfo.Length.ToString();
+                        p.Icon = BlinkIcom;
+                        p.maska = maska;
+                        p.Image = back;
+                        Photos.Add(p);
+                        if (Photos.IndexOf(p) == 0)
                         {
-                            Name = System.IO.Path.GetFileName(imFile),
-                            Extension = System.IO.Path.GetExtension(imFile),
-                            Path = path,
-                            Icon = BlinkIcom,
-                            Size = BrokerFile.Prdouble(finfo.Length),
-                            RealSize = finfo.Length.ToString()
-                        });*/
-                        //to jakoś zmienić, dać jakiś parametr bool zamiast uzależniać to od ładowanego widoku
-                        //if ((View.ToLower().Contains("gallery") || View.Contains("Gallery2")) && !token.IsCancellationRequested)
-                        if (GalleryView.Contains(View) && !token.IsCancellationRequested)
-                        {
-                            Photo p = new Photo(imFile);
-                            p.Size = BrokerFile.Prdouble(finfo.Length);
-                            p.RealSize = finfo.Length.ToString();
-                            p.Icon = BlinkIcom;
-                            p.maska = maska;
-                            p.Image = back;
-                            Photos.Add(p);
-                            if (Photos.IndexOf(p) == 0)
-                            {
-                                p.IsSelected = true;
-                            }
-                        }
+                            p.IsSelected = true;
+                        }                        
                     }
                     catch (Exception ex)
                     {
