@@ -1,6 +1,7 @@
 ﻿
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.VisualBasic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Media;
@@ -34,6 +35,8 @@ public partial class Photo : ObservableObject
     public string Size { get; set; } = string.Empty;
     public string RealSize { get; set; } = string.Empty;
     public CancellationToken Ctoken { get; set; }
+
+    public DateTime DateModified { get; set; }
     public override string ToString() => Path;
         
     //public ExifMetadata Metadata { get; } tu trzeba zbudować właśną klasę do odczytu metadanych

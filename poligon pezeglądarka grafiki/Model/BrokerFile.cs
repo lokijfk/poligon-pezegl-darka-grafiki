@@ -76,10 +76,10 @@ internal class BrokerFile
     /// muszę doczytać jaka jest różnica między GetFiles a EnumerateFiles
     /// to moze powoadować problemy z otwieraniem dużych katalogów
     /// </summary>
-    /// <param name="folder"></param>
-    /// <param name="kryterium"></param>
-    /// <param name="kierunek"></param>
-    /// <param name="patternArray"></param>
+    /// <param name="folder">ściezka do katalogu</param>
+    /// <param name="kryterium">po czym sortujemy: nazwa,data,wielkość</param>
+    /// <param name="kierunek">rosnąco czy malejąco</param>
+    /// <param name="patternArray">tablica zawierając dozwolone rozszeżenia plików</param>
     /// <returns></returns>
     public static IEnumerable<string> IGetFiles(string folder, string kryterium, string kierunek, string[] patternArray)
     {

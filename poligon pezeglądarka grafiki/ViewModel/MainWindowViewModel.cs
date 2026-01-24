@@ -935,39 +935,56 @@ public partial class MainWindowViewModel : ObservableObject
         set => SetProperty(iniFile.Sortowaniekierunek, value, iniFile, static (u,n) => u.Sortowaniekierunek = n);
     }
     private void Sortowanie(string kryterium, string kierunek, string[] patternArray)
-    {        
-        List<Photo> PhotoSKopia = Photos.ToList();
-        if (PhotoSKopia.Count == Photos.Count)
+    {
+        List<Photo> PhotosKopia =[];// = Photos.ToList();
+        
+        if(kierunek == "Rosnąco")
         {
-            //Debug.WriteLine("sortowanie, ok liczba się zgadza");
-            string ViewPath = SelectedTreePath;            
-            var files = BrokerFile.IGetFiles(ViewPath, kryterium, kierunek, patternArray);            
-            Photos.Clear();
-            foreach (var file in files)
+            if(kryterium == "Nazwa")
             {
-                Photos.Add(PhotoSKopia.First(x => x.Path == file));
+                PhotosKopia = [.. Photos.OrderBy(p => p.Name)];
             }
-            PhotoSKopia.Clear();
+            else if(kryterium == "Data")
+            {
+                PhotosKopia = [.. Photos.OrderBy(p => p.DateModified)];
+            }
+            else if(kryterium == "Wielkość")
+            {
+                PhotosKopia = [.. Photos.OrderBy(p => p.RealSize)];
+            }
+        }
+        else if(kierunek == "Malejąco")
+        {
+            if (kryterium == "Nazwa")
+            {
+                PhotosKopia = [.. Photos.OrderByDescending(p => p.Name)];
+            }
+            else if (kryterium == "Data")
+            {
+                PhotosKopia = [.. Photos.OrderByDescending(p => p.DateModified)];
+            }
+            else if (kryterium == "Wielkość")
+            {
+                PhotosKopia = [.. Photos.OrderByDescending(p => p.RealSize)];
+            }
+        }
+
+        if (PhotosKopia.Count == Photos.Count)
+        {            
+            //string ViewPath = SelectedTreePath;            
+            //var files = BrokerFile.IGetFiles(ViewPath, kryterium, kierunek, patternArray);  
+            
+            Photos.Clear();
+            //foreach (var file in files)
+            foreach (var file in PhotosKopia)
+            {
+                //Photos.Add(PhotosKopia.First(x => x.Path == file));
+                Photos.Add(file);
+            }        
+            PhotosKopia.Clear();
             Sortowaniekierunek = kierunek;
             Sortowaniekryterium = kryterium;
         }
-        /*
-         * sortowanie po nazwie można zrobić bez wczytywanie plików
-         * po dacie czy rozmiarze to już chyba trzeba wczytać
-         * ciekawe ile zajmuje struktura z FileInfo? może ją dołączyć do obiektu File?
-         * FileInfo to objekt i raczej nie będę go dołączał, ale wezmęz niego informacje
-         * zmienię kod pod niego
-         * 
-        List<string> words = new List<string> { "falcon", "order", "war", "sky" };
-        var sortedWords = words.OrderBy(w => w);
-        // sortedWords is an IEnumerable<string> (or use .ToList() to make a new List<string>)
-        // Result: { "falcon", "order", "sky", "war" }
-        var descendingWords = words.OrderByDescending(w => w);
-        // Result: { "war", "sky", "order", "falcon" }
-        //Możesz użyć ThenBy() lub ThenByDescending() w celu określenia drugorzędnych kryteriów sortowania
-        //var sortedPeople = people.OrderBy(p => p.Name.Length).ThenBy(p => p.Age).ToList();
-        */
-
     }
     #endregion
        
@@ -1770,6 +1787,7 @@ public partial class MainWindowViewModel : ObservableObject
                         Photo p = new Photo(imFile);
                         p.Size = BrokerFile.Prdouble(finfo.Length);
                         p.RealSize = finfo.Length.ToString();
+                        p.DateModified = finfo.LastWriteTime;
                         p.Icon = BlinkIcom;
                         p.maska = maska;
                         p.Image = back;
