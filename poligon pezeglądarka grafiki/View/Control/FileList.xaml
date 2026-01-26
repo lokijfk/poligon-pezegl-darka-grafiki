@@ -4,12 +4,25 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:convertersInternal="clr-namespace:MaterialDesignThemes.Wpf.Converters.Internal;assembly=MaterialDesignThemes.Wpf"
              xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
+             xmlns:converters="clr-namespace:poligon_pezeglądarka_grafiki.View.Converters"
              xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
+             x:Name="FileListWin"
              >
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!--md:MaterialDesignThemesResources/-->
+                <!--ResourceDictionary Source="/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListBox.xaml"/-->
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <converters:AutomationPropertiesNameConverter x:Key="AutomationPropertiesNameConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <!--TextBlock Text="{Binding SelectedTreeItem}"/-->
 
@@ -25,9 +38,26 @@
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" >
                                     <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,4,0"/>
                                     <Grid>
-                                        <TextBox Text="{Binding Name}"  x:Name="EditBox" Background="DarkRed" Visibility="Collapsed"/> 
-                                        <!-- błąd który tu występuje prawdopodobnie jest z material design-->
-                                        <TextBlock Text="{Binding Name}" x:Name="LabelBlock"  Background="Green" />
+                                        <TextBlock Text="{Binding Name, Mode=OneWay}" x:Name="LabelBlock" />
+                                        <TextBox Text="{Binding Path=Title, ElementName=FileListWin, Mode=OneWay}" x:Name="EditTextBox" Visibility="Collapsed">
+                                            <TextBox.Style>
+                                                <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
+                                                    <Setter Property="AutomationProperties.Name"                                                       
+                                                    Value="{Binding Path=(md:HintAssist.Hint), RelativeSource={RelativeSource Self},
+                                                        Converter={x:Static converters:AutomationPropertiesNameConverter.Instance}}" />
+                                                    <!--Setter Property="Background" Value="Transparent"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                    <Setter Property="Padding" Value="0"/>
+                                                    <Setter Property="materialDesign:HintAssist.IsFloating" Value="False"/>
+                                                    <Setter Property="materialDesign:TextFieldAssist.DecorationVisibility" Value="Collapsed"/>
+                                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                                    <Setter Property="materialDesign:TextFieldAssist.UnderlineBrush" Value="Transparent"/>
+                                                    <Setter Property="materialDesign:TextFieldAssist.CaretBrush" Value="Black"/>
+                                                    <Setter Property="FontSize" Value="12"/-->
+                                                </Style>
+                                            </TextBox.Style>
+                                        </TextBox>
+
                                     </Grid>
                                     <!--TextBlock Text="{Binding Name}" /-->
                                     <!-- tu był textblock zmiana żeby był edytowalny, 

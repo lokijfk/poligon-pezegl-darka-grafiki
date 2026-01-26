@@ -17,6 +17,7 @@ namespace poligon_pezeglądarka_grafiki.View.Control;
 /// </summary>
 public partial class FileList : UserControl
 {
+    public string Title { get; set; } = "File List Control";
     public FileList()
     {
         //Debug.WriteLine("-- jest: FileList");
@@ -34,7 +35,7 @@ public partial class FileList : UserControl
         }
         var FList = (this.DataContext as MainWindowViewModel)?.Photos;
         var p = FList[index].Path;// + "\\" + FList[index].Name;
-        Debug.WriteLine("MouseDoubleClick: " + p);
+        //Debug.WriteLine("MouseDoubleClick: " + p);
         ViewWindow viewWindow = new ViewWindow { DataContext = new ViewWindowViewModel(p) };
         viewWindow.Show();
         //Debug.WriteLine("MouseDoubleClick:"+sender.ToString()+" event:"+(e.Source as ListBox).SelectedIndex );
