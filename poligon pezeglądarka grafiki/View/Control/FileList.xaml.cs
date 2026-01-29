@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.ViewModel;
 using System;
 using System.Collections.Generic;
@@ -27,17 +28,15 @@ public partial class FileList : UserControl
 
     private void ListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        var index = (e.Source as ListBox).SelectedIndex;
-        if (index < 0)
+        if (((ListView)sender).SelectedItem is Photo photo)
         {
-            Debug.WriteLine("MouseDoubleClick: invalid index");
-            return;
+            ViewWindow viewWindow = new ViewWindow { DataContext = new ViewWindowViewModel(photo.Path) };
+            viewWindow.Show();
         }
-        var FList = (this.DataContext as MainWindowViewModel)?.Photos;
-        var p = FList[index].Path;// + "\\" + FList[index].Name;
-        //Debug.WriteLine("MouseDoubleClick: " + p);
-        ViewWindow viewWindow = new ViewWindow { DataContext = new ViewWindowViewModel(p) };
-        viewWindow.Show();
-        //Debug.WriteLine("MouseDoubleClick:"+sender.ToString()+" event:"+(e.Source as ListBox).SelectedIndex );
+    }
+
+    private void MenuItem_Rename(object sender, RoutedEventArgs e)
+    {
+
     }
 }

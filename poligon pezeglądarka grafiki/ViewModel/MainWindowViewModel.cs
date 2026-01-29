@@ -18,10 +18,28 @@ namespace poligon_pezeglądarka_grafiki.ViewModel;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    
+    #region notatki
+    /*
+     * generowanie tokena 
+     * - można go zapisac w pliku bin jako sól do hasła do szyfrowania bazy danych
+    using System.Security.Cryptography;
+    byte[] randomBytes = new byte[32]; // 256 bitów
+    RandomNumberGenerator.Fill(randomBytes);
+    string token = Convert.ToBase64String(randomBytes);
+    - dokończyć przenoszenie ustawień domyślnych do pliku ini
+    - dodać odczyt ustawień domyslnych, resert do domyślnych itd...
+    - dokończyć skalowanie miniatur i napisów pod nimi
+
+    - poprawić widok do wyświetlania pełnoekranowego
+    - dodać widok z miniaturami w liście prewijanej na dole i dużym podglądem na górze
+
+    - dodać widok z edytorem zdjęć - obracanie, odbicia lustrzane, kadrowanie, zmiana rozmiaru
+    */
+    #endregion notatki
+
     #region Properties and [observableProperty]
     #region Collection
-    private BrokerIni iniFile = BrokerIni.GetBroker();  //new BrokerIni();
+    private BrokerIni iniFile = BrokerIni.GetBroker();  
     private ImageSource BlinkIcom { get; set; } = PhotoHelper.CreateEmtpyBitmapSource();
     
     /// <summary>
@@ -29,26 +47,17 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     public ObservableCollection<TreeModel>? Tree { get; set; } = [];
 
-    //to mże usuną i przepisać wszystko na Ptors
-    /// <summary>
-    /// kolekcja przechowująca tablicę obrazów w katalogu do widoków tabelarycznych
-    /// </summary>
-    //public ObservableCollection<FilesIO> FilesList { get; set; } = [];
-
     /// <summary>
     /// lista wyliczeniowa możliwości sortowania
     /// </summary>  
     public ObservableCollection<string> TypSotowania { get; set; } = ["Nazwa", "Data", "Wielkość"];
-
-    //public List<string> TypSortowania = ["Nazwa","Data", "Wielkość"];
 
     /// <summary>
     /// kolekcja przechowująca kolekcją obrazów w katalogu do urzytku w widoku galerii
     /// </summary>
     public ObservableCollection<Photo> Photos { get; set; } = [];
 
-    public ObservableCollection<MenuRadioButton> MenuSort { get; set; } = [];
-    //public ObservableCollection<MenuRadioButton> MenuSortAD { get; set; } = [];
+    public ObservableCollection<MenuRadioButton> MenuSort { get; set; } = [];    
 
     #endregion Collection
 
@@ -57,9 +66,11 @@ public partial class MainWindowViewModel : ObservableObject
 
     public readonly DateTime CreationTime = File.GetCreationTime(Assembly.GetExecutingAssembly().Location);
 
+    //============================================
     [ObservableProperty]
     private int _ThumbnailHeight = 200;
 
+    //============================================
     [ObservableProperty]
     private bool _Writings = true;
     [ObservableProperty]
@@ -105,9 +116,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// w krócie na pulpicie wystarczy dodać katalog startowy i działa
     /// </summary>
     public string ActualPath { get => Directory.GetCurrentDirectory(); }
-    public string InstallPath { get => BrokerFile.GetUserAppDataPath; }
-
-    //public readonly string[] TypSotowania = ["Nazwa", "Data", "Rozmiar"];
+    public string InstallPath { get => BrokerFile.GetUserAppDataPath; }    
 
     #region Interface
     public bool FirstAdd
@@ -143,13 +152,7 @@ public partial class MainWindowViewModel : ObservableObject
         get => iniFile.VisibleFilesInTree;
         set => SetProperty(iniFile.VisibleFilesInTree, value, iniFile, static (u, n) => u.VisibleFilesInTree = n);
     }
-    /*
-    public bool OnlyFoldersWithFiles
-    {
-        get => iniFile.OnlyFoldersWithFiles;
-        set => SetProperty(iniFile.OnlyFoldersWithFiles, value, iniFile, (u, n) => u.OnlyFoldersWithFiles = n);
-    }
-    */
+
     #endregion Interface
 
     private bool _cut = false;
@@ -950,7 +953,7 @@ public partial class MainWindowViewModel : ObservableObject
             }
             else if(kryterium == "Wielkość")
             {
-                PhotosKopia = [.. Photos.OrderBy(p => p.RealSize)];
+                PhotosKopia = [.. Photos.OrderBy(p => p.Size)];
             }
         }
         else if(kierunek == "Malejąco")
@@ -965,7 +968,7 @@ public partial class MainWindowViewModel : ObservableObject
             }
             else if (kryterium == "Wielkość")
             {
-                PhotosKopia = [.. Photos.OrderByDescending(p => p.RealSize)];
+                PhotosKopia = [.. Photos.OrderByDescending(p => p.Size)];
             }
         }
 
@@ -1115,6 +1118,10 @@ public partial class MainWindowViewModel : ObservableObject
                 treeModel.Children.Clear();
                 treeModel.Addchild(ScanPath(treeModel.Path).Children);
                 treeModel.IsExpanded = true;
+                var yuz = treeModel.Children.FirstOrDefault(f => f.Name == x);
+               //var index = treeModel.Children.IndexOf(yuz);
+                //Debug.WriteLine("AddFolder - new folder index: " + index.ToString());
+                return yuz;
             }
             //return null;
         }
@@ -1785,8 +1792,8 @@ public partial class MainWindowViewModel : ObservableObject
                     {                        
                         finfo = new FileInfo(imFile);                        
                         Photo p = new Photo(imFile);
-                        p.Size = BrokerFile.Prdouble(finfo.Length);
-                        p.RealSize = finfo.Length.ToString();
+                        p.Size = finfo.Length;//BrokerFile.Prdouble(finfo.Length);
+                        //p.RealSize = finfo.Length;
                         p.DateModified = finfo.LastWriteTime;
                         p.Icon = BlinkIcom;
                         p.maska = maska;

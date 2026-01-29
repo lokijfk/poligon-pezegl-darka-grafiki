@@ -1,8 +1,11 @@
 ﻿
+using GongSolutions.Wpf.DragDrop.Utilities;
 using Microsoft.Win32;
+using poligon_pezeglądarka_grafiki.DEP;
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -10,6 +13,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
+using static MaterialDesignThemes.Wpf.Theme.ToolBar;
+
 
 
 
@@ -141,6 +147,7 @@ public partial class MainWindow : Window
     /// <param name="textBox"></param>
     private void TextBoxActivate(TextBox textBox)
     {
+        Debug.WriteLine("TextBoxActivate");
         try
         {
             if (textBox != null)
@@ -150,6 +157,7 @@ public partial class MainWindow : Window
                 if (menuSelectedItem == null) menuSelectedItem = textBlock.GetTreeViewItem();
                 if ((menuSelectedItem != null) && (textBlock != null))
                 {
+                    Debug.WriteLine("TextBoxActivate: " + (menuSelectedItem.DataContext as TreeModel).Name);
                     textBlock.Visibility = Visibility.Collapsed;
                     textBox.Height = menuSelectedItem.ActualHeight;//a jak to idzie z double click?
                     textBox.MaxHeight = textBox.FontSize * 1.5;
@@ -160,6 +168,7 @@ public partial class MainWindow : Window
                     textBox.Visibility = Visibility.Visible;
                     _ = textBox.Focus();
                     textBox.Select(TabIndex, textBox.Text.Length); // ustawia kursor na końcu tekstu
+                    //tu nie wiem czemu nie zanznacza tekstu, tylko ustawia kursor na końcu
                 }
             }
         }
@@ -578,15 +587,29 @@ public partial class MainWindow : Window
     private void MenuItem_AddDir(object sender, RoutedEventArgs e)
     {
     #pragma warning disable CS8602 // Wyłuskanie odwołania, które może mieć wartość null.
-        TreeModel itemTV = (TreeModel)menuSelectedItem.DataContext;
-        //var path = itemTV.Path;
-        TreeModel name = ((MainWindowViewModel)this.DataContext).AddFolder(itemTV);
-        // z powodu wirtualizacji nie można dostać się do nowo utworzonego TreeViewItem
-        // a jak wyłączymy wirtualizację to od ręki nie posiada on elemętów podrzędnych
-
+        
+        if (menuSelectedItem.DataContext is TreeModel TM)
+        {
+            if(menuSelectedItem.Items.Count > 0)
+            {
+                menuSelectedItem.IsExpanded = true;
+            }
+            var newItem = ((MainWindowViewModel)this.DataContext).AddFolder(TM);
+            int index = menuSelectedItem.Items.IndexOf(newItem);            
+            if (menuSelectedItem.ItemContainerGenerator.ContainerFromIndex(index) is TreeViewItem tvi)
+            {                
+                tvi.IsSelected = true;
+                tvi.BringIntoView();
+                tvi.UpdateLayout();                
+                if(tvi.GetCHildTextBox() is TextBox textBox)                
+                {
+                    TextBoxActivate(textBox);
+                }                
+            }                     
+        }
     #pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.        
     }
-
+    
 
     private void MenuItem_DeleteDir(object sender, RoutedEventArgs e)
     {

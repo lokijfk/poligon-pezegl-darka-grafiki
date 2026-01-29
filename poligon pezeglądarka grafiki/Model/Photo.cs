@@ -22,7 +22,7 @@ public partial class Photo : ObservableObject
     public string Path { get; set; }
 
     [ObservableProperty]
-    private string _Name;
+    private string _Name;// powinno być bez rozszeżenia skoro osobno jest Extension ??
 
     [ObservableProperty]
     private ImageSource image;
@@ -32,8 +32,8 @@ public partial class Photo : ObservableObject
     //from filesIO
     public string Extension { get; set; } = string.Empty;
     public ImageSource Icon { get; set; }
-    public string Size { get; set; } = string.Empty;
-    public string RealSize { get; set; } = string.Empty;
+    public long Size { get; set; }//tu dać normalną wartość
+    //public long RealSize { get; set; }// a tu zostawiamy long do obliczeń
     public CancellationToken Ctoken { get; set; }
 
     public DateTime DateModified { get; set; }

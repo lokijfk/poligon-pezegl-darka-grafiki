@@ -264,10 +264,7 @@
                                   <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children, Mode=OneTime}" >
                                             <!-- tu dać wrap panel ikonę do katalogu 
                                             i dalej grid do tekstu-->
-                                        <StackPanel Orientation="Horizontal">
-                                        <!--materialDesign:PackIcon Kind="{Binding ElementName=TreeViewX ,Path=IsExpanded ,
-                                            Converter={StaticResource BoolToKindString}}" Margin="0,0,3,0" Foreground="Yellow" /-->
-                                        <!--materialDesign:PackIcon Kind="Folder" Margin="0,0,3,0" Foreground="Yellow" /-->
+                                        <StackPanel Orientation="Horizontal">                                        
                                             <materialDesign:PackIcon Margin="0,0,3,0" >
                                                 <materialDesign:PackIcon.Style>
                                                     <Style TargetType="materialDesign:PackIcon">
@@ -292,37 +289,36 @@
                                                     </Style>
                                                 </materialDesign:PackIcon.Style>
                                             </materialDesign:PackIcon>
+                                            <Grid>                                                
+                                                <TextBlock ToolTip="{Binding Path=Path}">
+                                                     <TextBlock.Text>
+                                                         <MultiBinding Converter="{StaticResource MBConwerterSTS}">
+                                                             <Binding Path="Name" Mode="OneWay" />
+                                                             <Binding Path="CountFiles" />
+                                                             <Binding RelativeSource="{RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}}"
+                                                                    Path="DataContext.VisibleFilesInTree" />
+                                                         </MultiBinding>
+                                                     </TextBlock.Text>
+                                                </TextBlock>
 
-                                        <Grid>                                                
-                                            <TextBlock ToolTip="{Binding Path=Path}">
-                                                 <TextBlock.Text>
-                                                     <MultiBinding Converter="{StaticResource MBConwerterSTS}">
-                                                         <Binding Path="Name" Mode="OneWay" />
-                                                         <Binding Path="CountFiles" />
-                                                         <Binding RelativeSource="{RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}}"
-                                                                Path="DataContext.VisibleFilesInTree" />
-                                                     </MultiBinding>
-                                                 </TextBlock.Text>
-                                            </TextBlock>
-
-                                            <TextBox Visibility="Collapsed" 
-                                                         Text="{Binding Path=Name, Mode=OneWay}">
-                                                <TextBox.Style>
-                                                    <Style TargetType="TextBox">
-                                                        <Setter Property="TextWrapping" Value="Wrap" />
-                                                        <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
-                                                        <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
-                                                     </Style>
-                                                </TextBox.Style>
-                                                    <!--nie wiem czy działą nie testowałem, tu mi jest potrzebny kod BC -->
-                                                    <!-- bo są manipulacje w interfejsie a doiero wynik końcowy jest wysyłąny do VM-->
-                                                <!--i:Interaction.Triggers>
-                                                    <i:EventTrigger EventName="KeyDown">
-                                                    <i:InvokeCommandAction Command="{Binding StartEditCommand}" />
-                                                </i:EventTrigger>
-                                                </i:Interaction.Triggers-->
-                                            </TextBox>
-                                       </Grid>
+                                                <TextBox Visibility="Collapsed" 
+                                                             Text="{Binding Path=Name, Mode=OneWay}">
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox">
+                                                            <Setter Property="TextWrapping" Value="Wrap" />
+                                                            <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
+                                                            <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
+                                                         </Style>
+                                                    </TextBox.Style>
+                                                        <!--nie wiem czy działą nie testowałem, tu mi jest potrzebny kod BC -->
+                                                        <!-- bo są manipulacje w interfejsie a doiero wynik końcowy jest wysyłąny do VM-->
+                                                    <!--i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="KeyDown">
+                                                        <i:InvokeCommandAction Command="{Binding StartEditCommand}" />
+                                                    </i:EventTrigger>
+                                                    </i:Interaction.Triggers-->
+                                                </TextBox>
+                                           </Grid>
                                         </StackPanel>
                                   </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>

@@ -1,6 +1,8 @@
-﻿
-using poligon_pezeglądarka_grafiki.DEP;
+﻿using poligon_pezeglądarka_grafiki.DEP;
+using poligon_pezeglądarka_grafiki.Model;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -15,7 +17,7 @@ public static class TreeViewItemExtension
     /// <param name="item"></param>
     /// <returns></returns>
     public static DependencyObject GetCHildTextBox(this DependencyObject item)
-    {
+    {        
         if (item != null)
         {
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(item); i++)
@@ -24,36 +26,11 @@ public static class TreeViewItemExtension
                 if (child is TextBox)
                 {
                     return (TextBox)child;
-                }
+                }                
                 DependencyObject childItem = GetCHildTextBox(child);
-                if (childItem != null) return childItem as TextBox;
+                if (childItem is TextBox TBi) return TBi;
             }
         }
         return null;
-
-        /*
-        //DependencyObject item = block;
-        //var parent = VisualTreeHelper.GetParent(item);
-        TreeViewItem treeViewItem = item as TreeViewItem;
-        var child = VisualTreeHelper.GetChild(treeViewItem, 0);
-        if (child is TextBox textBox)
-        {
-            Debug.WriteLine("Found TextBox in TreeViewItem: " + textBox.Name);
-            return textBox;
-        }else if (child is Grid grid)
-        {
-            foreach (var gridChild in LogicalTreeHelper.GetChildren(grid))
-            {
-                if (gridChild is TextBox textBox2)
-                {
-                    Debug.WriteLine("Found TextBox2 in TreeViewItem: " + textBox2.Name);
-                    return textBox2;
-                }
-            }
-        }
-        return null;
-        */
     }
-
-
 }

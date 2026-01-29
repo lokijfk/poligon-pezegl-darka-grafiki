@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:convertersInternal="clr-namespace:MaterialDesignThemes.Wpf.Converters.Internal;assembly=MaterialDesignThemes.Wpf"
              xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
              xmlns:converters="clr-namespace:poligon_pezeglądarka_grafiki.View.Converters"
@@ -16,18 +16,77 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!--md:MaterialDesignThemesResources/-->
-                <!--ResourceDictionary Source="/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.ListBox.xaml"/-->
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.TextBox.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:AutomationPropertiesNameConverter x:Key="AutomationPropertiesNameConverter"/>
+            <converters:SizeConverter x:Key="SizeConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <!--TextBlock Text="{Binding SelectedTreeItem}"/-->
+        <!-- dodać u góry pole z filtrami i sorowaniem przed listview, 
+        czy to jest na pewno mi potrzebne? 
+        - dokończyć implementację menu kontekstowego
+        - sprawdzić keybinding z okna głównego
+        -->
 
         <ListView Margin="10" Grid.Row="1"  x:Name="Lista" ItemsSource="{Binding Photos}"
                   MouseDoubleClick="ListBox_MouseDoubleClick">
+            <ListView.ContextMenu>
+                <ContextMenu  materialDesign:MenuAssist.MenuItemsPresenterMargin="0" DataContext="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="zaznacz wszystko" 
+                    Command="{Binding Path=DataContext.SelectAllCommand}"
+                    CommandParameter="{Binding PlacementTarget, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+                    >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="SelectAll" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <!-- "otwórz" to menu testowe, bedzie do usunięcia-->
+                    <MenuItem Header="Otwórz" Command="{Binding Path=DataContext.TestMethodCommand}" 
+                        CommandParameter="{Binding Path=SelectedItems}" 
+                        >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="OpenInNew" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Zmień nazwę" Click="MenuItem_Rename">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="RenameOutline" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+
+                    <MenuItem Header="Usuń" 
+                        Command="{Binding Path=DataContext.DeleteThumbnailsCommand}" 
+                        CommandParameter="{Binding Path=SelectedItems}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="DeleteRestore" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Wytnij" Command="{Binding Path=DataContext.MenuCutCommand}" 
+                            CommandParameter="{Binding Path=SelectedItems}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentCut" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Kopiuj" 
+                        Command="{Binding Path=DataContext.MenuCopyCommand}" 
+                        CommandParameter="{Binding Path=SelectedItems}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentCopy" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Wlkej" Command="{Binding Path=DataContext.MenuPasteCommand}">
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="ContentPaste" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Odśwież" Command="{Binding Path=DataContext.MenuRefreshCommand}" >
+                        <MenuItem.Icon>
+                            <materialDesign:PackIcon Kind="Refresh" />
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.View>
                 <GridView>
                     <GridViewColumn >
@@ -39,11 +98,11 @@
                                     <Image Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,4,0"/>
                                     <Grid>
                                         <TextBlock Text="{Binding Name, Mode=OneWay}" x:Name="LabelBlock" />
-                                        <TextBox Text="{Binding Path=Title, ElementName=FileListWin, Mode=OneWay}" x:Name="EditTextBox" Visibility="Collapsed">
+                                        <TextBox Text="{Binding Name, Mode=OneWay}" x:Name="EditTextBox" Visibility="Collapsed">
                                             <TextBox.Style>
                                                 <Style TargetType="TextBox" BasedOn="{StaticResource MaterialDesignTextBox}">
                                                     <Setter Property="AutomationProperties.Name"                                                       
-                                                    Value="{Binding Path=(md:HintAssist.Hint), RelativeSource={RelativeSource Self},
+                                                    Value="{Binding Path=(materialDesign:HintAssist.Hint), RelativeSource={RelativeSource Self},
                                                         Converter={x:Static converters:AutomationPropertiesNameConverter.Instance}}" />
                                                     <!--Setter Property="Background" Value="Transparent"/>
                                                     <Setter Property="BorderThickness" Value="0"/>
@@ -59,25 +118,15 @@
                                         </TextBox>
 
                                     </Grid>
-                                    <!--TextBlock Text="{Binding Name}" /-->
-                                    <!-- tu był textblock zmiana żeby był edytowalny, 
-                                    ale może da się tak zrobić żeby do edycji podmieniać rodzaj pól -->
-                                    <!-- kolor może da się zmienić za pomocą triggera -->
+                                    
                                 </StackPanel>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
                     <GridViewColumn Width="Auto" Header="Roz." DisplayMemberBinding="{Binding Extension}" />
-                    <GridViewColumn Width="Auto" Header="Wielkość" DisplayMemberBinding="{Binding Size}"/>
+                    <GridViewColumn Width="Auto" Header="Wielkość" DisplayMemberBinding="{Binding Path=Size, 
+                        Converter={StaticResource SizeConverter}}"/>
                     <GridViewColumn Width="Auto" Header="Ścieszka"  DisplayMemberBinding="{Binding Path}" />
-
-                    <!--GridView.ColumnHeaderContainerStyle>
-                        <Style TargetType="{x:Type GridViewColumnHeader}" >
-                            
-                            <Setter Property="BorderThickness" Value="2" />
-                            <Setter Property="BorderBrush" Value="Red" />
-                        </Style>
-                    </GridView.ColumnHeaderContainerStyle-->
                 </GridView>
                 
             </ListView.View>
