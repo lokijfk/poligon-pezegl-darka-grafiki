@@ -9,6 +9,7 @@ namespace poligon_pezeglądarka_grafiki;
 
 public partial class App : Application
 {
+    public readonly string Version = "1.0.0 beta";
     private void Application_Startup(object sender, StartupEventArgs e)
     {
         {

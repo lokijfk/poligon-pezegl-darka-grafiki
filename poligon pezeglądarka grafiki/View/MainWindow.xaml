@@ -64,7 +64,7 @@
     </i:Interaction.Triggers>
 
     <Border CornerRadius="5" BorderBrush="Indigo" BorderThickness="2" Padding="6" Background="Transparent">
-        <materialDesign:DialogHost x:Name="DialogHostSettings">
+        <!--materialDesign:DialogHost x:Name="DialogHostSettings"-->
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto" MaxHeight="40"/><!-- pasek tytułowy -->                        
@@ -91,7 +91,7 @@
                         <!--StackPanel  Grid.Row="0" Orientation="Horizontal" -->
                             <ToolBar  Visibility="{Binding VisibleToolBar, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <!-- tu przerobić na Behawior zamiast zdarzeń-->
-                                <Button   ToolTip="Widok miniatur" Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery">
+                                <Button  Name="ViewGrid1" ToolTip="Widok miniatur" Command="{Binding Path=SelectionChangedCommand}" CommandParameter="Gallery">
                                     <!--materialDesign:PackIcon Kind="DatabasePlus" /-->
                                     <materialDesign:PackIcon Kind="ViewGrid" />
                                 </Button>
@@ -174,6 +174,10 @@
 
                                     </MenuItem>
                                 </Menu>
+                                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                                <Button Click="EditWindow_Click" Margin="5">
+                                    <materialDesign:PackIcon Kind="ImageEditOutline" />
+                                </Button>
                             </ToolBar>
                             <ToolBar Visibility="{Binding VisibleToolBar, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                     HorizontalAlignment="Right" >
@@ -264,7 +268,7 @@
                                   <HierarchicalDataTemplate DataType="{x:Type model:TreeModel}" ItemsSource="{Binding Children, Mode=OneTime}" >
                                             <!-- tu dać wrap panel ikonę do katalogu 
                                             i dalej grid do tekstu-->
-                                        <StackPanel Orientation="Horizontal">                                        
+                                        <!--StackPanel Orientation="Horizontal">                                        
                                             <materialDesign:PackIcon Margin="0,0,3,0" >
                                                 <materialDesign:PackIcon.Style>
                                                     <Style TargetType="materialDesign:PackIcon">
@@ -278,11 +282,11 @@
                                                             <Setter Property="Foreground" Value="Yellow" />
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
-                                                                AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="true">
+                                                                AncestorType={x:Type TreeViewItem}}, Path=IsExpanded,Mode=OneWay}" Value="true">
                                                                 <Setter Property="Kind" Value="FolderOpen" />
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
-                                                                AncestorType={x:Type TreeViewItem}}, Path=IsExpanded}" Value="false">
+                                                                AncestorType={x:Type TreeViewItem}}, Path=IsExpanded, Mode=OneWay}" Value="false">
                                                                 <Setter Property="Kind" Value="Folder" />
                                                             </DataTrigger>                                                            
                                                     </Style.Triggers>
@@ -301,7 +305,7 @@
                                                      </TextBlock.Text>
                                                 </TextBlock>
 
-                                                <TextBox Visibility="Collapsed" 
+                                                <TextBox Visibility="Collapsed" Name="TextBoxRename"
                                                              Text="{Binding Path=Name, Mode=OneWay}">
                                                     <TextBox.Style>
                                                         <Style TargetType="TextBox">
@@ -310,16 +314,61 @@
                                                             <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
                                                          </Style>
                                                     </TextBox.Style>
-                                                        <!--nie wiem czy działą nie testowałem, tu mi jest potrzebny kod BC -->
-                                                        <!-- bo są manipulacje w interfejsie a doiero wynik końcowy jest wysyłąny do VM-->
-                                                    <!--i:Interaction.Triggers>
-                                                        <i:EventTrigger EventName="KeyDown">
-                                                        <i:InvokeCommandAction Command="{Binding StartEditCommand}" />
-                                                    </i:EventTrigger>
-                                                    </i:Interaction.Triggers-->
+                                                        
                                                 </TextBox>
                                            </Grid>
-                                        </StackPanel>
+                                        </StackPanel!-->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <materialDesign:PackIcon Margin="0,0,3,0" Grid.Column="0">
+                                            <materialDesign:PackIcon.Style>
+                                                <Style TargetType="materialDesign:PackIcon">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                            AncestorType={x:Type TreeViewItem}}, Path=IsSelected }" Value="true">
+                                                            <Setter Property="Foreground"  Value="LightGoldenrodYellow" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                            AncestorType={x:Type TreeViewItem}}, Path=IsSelected}" Value="false">
+                                                            <Setter Property="Foreground" Value="Yellow" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                            AncestorType={x:Type TreeViewItem}}, Path=IsExpanded,Mode=OneWay}" Value="true">
+                                                            <Setter Property="Kind" Value="FolderOpen" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding  RelativeSource={RelativeSource Mode=FindAncestor,
+                                                            AncestorType={x:Type TreeViewItem}}, Path=IsExpanded, Mode=OneWay}" Value="false">
+                                                            <Setter Property="Kind" Value="Folder" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </materialDesign:PackIcon.Style>
+                                        </materialDesign:PackIcon>
+                                        <TextBlock ToolTip="{Binding Path=Path}" Grid.Column="1">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource MBConwerterSTS}">
+                                                    <Binding Path="Name" Mode="OneWay" />
+                                                    <Binding Path="CountFiles" />
+                                                    <Binding RelativeSource="{RelativeSource Mode=FindAncestor,AncestorType={x:Type Window}}"
+                    Path="DataContext.VisibleFilesInTree" />
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                        <TextBox Visibility="Collapsed" Name="TextBoxRename" Grid.Column="1"
+                                            Text="{Binding Path=Name, Mode=OneWay}">
+                                            <TextBox.Style>
+                                                <Style TargetType="TextBox">
+                                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                                    <EventSetter Event="KeyDown" Handler="TextBox_KeyDown" />
+                                                    <EventSetter Event="LostFocus" Handler="TextBox_LostFocus" />
+                                                </Style>
+                                            </TextBox.Style>
+
+                                        </TextBox>
+                                    </Grid>
                                   </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>
                                     
@@ -425,6 +474,6 @@
                     </Grid>
                 </Grid>
             
-        </materialDesign:DialogHost>
+        <!--/materialDesign:DialogHost-->
     </Border>
 </Window>

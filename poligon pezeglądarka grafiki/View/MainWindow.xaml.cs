@@ -1,20 +1,24 @@
 ﻿
-using GongSolutions.Wpf.DragDrop.Utilities;
 using Microsoft.Win32;
-using poligon_pezeglądarka_grafiki.DEP;
 using poligon_pezeglądarka_grafiki.Model;
+using poligon_pezeglądarka_grafiki.View;
 using poligon_pezeglądarka_grafiki.View.ext;
 using poligon_pezeglądarka_grafiki.ViewModel;
-using System.ComponentModel;
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using static MaterialDesignThemes.Wpf.Theme.ToolBar;
+using System.Windows.Shapes;
+using static System.Net.Mime.MediaTypeNames;
+using Path = System.IO.Path;
+//using static MaterialDesignThemes.Wpf.Theme;
+
 
 
 
@@ -227,6 +231,49 @@ public partial class MainWindow : Window
     #endregion zdarzenia
 
     #region Widoki i przyciski główne
+    /// <summary>
+    /// wywołuje okno edycji
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void EditWindow_Click(object sender, RoutedEventArgs e)
+    {
+        //MainWindowViewModel vm = this.DataContext as MainWindowViewModel;
+        //string x = vm.SelectedTreeItem;// to jest katalog
+        //vm.Photos.Where(static p => p.IsSelected).Select(static p => p.Path).ToList().ForEach(p => Debug.WriteLine("EditWindow_Click: " + p));
+        //string y  = vm.Photos.Where(static p => p.IsSelected).Select(static p => p.Path).First();
+        //Debug.WriteLine("EditWindow_Click: " +y);
+        if (DataContext is MainWindowViewModel vm)
+        {
+            //dodać wykrywanie czy coś jest zaznaczone
+            if (vm.Photos.Where(static p => p.IsSelected).Select(static p => p.Path).First() is string photo 
+                && photo != String.Empty)
+            {
+
+
+                //string photo = vm.Photos.Where(static p => p.IsSelected).Select(static p => p.Path).First();
+
+                EditWindow editWindow = new()
+                {
+                    DataContext = new EditWindowViewModel(photo),//(vm.Photos.Where(static p => p.IsSelected).Select(static p => p.Path).First()),
+                    Owner = this
+                };
+                editWindow.ShowDialog();
+                _ = editWindow.Activate();
+                if (editWindow.isSaved)
+                {
+                    //tu trzeba dodać odświeżenie galerii, ale to chyba już jest w vm editwindow
+                    vm.RefreshGalleryAfterEdit(photo);
+                    //Debug.WriteLine("EditWindow_Click - isSaved: " + editWindow.isSaved);
+                }
+                //else
+                //{
+                //    Debug.WriteLine("EditWindow_Click - isSaved: " + editWindow.isSaved);
+                //}
+            }
+        }
+    }
+
 
     /// <summary>
     /// zdażenie kliknięcia na elementy menu sortowania na pasku narzędziowym
@@ -259,59 +306,6 @@ public partial class MainWindow : Window
             _ = (DataContext as MainWindowViewModel).AddRootFolderToTree(path);
         }
     }
-    //to będzie do przerobienia, przenieść wykonanie  do mv
-    /* - przeniesione, zakomentowane w razie problemów
-    private void Button_Click_ViewGrid(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine("Button_Click_ViewGrid");
-        var mv = (this.DataContext as MainWindowViewModel);
-        mv.SelectedView = "Gallery";
-        mv.SelectionChangedCommand.Execute(this);
-    }
-
-    private void Button_Click_ViewList(object sender, RoutedEventArgs e)
-    {
-        //["Hello", "FDataGrid", "FList","Gallery"];
-
-        var mv = (this.DataContext as MainWindowViewModel);
-        mv.SelectedView = "FList";
-        mv.SelectionChangedCommand.Execute(this);
-    }
-
-    private void Button_Click_SettingsFolder(object sender, RoutedEventArgs e)
-    {
-        var mv = (this.DataContext as MainWindowViewModel);
-        mv.SelectedView = "Settings";//settingdFolder - to gdzieś jest jeszcze zapisane i nie wiem gdzie !!! może  w ini
-        mv.SelectionChangedCommand.Execute(this);
-    }
-
-    private void Button_Click_ViewList2(object sender, RoutedEventArgs e)
-    {
-        //["Hello", "FDataGrid", "FList","Gallery"];
-
-        var mv = (this.DataContext as MainWindowViewModel);
-        mv.SelectedView = "Gallery2";
-        mv.SelectionChangedCommand.Execute(this);
-    }
-
-    private void Button_Click_FDataGrid(object sender, RoutedEventArgs e)
-    {
-        //["Hello", "FDataGrid", "FList","Gallery"];
-
-        var mv = (this.DataContext as MainWindowViewModel);
-        mv.SelectedView = "FDataGrid";
-        mv.SelectionChangedCommand.Execute(this);
-    }
-
-    private void Button_Click_Welcome(object sender, RoutedEventArgs e)
-    {
-        //["Hello", "FDataGrid", "FList","Gallery"];
-
-        var mv = (this.DataContext as MainWindowViewModel);
-        mv.SelectedView = "Welcome";
-        mv.SelectionChangedCommand.Execute(this);
-    }
-    */
     #endregion widoki
 
 
@@ -325,6 +319,9 @@ public partial class MainWindow : Window
         treeViewItem.Foreground = temp;
     }
 
+
+    private System.Windows.Threading.DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+    private TreeViewItem treeViewItemToEx = null;
     /// <summary>
     /// zmiana kolory napisu podczas przeciągania pliku nad elementem drzewa
     /// </summary>
@@ -341,10 +338,23 @@ public partial class MainWindow : Window
         TreeModel model = (TreeModel)treeViewItem.DataContext;
         if(model.Children.Count > 0)
         {
-            treeViewItem.IsExpanded = true;
+            if (dispatcherTimer == null)
+            {
+                dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+                treeViewItemToEx = treeViewItem;
+                dispatcherTimer.Tick += new EventHandler(TreeExpand);                
+                dispatcherTimer.Interval = TimeSpan.FromSeconds(1);
+                dispatcherTimer.Start();
+            }
         }
     }
 
+    private void TreeExpand(object sender, EventArgs e)
+    {
+        treeViewItemToEx.IsExpanded = true;
+        dispatcherTimer.Stop();
+        dispatcherTimer = null;
+    }
 
     /// <summary>
     /// sprzątaie, czyli przywraca kolor napisu po opuszczeniu elementu drzewa
@@ -353,9 +363,14 @@ public partial class MainWindow : Window
     /// <param name="e"></param>
     private void TreeViewItem_DragLeave(object sender, DragEventArgs e)
     {
-        var treeViewItem = sender as TreeViewItem;
-        
+        var treeViewItem = sender as TreeViewItem;        
         treeViewItem.Foreground = temp;
+        if(dispatcherTimer != null)
+        {
+            dispatcherTimer.Stop();
+            dispatcherTimer = null;
+        }
+        
     }
 
     
@@ -374,33 +389,56 @@ public partial class MainWindow : Window
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);            
             foreach (var dataString in dataStrings)
             {
-                if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))
+                if(System.IO.File.Exists(dataString) || Directory.Exists(dataString))
                 {
-                    string ext = Path.GetExtension(dataString).ToLower();
-                    var mv = (this.DataContext as MainWindowViewModel);
-                    //to jakoś trzeba zamienić na rozszeżenia brane z ustawień
-                    //if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
-                    if(mv.ExtO(ext))//sięganie do mv, żeby sprawdzić czy rozszerzenie jest obsługiwane, globalne ustawienia dla progrmu
+                    //var mv = (this.DataContext as MainWindowViewModel);
+
+                    if (System.IO.File.Exists(dataString))
                     {
-                        if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+                        if (DataContext is MainWindowViewModel mv)
                         {
-                            e.Effects = DragDropEffects.Copy;
-                        }
-                        else if(e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
-                            e.Effects = DragDropEffects.Move;
-                        //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
+                            if (Path.HasExtension(dataString) && !mv.ExtO(Path.GetExtension(dataString).ToLower()))
+                            {
+                                return;
+                            }
+                        }else return;
                     }
-                }
-                else if (Directory.Exists(dataString) && !Path.HasExtension(dataString))
-                {
-                    //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
                     if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
                     {
                         e.Effects = DragDropEffects.Copy;
                     }
-                    else if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
+                    else //if(e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
                         e.Effects = DragDropEffects.Move;
+                    //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
                 }
+
+                //if (System.IO.File.Exists(dataString) && Path.HasExtension(dataString))
+                //{
+                //    string ext = Path.GetExtension(dataString).ToLower();
+                //    var mv = (this.DataContext as MainWindowViewModel);
+                //    //to jakoś trzeba zamienić na rozszeżenia brane z ustawień
+                //    //if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".gif" || ext == ".tiff" || ext == ".webp")
+                //    if(mv.ExtO(ext))//sięganie do mv, żeby sprawdzić czy rozszerzenie jest obsługiwane, globalne ustawienia dla progrmu
+                //    {
+                //        if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+                //        {
+                //            e.Effects = DragDropEffects.Copy;
+                //        }
+                //        else //if(e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
+                //            e.Effects = DragDropEffects.Move;
+                //        //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
+                //    }
+                //}
+                //else if (Directory.Exists(dataString) && !Path.HasExtension(dataString))
+                //{
+                //    //e.Effects = DragDropEffects.Copy | DragDropEffects.Move;
+                //    if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+                //    {
+                //        e.Effects = DragDropEffects.Copy;
+                //    }
+                //    else //if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))
+                //        e.Effects = DragDropEffects.Move;
+                //}
 
             }
         }
@@ -420,16 +458,12 @@ public partial class MainWindow : Window
         //Debug.WriteLine("TreeView_Drop");
         //Debug.WriteLine()
         //tu gzieś dodać znacznik że ma odświeżyć elementy interfejsu
-        if (e.Data == null)
+        if (e.Data == null || (e.Effects == DragDropEffects.None))
         {
-            Debug.WriteLine("e.data == null");
+            Debug.WriteLine("e.data == null or TreeView_Drop brak efektu");
             return;
         }
-        if (e.Effects == DragDropEffects.None)
-        {
-            Debug.WriteLine("TreeView_Drop brak efektu");
-            return;
-        }
+
         //znacznik = 0; // reset znacznik po upuszczeniu pliku
         TreeView treeView = (TreeView)sender;
         TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
@@ -438,26 +472,29 @@ public partial class MainWindow : Window
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+            bool copy = false;
+            var vm = (MainWindowViewModel)this.DataContext;
+            foreach (var dataString in dataStrings)
             {
-                //Debug.WriteLine("TreeView_Drop Copy: ");
-                foreach (var dataString in dataStrings)
+                if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
                 {
-                    //tu by się przydało żeby moveFileToFolder przyjmowało TreeModel jako drugi parametr
-                    //może wtedy by sie unikneło niepotrzebnego wyszukiwania tego elementu w drzewie
-                    //((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path, true);
-                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, (TreeModel)treeViewItem.DataContext, true);
-                }
-            }
-            else if (e.KeyStates.HasFlag(DragDropKeyStates.ShiftKey))//muszę dodać do ustawień zmianę klawiszy specjalnych definiujących operaqcję
-            {
-                //Debug.WriteLine("TreeView_Drop Move: ");
-                foreach (var dataString in dataStrings)
+                    copy = true;
+                }else copy = false;
+                if (!File.Exists(dataString) && Directory.Exists(dataString))
                 {
-                    //((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path);
-                    ((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, (TreeModel)treeViewItem.DataContext);
+                    Debug.WriteLine("przenoszenie katalogu");
+                    vm.MoveFoderToFolder(dataString, (TreeModel)treeViewItem.DataContext);
                 }
+                //dodać sprawdzanie czy to plik czy też katalog, katalog wysyłać do innej metody
+                //na katalog można też tutaj inaczej zareagować niż w vm
+
+
+                //tu by się przydało żeby moveFileToFolder przyjmowało TreeModel jako drugi parametr
+                //może wtedy by sie unikneło niepotrzebnego wyszukiwania tego elementu w drzewie
+                //((MainWindowViewModel)this.DataContext).MoveFileToFolder(dataString, ((TreeModel)treeViewItem.DataContext).Path, true);
+                vm.MoveFileToFolder(dataString, (TreeModel)treeViewItem.DataContext, copy);
             }
+                       
             //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
             /*
              //ten element w zasadzie już nie istnieje po upuszczeniu i tu generuje błąd
@@ -468,9 +505,7 @@ public partial class MainWindow : Window
                 selectedItem.BringIntoView();
             }
             */
-
         }
-
     }
     private void TreeView_MouseMove(object sender, MouseEventArgs e)
     {
@@ -590,33 +625,179 @@ public partial class MainWindow : Window
         
         if (menuSelectedItem.DataContext is TreeModel TM)
         {
-            if(menuSelectedItem.Items.Count > 0)
+            var newItem = ((MainWindowViewModel)this.DataContext).AddFolder(TM);
+            //Debug.WriteLine($"menuSelectedItem: {(menuSelectedItem.DataContext as TreeModel).Name} - new item: {(newItem as TreeModel).Name}");
+            if (menuSelectedItem.Items.Count > 0)
             {
                 menuSelectedItem.IsExpanded = true;
             }
-            var newItem = ((MainWindowViewModel)this.DataContext).AddFolder(TM);
-            int index = menuSelectedItem.Items.IndexOf(newItem);            
-            if (menuSelectedItem.ItemContainerGenerator.ContainerFromIndex(index) is TreeViewItem tvi)
-            {                
-                tvi.IsSelected = true;
-                tvi.BringIntoView();
-                tvi.UpdateLayout();                
-                if(tvi.GetCHildTextBox() is TextBox textBox)                
+
+            RefreshAfterAddFolder(menuSelectedItem);
+            //int index = menuSelectedItem.Items.IndexOf(newItem);            
+            //if (menuSelectedItem.ItemContainerGenerator.ContainerFromIndex(index) is TreeViewItem tvi)
+            var item = menuSelectedItem.ItemContainerGenerator.ContainerFromItem(newItem);
+            RefreshAfterAddFolder(menuSelectedItem);
+            menuSelectedItem.UpdateLayout();
+            //TreeViewItem tvm = (TreeViewItem)(TreeViewX.ItemContainerGenerator.ContainerFromItem(item));
+            //ContentPresenter myContentPresenter = FindVisualChild<ContentPresenter>(tvm);
+            //if (myContentPresenter == null)
+            //{
+
+            //     myContentPresenter =
+            //    (ContentPresenter)tvm.Template.FindName("ItemsHost", tvm);
+            //    //if (itemsPresenter != null)
+            //    //{
+            //    //    itemsPresenter.ApplyTemplate();
+            //    //}
+            //}
+
+            //DataTemplate myDataTemplate = myContentPresenter.ContentTemplate;
+            //TextBlock myTextBlock = (TextBlock)myDataTemplate.FindName("TextBoxRename", myContentPresenter);
+
+            //MessageBox.Show("The text of the TextBlock of the selected list item: "
+            //+ myTextBlock.Text);
+            //problem występuje gdy dodaję do pustego folderu, wtedy item jest null
+            //trzeba wymusić wygenerowanie kontenera
+            
+            
+            if (item != null)
+                //Debug.WriteLine("item: null");
+            //else
+            {
+                //Debug.WriteLine($"item: {item.GetType().ToString()}");
+
+                //if (menuSelectedItem.ItemContainerGenerator.ContainerFromItem(newItem) is TreeViewItem tvi)
+                if (item is TreeViewItem tvi)
                 {
-                    TextBoxActivate(textBox);
-                }                
-            }                     
+                   // Debug.WriteLine($"menuSelectedItem: {(menuSelectedItem.DataContext as TreeModel).Name} - new item: {(newItem as TreeModel).Name}");
+                    //Debug.WriteLine($"index: {index} - new item: {(newItem as TreeModel).Name}");
+
+
+                    //tvi.IsSelected = true;
+                    tvi.BringIntoView();
+                    //tvi.UpdateLayout();                
+                    RefreshAfterAddFolder(tvi);                    
+                    if (tvi.GetCHildTextBox() is TextBox textBox)                
+                    {
+                        Debug.WriteLine("MenuItem_AddDir - TextBoxActivate");
+                        TextBoxActivate(textBox);
+                    }
+                    else
+                    {
+                        if (tvi.GetCHildTextBoxEx() is TextBox textBox1)
+                        {
+                            Debug.WriteLine("MenuItem_AddDir - TextBoxActivate");
+                            TextBoxActivate(textBox1);
+                        }else
+                            Debug.WriteLine("MenuItem_AddDir - Brak TextBox");
+                    }
+                    
+                }
+            }
         }
     #pragma warning restore CS8602 // Wyłuskanie odwołania, które może mieć wartość null.        
     }
-    
 
-    private void MenuItem_DeleteDir(object sender, RoutedEventArgs e)
+    private childItem FindVisualChild<childItem>(DependencyObject obj)
+    where childItem : DependencyObject
     {
-        //Debug.WriteLine("MenuItem_DeleteDir: " + (menuSelectedItem.DataContext as TreeModel).Path);
-        ((MainWindowViewModel)this.DataContext).DeleteFolder((TreeModel)menuSelectedItem.DataContext);
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+        {
+            DependencyObject child = VisualTreeHelper.GetChild(obj, i);
+            if (child != null && child is childItem)
+            {
+                return (childItem)child;
+            }
+            else
+            {
+                childItem childOfChild = FindVisualChild<childItem>(child);
+                if (childOfChild != null)
+                    return childOfChild;
+            }
+        }
+        return null;
     }
 
+    private void RefreshAfterAddFolder(TreeViewItem treeViewItem)
+    {
+        treeViewItem.ApplyTemplate();
+        ItemsPresenter itemsPresenter =
+            (ItemsPresenter)treeViewItem.Template.FindName("ItemsHost", treeViewItem);
+        if (itemsPresenter != null)
+        {
+            itemsPresenter.ApplyTemplate();
+        }
+        else
+        {
+            itemsPresenter = FindVisualChild<ItemsPresenter>(treeViewItem);
+            if (itemsPresenter == null)
+            {
+                treeViewItem.UpdateLayout();
+                itemsPresenter = FindVisualChild<ItemsPresenter>(treeViewItem);
+            }
+        }
+        Panel itemsHostPanel = (Panel)VisualTreeHelper.GetChild(itemsPresenter, 0);
+        UIElementCollection children = itemsHostPanel.Children;
+        //if (children != null)
+        //{
+        //    foreach (UIElement child in children)
+        //    {
+        //        if (child is TreeViewItem tvi)
+        //        {
+        //            tvi.ApplyTemplate();
+        //        }
+        //    }
+        //}
+        //else
+        //{
+        //    Debug.WriteLine("RefreshAfterAddFolder: children is null");
+        //}
+        }
+
+
+    
+    /// <summary>
+    /// Search for an element of a certain type in the visual tree.
+    /// </summary>
+    /// <typeparam name="T">The type of element to find.</typeparam>
+    /// <param name="visual">The parent element.</param>
+    /// <returns></returns>
+    private T FindVisualChild<T>(Visual visual) where T : Visual
+    {
+        if (visual == null) return null;
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(visual); i++)
+        {
+            Visual child = (Visual)VisualTreeHelper.GetChild(visual, i);
+            if (child != null)
+            {
+                T correctlyTyped = child as T;
+                if (correctlyTyped != null)
+                {
+                    return correctlyTyped;
+                }
+
+                T descendent = FindVisualChild<T>(child);
+                if (descendent != null)
+                {
+                    return descendent;
+                }
+            }
+        }
+
+        return null;
+    }
+    
+    /*
+    private void MenuItem_DeleteDir(object sender, RoutedEventArgs e)
+    {
+        Debug.WriteLine("MenuItem_DeleteDir");
+        //var parent = menuSelectedItem.Parent as TreeModel;
+        //Debug.WriteLine("MenuItem_DeleteDir: " + (menuSelectedItem.DataContext as TreeModel).Path);
+        bool x =((MainWindowViewModel)this.DataContext).DeleteFolder((TreeModel)menuSelectedItem.DataContext);
+
+        //if(menuSelectedItem)
+    }
+    */
     private void MenuItem_Rename(object sender, RoutedEventArgs e)
     {
         var t = menuSelectedItem.GetCHildTextBox();
@@ -658,6 +839,7 @@ public partial class MainWindow : Window
 
 
 
+
     #endregion Menu Context
 
     #region EndGame
@@ -666,5 +848,5 @@ public partial class MainWindow : Window
 
     #endregion
 
-   
+    
 }

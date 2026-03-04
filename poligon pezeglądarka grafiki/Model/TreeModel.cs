@@ -22,7 +22,8 @@ public partial class TreeModel : ObservableObject
     private string _name = string.Empty;
     public bool IsSelected { get; set; } = false;
 
-    public bool IsExpanded { get; set; } = false;
+    [ObservableProperty]
+    private bool _IsExpanded  = false;
 
     public string IsRightSelected { get; set; } = string.Empty;
 

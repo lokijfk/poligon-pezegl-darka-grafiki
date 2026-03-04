@@ -189,6 +189,7 @@ public partial class Gallery : UserControl
             {
                 DataContext = new ViewWindowViewModel(index, in photos) // <-- poprawka: dodaj "in"
             };
+            viewWindow.Owner = Window.GetWindow(this);
             _ = viewWindow.ShowDialog();
             _ = viewWindow.Activate();
             var viewWindowViewModel = viewWindow.DataContext as ViewWindowViewModel;

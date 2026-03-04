@@ -5,12 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View"
-        xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
-        
-        xmlns:MaterialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"       
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance vm:ViewWindowViewModel}"
-        xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+        d:DataContext="{d:DesignInstance vm:ViewWindowViewModel}"        
         Style="{StaticResource MaterialDesignWindow }"         
         WindowStyle="None" ResizeMode="NoResize" WindowState="Maximized"
         Title="ViewWindow" Height="450" Width="800"
@@ -20,7 +17,9 @@
         x:Name="WindowView"
         Loaded="Image_Loaded"
         >
-    <!--    -->
+    <!-- xmlns:MaterialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"   
+    xmlns:md="http://materialdesigninxaml.net/winfx/xaml/themes"
+    -->
     <Window.Background>
         <SolidColorBrush Opacity="{Binding Opacity_C}" Color="{Binding Bacground_C}"/>
     </Window.Background>

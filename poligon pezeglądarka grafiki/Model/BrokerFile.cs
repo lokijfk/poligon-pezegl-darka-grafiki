@@ -5,6 +5,9 @@ using System.Reflection;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Principal;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 
 
@@ -129,6 +132,12 @@ internal class BrokerFile
             
         }
         return Directory.EnumerateFiles(folder);
+    }
+
+    public static string GetNewFile(string folder, string[] patternArray)
+    {
+        return BrokerFile.GetFiles(folder, "Data", "", patternArray).First();
+        //return string.Empty;
     }
 
     /// <summary>
@@ -376,5 +385,23 @@ internal class BrokerFile
             return false;
         }
         return true;
+    }
+
+    /// <summary>
+    /// from https://stackoverflow.com/questions/35804375/how-do-i-save-a-bitmapimage-from-memory-into-a-file-in-wpf-c
+    /// </summary>
+    /// <param name="image"></param>
+    /// <param name="filePath"></param>
+    public static bool Save(ImageSource image, string filePath)
+    {
+        BitmapEncoder encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create((BitmapSource)image));
+        using var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Create);
+        encoder.Save(fileStream);
+        if (File.Exists(filePath))
+        {
+            return true;
+        }
+        return false;
     }
 }

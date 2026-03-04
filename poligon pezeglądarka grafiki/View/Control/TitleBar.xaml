@@ -33,7 +33,9 @@
                 </Style>
             </TextBlock.Style-->
         </TextBlock>
-        <!-- end I and T-->
+        <!-- jak tu dodać wybór przycisków które będą się pokazywać ??
+            może jakiś konwerter w zależności od tego jak jest odpalone okno??
+        -->
         <!-- przycisk zmiany ustawień -->
         <Button Grid.Column="2" Style="{StaticResource MaterialDesignTitleBarButtonStyle}"
                                Width="46" Height="32"

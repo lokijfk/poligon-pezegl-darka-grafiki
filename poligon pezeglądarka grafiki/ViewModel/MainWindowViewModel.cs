@@ -5,6 +5,7 @@ using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.Control;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -12,6 +13,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
@@ -409,6 +412,46 @@ public partial class MainWindowViewModel : ObservableObject
         SelectionChanged(SelectedView);
     }
 
+    public void RefreshGalleryAfterEdit(string PathToPhoto)
+    {
+        var photo = Photos.Where(p => p.Path.Equals(PathToPhoto)).First();
+        if (photo != null)
+        {
+            photo.Load(token);
+        }
+
+        var directory = Directory.GetCurrentDirectory().Count();
+        if (directory > Photos.Count)
+        {
+            var path = System.IO.Path.GetDirectoryName(PathToPhoto);
+            if (Directory.Exists(path))
+            {
+                string newFile = BrokerFile.GetNewFile(path, patternArray);
+                Photo elem = (Photo)Photos.Where(p => p.Path == PathToPhoto).FirstOrDefault();
+                int pos = IndexOf(elem);
+                //Debug.WriteLine($"index:{pos}");
+                newPhoto(newFile, pos+1);  //tu dodawanie elementu do Photos                
+            }
+            //Debug.WriteLine(newFile);//ok
+        }
+    }
+
+
+    public int IndexOf(object item)
+    {
+        var e = Photos.GetEnumerator();
+        var idx = 0;
+        while (e.MoveNext())
+        {
+            if (Equals(item, e.Current))
+                return idx;
+            else
+                idx++;
+        }
+        //if we've got this far it means that the item is either filtered out
+        //or is not in the source collection
+        return -1;
+    }
 
     /// <summary>
     /// obsługa zmiany widoków, polecenie z parametrem
@@ -465,6 +508,13 @@ public partial class MainWindowViewModel : ObservableObject
         if (MenuSelectedTreeItem != null)
         {
             DeleteFolder(MenuSelectedTreeItem);
+            /*
+            var parent = MenuSelectedTreeItem.Parent;
+            Debug.WriteLine($"Parent: {parent} Parent children count: " + parent.Children.Count);
+            if (parent.Children.Count == 0)
+            {
+                parent.IsExpanded = false;
+            }*/
             MenuSelectedItem(null);
         }
     }
@@ -1132,7 +1182,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// inicjuje usuwanie folderu z dysku do kosza, aktualizuje drzewo
     /// </summary>
     /// <param name="treeModel"></param>
-    public void DeleteFolder(TreeModel treeModel)
+    public bool DeleteFolder(TreeModel treeModel)
     {
         if (treeModel != null)
         {
@@ -1141,11 +1191,18 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 var xuz = treeModel.GetSelfFromParent();
                 if (xuz != null)
-                {
+                {   var parent = xuz.Parent;
+                    parent = parent.GetSelfFromParent();
                     _ = (xuz.Parent?.Children.Remove(xuz));
+                    if (parent != null && parent.Children.Count == 0)
+                    {                        
+                        parent.IsExpanded = false;
+                    }
                 }
+                return true;
             }
         }
+        return false;
     }
 
     /// <summary>
@@ -1212,7 +1269,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     #endregion Folders and Files
 
-    #region okna
+    #region okna dialogowe - nie wykożystane
     /*
     private async Task<string> ShowDialog(SimpledialogViewModel DC)
     {
@@ -1262,6 +1319,11 @@ public partial class MainWindowViewModel : ObservableObject
         //Debug.WriteLine($"GetDropCollor called: {DropCollor}");
         //return DefaultSettings.DropCollor;
         return DropCollor;
+    }
+
+    public void MoveFoderToFolder(string folder, TreeModel DestinyPath)
+    {
+        MoveFoderToFolder(folder, DestinyPath.Path);
     }
 
     private void MoveFoderToFolder(string folder, string DestinyPath)
@@ -1342,17 +1404,7 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
 
-    public void RemoveFileFromPhotos(Photo[] photos)
-    {
-        //Debug.WriteLine("usuwanie przeniesionych plików z Photos");
-       
-        foreach (var item in photos)
-        {
-            Photos.Remove(item);
-            //Debug.WriteLine($"Remowe: {item.Name}");
-        }
-    }
-    /// <summary>
+     /// <summary>
     /// usuwa przeniesione pliki z kolekcji Photos
     /// </summary>
     /// <param name="photos"></param>
@@ -1396,6 +1448,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             if (!File.Exists(file) && Directory.Exists(file))
             {
+                Debug.WriteLine("przenoszenie katalogu");
                 MoveFoderToFolder(file, path.Path);
             }
             return;
@@ -1826,27 +1879,27 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     /// <param name="token"></param>
     /// <returns></returns>
-    private async Task PhotosLoadImae(List<Photo> PhotoSKopia, CancellationToken token)
-    {
-        //Debug.WriteLine($"PhotosLoadImae - token: {token}")
-        if (PhotoSKopia.Count > 0 && !token.IsCancellationRequested)
-        {
-            try
-            {
-                for (var  i = 0; i < PhotoSKopia.Count && !token.IsCancellationRequested; i++)                
-                {
-                    var photo = PhotoSKopia[i];
-                    FileLoaded = i+1;
-                    await photo.Load(token);
-                    //_= PhotoHelper.Load(photo, token);
-                }
-            }
-            catch(Exception ex)
-            {
-                Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
-            }
-        }
-    }
+    //private async Task PhotosLoadImae(List<Photo> PhotoSKopia, CancellationToken token)
+    //{
+    //    //Debug.WriteLine($"PhotosLoadImae - token: {token}")
+    //    if (PhotoSKopia.Count > 0 && !token.IsCancellationRequested)
+    //    {
+    //        try
+    //        {
+    //            for (var  i = 0; i < PhotoSKopia.Count && !token.IsCancellationRequested; i++)                
+    //            {
+    //                var photo = PhotoSKopia[i];
+    //                FileLoaded = i+1;
+    //                await photo.Load(token);
+    //                //_= PhotoHelper.Load(photo, token);
+    //            }
+    //        }
+    //        catch(Exception ex)
+    //        {
+    //            Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
+    //        }
+    //    }
+    //}
 
 
     private async Task PhotosLoadImae(CancellationToken token)
