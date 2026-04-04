@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
@@ -179,6 +180,26 @@ public partial class EditWindowViewModel : ObservableObject
         destImage = FlipImage(false);
         Image = destImage;
     }
+
+    [RelayCommand]
+    private void ToGrayScale()
+    {
+        destImage = TransformToGrayScale();
+        Image = destImage;
+    }
+
+    private BitmapSource TransformToGrayScale()
+    {
+        FormatConvertedBitmap newFormatedBitmapSource = new FormatConvertedBitmap();
+        newFormatedBitmapSource.BeginInit();
+        newFormatedBitmapSource.Source = (BitmapSource)destImage;
+        newFormatedBitmapSource.DestinationFormat = PixelFormats.Gray32Float;
+        //newFormatedBitmapSource.DestinationFormat = PixelFormats.
+        newFormatedBitmapSource.EndInit();
+        return (BitmapSource)newFormatedBitmapSource;
+    }
+
+
     [RelayCommand]
     private void Crop()
     {

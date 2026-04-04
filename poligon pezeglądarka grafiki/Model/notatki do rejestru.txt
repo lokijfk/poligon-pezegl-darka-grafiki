@@ -1,0 +1,43 @@
+﻿
+w:
+HKEY_CLASSES_ROOT\Applications
+dodać klucz poligon pezeglądarka grafiki.exe :
+HKEY_CLASSES_ROOT\Applications\poligon pezeglądarka grafiki.exe
+HKEY_CLASSES_ROOT\Applications\poligon pezeglądarka grafiki.exe\DefaultIcon
+i tu w default ścieżka do ikony:
+"C:\Users\swlas\AppData\Local\poligon pezeglądarka grafiki\img\73042biohazard_109537(1).ico"
+
+w:
+HKEY_CLASSES_ROOT\Applications\poligon pezeglądarka grafiki.exe\shell\open\command
+default:
+"C:\Users\swlas\AppData\Local\poligon pezeglądarka grafiki\poligon pezeglądarka grafiki.exe" "%1"
+
+w:
+HKEY_CLASSES_ROOT\Applications\poligon pezeglądarka grafiki.exe\SupportedTypes
+dodać rozszeżenia plików do które program może otwierać, 
+nie wiem czy tu nie można przypadkiem dopisać ścieżek do ikon dla poszczególnych rozszeżeń
+.gif
+.jpg
+.jpge
+.ico
+klucze zostawiamy puste
+
+w:
+HKEY_CURRENT_USER\Software\Classes\Applications
+HKEY_CURRENT_USER\Software\Classes\Applications\poligon pezeglądarka grafiki.exe
+
+i to samo co w HKEY_CLASSES_ROOT
+
+w:
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.jpeg\OpenWithList
+tu zająć ostatniąliterę, u mnie na razie jest na b 
+w tym kluczu wpisać:
+poligon pezeglądarka grafiki.exe
+
+w:
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.jpeg\UserChoiceLatest\ProgId
+klucz:
+ProgId:
+Applications\poligon pezeglądarka grafiki.exe
+
+tak samo w każdym z rozszeżeń które ma obsługiwać

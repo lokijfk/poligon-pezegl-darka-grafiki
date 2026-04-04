@@ -83,11 +83,17 @@
                         </materialDesign:Card>
                     </ListBoxItem>
                 </ListBox>
-                
-
             </StackPanel>
         </Expander>
+        <Border Style="{StaticResource HorizontalDividerBorder}" />
 
+        <Expander Name="RegistryWrite" Header="Wpisy do rejestru, kojażenie plików z programem" Expanded="Expander_Expanded"
+          BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
+          >
+
+            <TextBlock Text="wpisy do rejestru" />
+        </Expander>
+        <Border Style="{StaticResource HorizontalDividerBorder}" />
         <Expander Name="AddFolderX"  VerticalAlignment="Center" 
                   Expanded="Expander_Expanded" Header="katalogi przeglądane"
                   BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
@@ -143,6 +149,7 @@
             <TextBlock Text="Chwilowo nie wspiwrane" />
         </Expander>
         <Border Style="{StaticResource HorizontalDividerBorder}" />
+        
         <Expander Name="ExcludeFile"  Expanded="Expander_Expanded" Header="pliki wykluczone z przeglądania"
                   BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
                   >

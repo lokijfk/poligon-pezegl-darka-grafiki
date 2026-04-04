@@ -17,7 +17,8 @@ namespace poligon_pezeglądarka_grafiki.View
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
-            ImageToEdit.Height = MainGrid.ActualHeight;
+            ImageToEdit.Height = PoleZarysu.ActualHeight;
+            
             //CanwasToEdit.HorizontalAlignment = HorizontalAlignment.Center;
         }
 

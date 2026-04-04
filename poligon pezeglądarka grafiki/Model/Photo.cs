@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-public partial class Photo : ObservableObject
+public partial class Photo : ObservableObject, IDisposable
 {
     /*jak by to działało jak bym zrobił do tego helpera?
      * - przeniesć tam wszystkie metody
@@ -48,6 +48,8 @@ public partial class Photo : ObservableObject
     // tak samo jak i komentarz z PNG (png trzeba samemu rozkodować)
 
     public string maska = string.Empty;
+    //czy to jest potrzebne??
+    private bool disposedValue = false;
 
     public Photo(string path)
     {
@@ -139,5 +141,43 @@ public partial class Photo : ObservableObject
             Debug.WriteLine($"zadanie wstrzymane (Task): {ex.Message}");
             //return null; // Return null if loading fails
         }
-    }   
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                // TODO: Wyczyścić stan zarządzany (obiekty zarządzane)
+                Name = string.Empty;
+                Path = string.Empty;
+                Extension = string.Empty;
+                Size = 0;
+                Ctoken = default(CancellationToken);
+                DateModified = default(DateTime);
+                maska = string.Empty;
+            }
+
+            // TODO: Zwolnić niezarządzane zasoby (niezarządzane obiekty) i przesłonić finalizator
+            // TODO: Ustawić wartość null dla dużych pól
+            image = null;
+            Icon = null;
+            disposedValue = true;
+        }
+    }
+
+    // // TODO: Przesłonić finalizator tylko w sytuacji, gdy powyższa metoda „Dispose(bool disposing)” zawiera kod służący do zwalniania niezarządzanych zasobów
+    // ~Photo()
+    // {
+    //     // Nie zmieniaj tego kodu. Umieść kod czyszczący w metodzie „Dispose(bool disposing)”.
+    //     Dispose(disposing: false);
+    // }
+
+    public void Dispose()
+    {
+        // Nie zmieniaj tego kodu. Umieść kod czyszczący w metodzie „Dispose(bool disposing)”.        
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
 }

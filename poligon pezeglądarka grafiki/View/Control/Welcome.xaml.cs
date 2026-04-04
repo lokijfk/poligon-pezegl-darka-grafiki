@@ -23,5 +23,10 @@ public partial class Welcome : UserControl
 
     }
 
-
+    private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+    {
+        //System.Diagnostics.Process.Start(e.Uri.AbsoluteUri);
+        Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+        e.Handled = true;
+    }
 }

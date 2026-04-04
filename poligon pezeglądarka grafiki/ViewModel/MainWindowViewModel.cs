@@ -5,7 +5,6 @@ using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.Control;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -13,16 +12,21 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Path = System.IO.Path;
+using Application = System.Windows.Application;
+using System.Runtime.ExceptionServices;
 
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+    [assembly: AssemblyVersionAttribute("4.3.2.1")]
+
     #region notatki
     /*
+     * poprawić przenoszenie katalogu na inny dysk, systemow move tego nie obsługuje
+     * 
      * generowanie tokena 
      * - można go zapisac w pliku bin jako sól do hasła do szyfrowania bazy danych
     using System.Security.Cryptography;
@@ -43,6 +47,7 @@ public partial class MainWindowViewModel : ObservableObject
     #region Properties and [observableProperty]
     #region Collection
     private BrokerIni iniFile = BrokerIni.GetBroker();  
+    //BrokerIni BrokerIni = App.Services.
     private ImageSource BlinkIcom { get; set; } = PhotoHelper.CreateEmtpyBitmapSource();
     
     /// <summary>
@@ -159,8 +164,16 @@ public partial class MainWindowViewModel : ObservableObject
     #endregion Interface
 
     private bool _cut = false;
+
+    /*
+     * to przerobić na odczyt z pliku ini?
+     */
     public string pattern { get; set; } = @"\.(jpg|jpeg|bmp|png|webp)";
-    private string[] patternArray = [".jpg", ".jpeg",".bmp",".png",".webp"];
+    public string pattern2
+    {
+        get => @"\.(" + string.Join("|", patternArray) + ")";
+    }
+    private string[] patternArray = [".jpg",".jpeg",".bmp",".png",".webp"];
 
     #region Private
 
@@ -186,33 +199,142 @@ public partial class MainWindowViewModel : ObservableObject
     /// albo zrobić osobny przycisk aktualizacji
     /// dodać automatyczne uruchomienie wersji z katalogu docelowego i zamknięcie tej wersji - dodane!!
     /// </summary>
-    [RelayCommand(CanExecute = nameof(InstallCanExecute))]    
+    [RelayCommand(CanExecute = nameof(InstallCanExecute))]
     private void Install()
-    {                
-        string sourcedir = Directory.GetCurrentDirectory();
-        string destinyDir = BrokerFile.GetUserAppDataPath;
-        string pathExe = string.Empty;
+    {
+        MovingFilesUI();
+    }
 
-        pathExe = CopyFiles(sourcedir, destinyDir);
+    /// <summary>
+    /// metoda odpowiada za operacje install i update, czyli przenoszenie plików i katalogów
+    /// </summary>
+    /// <param name="update"></param>
+    private void MovingFilesUI(bool update = false)
+    {
+        if (RunAnotherVersion()) return;
+        //RunAnotherVersion();
+        // tu trzeba dodać jakieś opóźnienie żeby proces który ma się zamknąć zdążył się zamknąć,
+        // bo czasami zdarza się że ten proces jeszcze jest aktywny i wtedy mamy błąd że plik jest używany
+        // przez inny proces
+        string sourcedir = Directory.GetCurrentDirectory();
+        string destinyDir = BrokerFile.GetUserAppDataPath;        
+        ClearDirectory(destinyDir);
+        string pathExe = CopyFiles(sourcedir, destinyDir);
         string[] subdirectories = Directory.GetDirectories(sourcedir);
         foreach (string directory in subdirectories)
         {
-            string dirNam = directory.Substring(directory.LastIndexOf(Path.DirectorySeparatorChar) + 1);            
-            if (dirNam == "Img" || dirNam == "Config")
+            if (Directory.GetDirectories(directory).Length > 0 || Directory.GetFiles(directory).Length > 0)
             {
-                string destSubDir = Path.Combine(destinyDir, dirNam);
-                _ = Directory.CreateDirectory(destSubDir);
-                _ = CopyFiles(directory, destSubDir);
+                string dirNam = directory.Substring(directory.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                if (dirNam == "Img" || dirNam == "Config")
+                {
+                    string destSubDir = Path.Combine(destinyDir, dirNam);
+                    _ = Directory.CreateDirectory(destSubDir);
+                    _ = CopyFiles(directory, destSubDir);
+                }
             }
         }
- 
-        if (pathExe != string.Empty)
+        if (pathExe != string.Empty && !update)        
         {
             StartExe(pathExe);
+            Application.Current.Shutdown();
+        }        
+    }
+
+    private bool RunAnotherVersion()
+    {
+        Process thisProc = Process.GetCurrentProcess();       
+        var procs = Process.GetProcessesByName(thisProc.ProcessName);
+        //if (Process.GetProcessesByName(thisProc.ProcessName).Length > 1)
+        if(procs.Length > 1)
+        {
+            MessageBox.Show("Application is already running.");// działa
+            foreach(var proc in procs)
+            {
+                if(proc.Id != thisProc.Id)
+                {
+                    try
+                    {
+                        proc.Kill();
+                        //proc.CloseMainWindow();
+                        //proc.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error closing process: {ex.Message}");
+                    }
+                }
+            }
+
+
+            //Application.Current.Shutdown();
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// czyszczenie wybranego katalogu, pozostawia tylko pliki ini w katalogu głównym
+    /// </summary>
+    /// <param name="directory"></param>
+    /// <returns></returns>
+    private bool ClearDirectory(string directory)
+    {
+        string[] files = Directory.GetFiles(directory);
+        foreach (string file in files)
+        {
+            if(Path.GetExtension(file) != ".ini") File.Delete(file);
+        }
+        string[] dirs = Directory.GetDirectories(directory);
+        foreach(string dir in dirs)
+        {
+            Directory.Delete(dir, true);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// usuwanie plików z katalogu " deinstalacja
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(DeinstallCanExecute))]
+    private void Deinstall()
+    {
+        Debug.WriteLine("Deinstalacja");
+        string currentDir = Directory.GetCurrentDirectory();
+        string appDir = BrokerFile.GetUserAppDataPath;
+        string[] dir = Directory.GetDirectories(appDir);
+        string[] files = Directory.GetFiles(appDir);
+        if (currentDir != appDir)
+        {
+            foreach (string directory in dir)
+            {
+                BrokerFile.DeleteDirectory(directory);
+                // DeleteFolder(directory);
+            }
+            foreach (string file in files)
+            {
+                string ext = Path.GetExtension(file);
+                //string fileName = Path.GetFileName(file);
+                if (ext != ".ini")//to tylko na czas testów, później jest do usunięcia
+                {
+                    //BrokerFile.DeleteFile(file);
+                    BrokerFile.DeleteFileStrong(file);
+                }
+            }
             Application.Current.Shutdown();
         }
     }
 
+
+    /// <summary>
+    /// kopiuje pliki miedzy wybranymi katalogami, tylko z wybranymi rozszeżeniami
+    /// pomija resztę. Zwraca ścieżkę do ostatniego pliku wykonywalnego jaki natrafi
+    /// </summary>
+    /// <param name="sourceDir"></param>
+    /// <param name="destDir"></param>
+    /// <param name="overwrite"></param>
+    /// <returns></returns>
     private string CopyFiles(string sourceDir, string destDir, bool overwrite = false)
     {
         string result = string.Empty;
@@ -223,8 +345,6 @@ public partial class MainWindowViewModel : ObservableObject
             if (File.Exists(file))
             {
                 string ext = Path.GetExtension(file);
-                //string fileName = Path.GetFileName(file);
-                //if (ext == ".exe" || ext == ".dll" || ext == ".json" || ext == ".ico" || ext == ".ini" || ext == ".png")
                 if (extDest.Contains(ext.ToLower()))
                 {
                     _ = FileMove(file, destDir, true,overwrite);
@@ -246,15 +366,18 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void InsatallCanExecuteTest()
     {
+        //Debug.WriteLine("InsatallCanExecuteTest");
         string directoryApp = BrokerFile.GetUserAppDataPath;
         string[] files = Directory.GetFiles(directoryApp);
         string sourceDir = Directory.GetCurrentDirectory();
         if (files.Length > 1)
         {
+            //Debug.WriteLine("tam są jakieś pliki");
             InstallCanExecute = false;
         }
         else
         {
+            //Debug.WriteLine("brak plików");
             InstallCanExecute = true;
         }
         //UpdateCanExecute = !InstallCanExecute;
@@ -268,6 +391,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             DeinstallCanExecute = false;
             ShortcutCanExecute = false;
+            //Debug.WriteLine("test: "+Directory.GetCurrentDirectory()+" != "+ BrokerFile.GetUserAppDataPath);
         }
         if (directoryApp != sourceDir)
         {
@@ -276,31 +400,18 @@ public partial class MainWindowViewModel : ObservableObject
         else
         {
             UpdateCanExecute = false;
+            //Debug.WriteLine("test: "+ directoryApp+" != "+sourceDir);
         }
-
+        //Debug.WriteLine("InstallCanExecute: " + InstallCanExecute);
     }
 
     [RelayCommand(CanExecute = nameof(UpdateCanExecute))]
     private void Update()
     {
-        //Debug.WriteLine("update");
-        //tu jakoś muszę jeszcze zrobić sprawdzanie wersji
-        string destinyDir = BrokerFile.GetUserAppDataPath;
-        string sourcedir = Directory.GetCurrentDirectory();
         
-        _ = CopyFiles(sourcedir, destinyDir,true);
-        string[] subdirectories = Directory.GetDirectories(sourcedir);
-        foreach (string directory in subdirectories)
-        {
-            string dirNam = directory.Substring(directory.LastIndexOf(Path.DirectorySeparatorChar) + 1);
-            //Debug.WriteLine("Katalog do skopiowania: " + dirNam);
-            if (dirNam == "img" || dirNam == "Config")
-            {
-                string destSubDir = Path.Combine(destinyDir, dirNam);
-                _ = Directory.CreateDirectory(destSubDir);
-                _ = CopyFiles(directory, destSubDir,true);
-            }
-        }
+       MovingFilesUI(true);
+        
+
     }
 
     [ObservableProperty]
@@ -336,34 +447,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    [RelayCommand(CanExecute = nameof(DeinstallCanExecute))]
-    private void Deinstall()
-    {
-        Debug.WriteLine("Deinstalacja");
-        string currentDir = Directory.GetCurrentDirectory();
-        string appDir = BrokerFile.GetUserAppDataPath;
-        string[] dir = Directory.GetDirectories(appDir);
-        string[] files = Directory.GetFiles(appDir);
-        if (currentDir != appDir)
-        {
-            foreach (string directory in dir)
-            {
-                BrokerFile.DeleteDirectory(directory);
-                // DeleteFolder(directory);
-            }
-            foreach (string file in files)
-            {
-                string ext = Path.GetExtension(file);
-                //string fileName = Path.GetFileName(file);
-                if (ext != ".ini")//to tylko na czas testów, później jest do usunięcia
-                {
-                    //BrokerFile.DeleteFile(file);
-                    BrokerFile.DeleteFileStrong(file);
-                }
-            }
-            Application.Current.Shutdown();
-        }
-    }
+
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeinstallCommand))]
@@ -388,7 +472,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         string env = BrokerFile.GetUserAppDataPath;
         string PathToExe = Path.Combine(env, "poligon pezeglądarka grafiki.exe");
-        string PathToIco = Path.Combine(env, @"img\73042biohazard_109537(1).ico");
+        string PathToIco = Path.Combine(env, @"poligon pezeglądarka grafiki.exe");
         string lnkFileName = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Poligon PG.lnk");
         if (File.Exists(PathToExe) && File.Exists(PathToIco))
         {
@@ -414,25 +498,29 @@ public partial class MainWindowViewModel : ObservableObject
 
     public void RefreshGalleryAfterEdit(string PathToPhoto)
     {
-        var photo = Photos.Where(p => p.Path.Equals(PathToPhoto)).First();
-        if (photo != null)
+        if (PathToPhoto != string.Empty)
         {
-            photo.Load(token);
-        }
-
-        var directory = Directory.GetCurrentDirectory().Count();
-        if (directory > Photos.Count)
-        {
-            var path = System.IO.Path.GetDirectoryName(PathToPhoto);
-            if (Directory.Exists(path))
+            //załadowanie pierwszego?? po co 
+            var photo = Photos.Where(p => p.Path.Equals(PathToPhoto)).First();
+            if (photo != null)
             {
-                string newFile = BrokerFile.GetNewFile(path, patternArray);
-                Photo elem = (Photo)Photos.Where(p => p.Path == PathToPhoto).FirstOrDefault();
-                int pos = IndexOf(elem);
-                //Debug.WriteLine($"index:{pos}");
-                newPhoto(newFile, pos+1);  //tu dodawanie elementu do Photos                
+                photo.Load(token);
             }
-            //Debug.WriteLine(newFile);//ok
+
+            var directory = Directory.GetCurrentDirectory().Count();
+            if (directory > Photos.Count)
+            {
+                var path = System.IO.Path.GetDirectoryName(PathToPhoto);
+                if (Directory.Exists(path))
+                {
+                    string newFile = BrokerFile.GetNewFile(path, patternArray);
+                    Photo elem = Photos.FirstOrDefault(p => p.Path == PathToPhoto);
+                    int pos = IndexOf(elem);
+                    //Debug.WriteLine($"index:{pos}");
+                    newPhoto(newFile, pos + 1);  //tu dodawanie elementu do Photos                
+                }
+                //Debug.WriteLine(newFile);//ok
+            }
         }
     }
 
@@ -559,8 +647,7 @@ public partial class MainWindowViewModel : ObservableObject
     {
         if (parameter is TreeModel ti)
         {
-            MenuSelectedTreeItem = ti;
-            //Debug.WriteLine("MenuSelectedItem: " + ti.Path);
+            MenuSelectedTreeItem = ti;            
         }
     }
 
@@ -853,8 +940,31 @@ public partial class MainWindowViewModel : ObservableObject
     #region Konstruktory
     public MainWindowViewModel()
     {
+        //var Broker = App.Services<BrokerIni>();
+        //Debug.WriteLine($"Wersja:"+GetBuildDateFromVersion());
+        Debug.WriteLine($"Wersja:" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+
+        //pobiera czas kompilacji ustawiony w projekcie ale godzina jest ustawiana na 2 godziny wczesniej tak jakby brał złąstrefęczasową
+        //var attribute = System.Reflection.Assembly.GetExecutingAssembly()
+        //.GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
+        //.Cast<System.Reflection.AssemblyMetadataAttribute>()
+        //.FirstOrDefault(a => a.Key == "BuildDateTime");
+
+        //string buildDate = attribute?.Value;
+
+        //Debug.WriteLine($"BuildDateTime from attribute: {buildDate}");
+        //System.DateTime.Now
         _init(String.Empty);
     }
+
+    //public DateTime GetBuildDateFromVersion()
+    //{
+    //    Version version = Assembly.GetExecutingAssembly().GetName().Version;
+    //    // Wersja 1.0.* używa formatu: 
+    //    // Major.Minor.DaysSinceBaseDate.SecondsSinceMidnight/2
+    //    DateTime buildDate = new DateTime(2026, 4, 3).AddDays(version.Build).AddSeconds(version.Revision * 2);
+    //    return buildDate;
+    //}
 
     public MainWindowViewModel(string path)
     {
@@ -1326,11 +1436,12 @@ public partial class MainWindowViewModel : ObservableObject
         MoveFoderToFolder(folder, DestinyPath.Path);
     }
 
-    private void MoveFoderToFolder(string folder, string DestinyPath)
+    public void MoveFoderToFolder(string folder, string DestinyPath)
     {
+        Debug.WriteLine("MoveFoderToFolder");
         if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(DestinyPath))
         {
-            throw new FileNotFoundException(@"[Katalog żródłowy lub docelowy nie istnieje]");
+            throw new FileNotFoundException("Katalog żródłowy lub docelowy nie istnieje");
         }
         if (folder == DestinyPath)
         {
@@ -1343,7 +1454,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             try
             {
-                Debug.WriteLine($"deftiny: {newDestinyPath}" + $" Source: {folder}");
+                //Debug.WriteLine($"deftiny: {newDestinyPath}" + $" Source: {folder}");
                 //tu pewnie trzeba zatrzymać wątek ładujący pliki z katalogu źródłowego
                 if (cts != null)
                 {
@@ -1351,13 +1462,27 @@ public partial class MainWindowViewModel : ObservableObject
                     //Debug.WriteLine("MoveFoderToFolder: Waiting for cancellation");
                     while (!cts.IsCancellationRequested)
                     {
-                        Debug.WriteLine("MoveFoderToFolder: still waiting...");                        
+                        Debug.WriteLine("MoveFoderToFolder: still waiting..."); 
                         Thread.SpinWait(5000);
                     }
                 }
-                Directory.Move(folder, newDestinyPath);
+                //BrokerFile.MoveDirectory(folder, newDestinyPath);
+                try
+                {
+                    Directory.Move(folder, newDestinyPath);
+                }
+                catch (IOException)
+                {
+                    //przy większej ilości jest zwiecha jak to przenieść do innego wątku ??
+                    // albo dać informację o przenoszeniu plików??
+                    BrokerFile.MoveDirectory(folder, newDestinyPath);
+                }
+                //nie odświeżył drzewa !!! i trwa za długo ;(
+
+                //Tree.Flatten()
+
                 TreeModel? TreeFoldr = null, TreeDestinyPath = null;
-                foreach (var tree in Tree)
+                foreach (var tree in Tree)//wybór właściwego drzwa
                 {
                     //ograniczamy niepotrzebe szukanie w drzewach
                     if (TreeDestinyPath == null)
@@ -1437,7 +1562,9 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     public void MoveFileToFolder(string file, TreeModel path, bool copy = false)
-    {        
+    {
+        Debug.WriteLine("MoveFileToFolder");
+        //jak przenosimy plik do tego samego katalogu to zmienia jego nazwę zamast wstrzymać się
         if ((file == String.Empty) && (path == null) && !copy)
         {            
             RefreshFileList();
@@ -1448,7 +1575,7 @@ public partial class MainWindowViewModel : ObservableObject
         {
             if (!File.Exists(file) && Directory.Exists(file))
             {
-                Debug.WriteLine("przenoszenie katalogu");
+                //Debug.WriteLine("przenoszenie katalogu");
                 MoveFoderToFolder(file, path.Path);
             }
             return;
@@ -1471,8 +1598,7 @@ public partial class MainWindowViewModel : ObservableObject
                 if (FilesList.Any(i => i.Path == file))
                     _ = FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
             }*/
-
-            //kurde co ja tu miałem na myśli ://////
+                        
             if (SelectedTreePath == path.Path)
             {
                 //to trzeba przerobić bo przy 1000 plików jest to bardzo widoczne i uciążliwe
@@ -1482,8 +1608,7 @@ public partial class MainWindowViewModel : ObservableObject
                 //    var token = cts.Token;
                 //    if (!token.IsCancellationRequested)
                 //    {
-                //        //Debug.WriteLine("load file: " + imFile.value);
-
+                //        //Debug.WriteLine("load file: " + imFile.value)
                 //        Photo p = new Photo(newFilePath);
                 //        p.Image = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png")); 
                 //        //Photos.Add(p);//dodaje na końcu
@@ -1727,9 +1852,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     /// <param name="parameter"></param>
     private void TreeModelLBMClick(TreeModel parameter)
-    {
-        //SelectedItemChanged
-        //PreviewMouseLeftButtonDown        
+    {       
         string View = SelectedViewModel.ToString().Split('.').Last();        
         if (parameter != null)
         {
@@ -1870,6 +1993,7 @@ public partial class MainWindowViewModel : ObservableObject
                 FileLoaded = 0;//teraz jest to wymagane żeby liczyć od początku
                 await PhotosLoadImae(token);
             }
+            // tu wywala błąd przy przenoszeniu katalogów
             if (imFiles.Count() == 0) FileLoaded = 0;
         }
     }

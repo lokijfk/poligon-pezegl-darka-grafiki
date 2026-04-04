@@ -2,43 +2,49 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"              
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"              
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
-            <RichTextBox x:Name="WelcomeText" Width="400" IsReadOnly="True" BorderThickness="0" Background="Transparent" >
-                <FlowDocument>
-                    <Paragraph TextAlignment="Left">
-                        <Run Text="Klawiszologia. " FontStyle="Italic" FontWeight="Bold" />
-                        <LineBreak/>
-                        <Run Text="Obsługuje formaty takie jak: PNG, JPEG, BMP, GIF, TIFF, WEBP "/>
-                        <LineBreak />
-                        <Run Text=" odsługiwane formaty zależne są od systemu"/>
-                        <LineBreak/>
-                        <Run Text="Drak and Drop:"/>
-                        <LineBreak/>
-                        <Run Text=" - CTRL + LKM - kopiowanie"/>
-                        <LineBreak/>
-                        <Run Text="- SHIFT + LKM - przenoszenie"/>
-                        <LineBreak/>
-                        <Run Text="Schowek systemowy: "/>    
-                        <LineBreak/>
-                        <Run Text="- CTRL + V - wklejanie obrazu z schowka"/>
-                        <LineBreak/>
-                        <Run Text="- CTRL + C - kopiowanie obrazu do schowka"/>
-                        <LineBreak/>
-                        <Run Text="- CTRL + X - wycinanie obrazu do schowka, obsługiwanie tylko wewnątrz aplikacji"/>
-                        <LineBreak/>
-                        <Run Text="Inne: "/>
-                        <LineBreak/>
-                        <Run Text=" - CTRL + A - zaznacza/odznacza wszystkie elementy w wybranym katalogu" />
-                        
-                    </Paragraph>
-                </FlowDocument>
-            </RichTextBox>
-        </StackPanel>
+    <Grid x:Name="InfoBlock">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0"  Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+            <TextBlock Margin="10" TextWrapping="Wrap">
+			<Bold><Italic>Klawiszologia.</Italic></Bold>
+            </TextBlock>
+            <TextBlock  TextWrapping="Wrap" Text="Obsługuje formaty takie jak: PNG, JPEG, BMP, GIF, TIFF, WEBP" />
+            <TextBlock Text="odsługiwane formaty zależne są od systemu" />
+            <TextBlock Text="Drak and Drop:"/>
+            <TextBlock Text="CTRL + LKM - kopiowanie" />
+            <TextBlock Text="LKM - przenoszenie"/>
+            <TextBlock Text="Schowek systemowy:"/>
+            <TextBlock Text="CTRL + V - wklejanie obrazu z schowka"/>
+            <TextBlock Text="CTRL + C - kopiowanie obrazu do schowka"/>
+            <TextBlock TextWrapping="Wrap" Text="CTRL + X - wycinanie obrazu do schowka, obsługiwanie tylko wewnątrz aplikacji"/>
+            <TextBlock Text="Inne:" />
+            <TextBlock TextWrapping="Wrap" Text="CTRL + A - zaznacza/odznacza wszystkie elementy w wybranym katalogu"/>
 
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+            <Image Source="/Img/00041-3739771558.jpg" Width="100"  Stretch="UniformToFill">
+                <Image.Clip>                    
+                    <EllipseGeometry Center="50,50" RadiusX="60" RadiusY="60"/>
+                </Image.Clip>
+            </Image>
+            <!-- The Center is at (Width/2, Height/2), RadiusX and RadiusY are Width/2 -->
+
+            <TextBlock>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" 
+                           NavigateUri="https://www.github.com/lokijfk/poligon-pezegl-darka-grafiki/">
+                    "Poligon - Przeglądarka grafiki" na Githubie by LokiJFK
+                </Hyperlink>
+                           
+            </TextBlock>
+        </StackPanel>
+        
         
     </Grid>
 </UserControl>

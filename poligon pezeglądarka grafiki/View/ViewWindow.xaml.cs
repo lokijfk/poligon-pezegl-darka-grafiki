@@ -94,7 +94,7 @@ public partial class ViewWindow : Window //czemu musi być partial ??
     private void Image_LostMouseCapture(object sender, MouseEventArgs e)
     {
         mousePositionAfterCapture = e.GetPosition(WindowView);
-        Debug.WriteLine("mousePositionAfterCapture X: " + mousePositionAfterCapture.X + ", Y:" + mousePositionAfterCapture.Y);
+        //Debug.WriteLine("mousePositionAfterCapture X: " + mousePositionAfterCapture.X + ", Y:" + mousePositionAfterCapture.Y);
     }
 
     private void Image_Loaded(object sender, RoutedEventArgs e)

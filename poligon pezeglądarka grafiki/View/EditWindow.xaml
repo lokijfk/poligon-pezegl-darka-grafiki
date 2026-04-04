@@ -77,16 +77,22 @@
                     </Button>
                     <Button ToolTip="obij w pionie" Command="{Binding FlipVerticalCommand}" Style="{StaticResource MaterialDesignFlatButton}" Margin="5">
                         <materialDesign:PackIcon Kind="FlipVertical" />
+                    </Button >
+                    <Button ToolTip="konwersja do skali szarości" Command="{Binding ToGrayScaleCommand}"
+                            Style="{StaticResource MaterialDesignFlatButton}" Margin="5">
+                        <materialDesign:PackIcon Kind="ImageFilterBlackWhite" />
                     </Button>
 
             </ToolBar>
             <Grid Grid.Row="2" x:Name="MainGrid">
-                    <!--<Image Source="{Binding ImageSource}" Stretch="Uniform" />-->
-                    <!--<Canvas x:Name="CanwasToEdit">--> 
-                    <!--</Canvas>-->
-                <Image HorizontalAlignment="Center" VerticalAlignment="Center"
+                <Border BorderBrush="Red" BorderThickness="2" Background="Transparent">
+                    <Canvas x:Name="PoleZarysu"  >
+
+                        <Image  VerticalAlignment="Center" HorizontalAlignment="Center"
                         x:Name="ImageToEdit" Source="{Binding Image, Mode=OneWay}"
                            Loaded="Image_Loaded"/>
+                    </Canvas>
+                </Border>
             </Grid>
             <StatusBar Grid.Row="3" Background="{DynamicResource MaterialDesignToolBarBackground}">
                     <TextBlock Text="    " />

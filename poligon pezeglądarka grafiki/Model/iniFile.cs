@@ -3,7 +3,7 @@ using System.IO;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-internal class IniFile : IDisposable
+internal class IniFile //: IDisposable
 {
    
     #region ToDo
@@ -430,7 +430,7 @@ internal class IniFile : IDisposable
         }
     }
 
-    ~IniFile() => Dispose();
+    //~IniFile() => Dispose();
 
     /// <summary>
     /// usuwa istniejącą strukturę i wczytuje nową z podanego pliku ini
@@ -538,7 +538,6 @@ internal class IniFile : IDisposable
             _ = ListAdw.Remove(section);
             SaveIni();
         }
-
     }
 
     /// <summary>
@@ -557,12 +556,12 @@ internal class IniFile : IDisposable
 
     //---- tools
 
-    public void Dispose()
-    {
-        SaveIni();
+    //public void Dispose()
+    //{
+    //    SaveIni();
 
-        ((IDisposable)ListAdw).Dispose();
+    //    ((IDisposable)ListAdw).Dispose();
 
-        // throw new NotImplementedException();
-    }
+    //    // throw new NotImplementedException();
+    //}
 }

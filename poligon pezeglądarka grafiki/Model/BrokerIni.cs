@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using poligon_pezeglądarka_grafiki.Model.Interface;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -7,8 +8,16 @@ using System.Windows.Media;
 
 namespace poligon_pezeglądarka_grafiki.Model;
 
-class BrokerIni
+/// <summary>
+/// Klasa pośrednicząca pomiędzy obiektem udostępniającym dane z plików ini a resztą programu, która korzysta z tych danych,
+/// głównie z ustawień interfejsu użytkownika, ale nie tylko, docelowo może być też wykorzystywana do innych plików ini, np. z ustawieniami kolorów czy schematami bazy danych
+/// ma na celu ułatwienie dostępu do tych danych, zapewnie konwersję typów na te wymagane przez program, oraz dostarcza właściwości odpowiaddające pobieranym lub zapisywanym danym, 
+/// a także zapewnienie, że dane są ładowane tylko raz i są dostępne dla całego programu, czyli implementacja wzorca singletona 
+/// </summary>
+class BrokerIni //: IBrokerIni
 {
+    //interfejs  jest niepotrzebny, zastosowany do testowania DI, ale na razie nie widzę zastosowanie dla DI i na razie chyba odpuszczę  to rozwiązanie, ale zostawię ten interfejs na wszelki wypadek, może kiedyś się przyda
+
     //albo to zmienić na dictionary, albo dodać dictionary na inne pliki ini
     // a tu zostawić taki na tylko to 
     //na pewno dojedzie ini z kolorami ustawianymi przez urzytkownika 
@@ -272,9 +281,11 @@ class BrokerIni
 
     public Brush DropCollor
     {
+        #pragma warning disable CS8603 // Możliwe zwrócenie odwołania o wartości null.
         get => GetStringValue(GetCurrentMethod(), "Color") == string.Empty ?
             (Brush)new BrushConverter().ConvertFrom("#459cfc") : 
             (Brush)new BrushConverter().ConvertFrom(GetStringValue(GetCurrentMethod(), "Color"));
+        #pragma warning restore CS8603 // Możliwe zwrócenie odwołania o wartości null.
         set => SetStringValue(GetCurrentMethod(), value.ToString(), "Color");            
     }
 

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
+
 
 
 namespace poligon_pezeglądarka_grafiki.Model;
@@ -25,7 +24,7 @@ public partial class TreeModel : ObservableObject
     [ObservableProperty]
     private bool _IsExpanded  = false;
 
-    public string IsRightSelected { get; set; } = string.Empty;
+    //public string IsRightSelected { get; set; } = string.Empty;
 
     public string View { get; set; } = string.Empty;
     [ObservableProperty]
@@ -38,17 +37,17 @@ public partial class TreeModel : ObservableObject
 
     #region methods
 
-    public void RightSelect()
-    {
-        if (Parent != null)
-        {
-            GetRootNode(this).IsRightSelected = _path;
-        }
-        else
-        {
-            IsRightSelected = _path;
-        }
-    }
+    //public void RightSelect()
+    //{
+    //    if (Parent != null)
+    //    {
+    //        GetRootNode(this).IsRightSelected = _path;
+    //    }
+    //    else
+    //    {
+    //        IsRightSelected = _path;
+    //    }
+    //}
 
     public override string ToString()
     {
@@ -98,8 +97,9 @@ public partial class TreeModel : ObservableObject
     public string GetPathSelecetedNode()
     {
         // to też jest nie potrzebne, to jest brane z path elementu
-        TreeModel tree = GetSelectedItem();
-        if (tree != null)
+        //TreeModel tree = GetSelectedItem();
+        if(GetSelectedItem() is TreeModel tree)
+        //if (tree != null)
             return tree.Path;// przetestować co zwróci
         return String.Empty;
     }
@@ -113,13 +113,11 @@ public partial class TreeModel : ObservableObject
     /// <returns></returns>
     public TreeModel? GetRootNode(TreeModel item)
     {
-        TreeModel root = null;
         while (item.Parent != null)
         {
-            root = item.Parent;
-            item = root;
+            item = item.Parent;            
         }
-        return root;
+        return item;
     }
 
     /// <summary>
@@ -152,26 +150,25 @@ public partial class TreeModel : ObservableObject
     /// <returns></returns>
     public TreeModel? FindChildByPath(string path)
     {
-        //Debug.WriteLine("FindChildByPath, searching for: " + path);
         TreeModel root = this;
         if (root.Path.Equals(path, StringComparison.OrdinalIgnoreCase)) return root;
         foreach (var child in root.Children)
         {
             if (child.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
-            {
-                //Debug.WriteLine("FindChildByPath 1, found direct: " + path);
+            {                
                 return child;
+            } else if (path.StartsWith(child.Path, StringComparison.OrdinalIgnoreCase))
+            { 
+                var foundChild = child.FindChildByPath(path);
+                if (foundChild != null)
+                {                    
+                    return foundChild;
+                }
             }
-            var foundChild = child.FindChildByPath(path);
-            if (foundChild != null)
-            {
-                //Debug.WriteLine("FindChildByPath 2, found recursive: " + path);
-                return foundChild;
-            }
-        }
-        //Debug.WriteLine("FindChildByPath, not found: " + path);
+        }        
         return null;
     }
+
 
     /// <summary>
     /// znajduje dziecko o podanym obiekcie w drzewie
@@ -218,10 +215,10 @@ public partial class TreeModel : ObservableObject
     public TreeModel? GetSelfFromParent()
     {
         //TreeModel item = this;
-        TreeModel? parent = this.Parent;
-        if (parent != null)
+        //TreeModel? parent = this.Parent;
+        if (this.Parent != null)
         {
-            return parent.FindChild(this.Name);
+            return this.Parent.FindChild(this.Name);
         }
         return null;
     }
@@ -234,24 +231,10 @@ public partial class TreeModel : ObservableObject
     /// <returns></returns>
     public TreeModel? GetElementByPath(string path)
     {
-        // to jest do poprawy, nie działa jak powinno
-        // nie szuka w drzewie tylko w ścieżce
-        TreeModel? root = this;
-        if (root.Parent != null)
-        {
-            root = GetRootNode(this);
-        }
-        //TreeModel? root = GetRootNode(this);
-        //Debug.WriteLine("GetElementByPath,root: " + root.Name+" , "+root.Path+" , path: "+ path);
-        TreeModel? result = null;
+        TreeModel? root = GetRootNode(this);
         if (root != null)
         {
-            result = root.FindChildByPath(path);
-            if (result != null)
-            {
-                //Debug.WriteLine("GetElementByPath, found: " + result.Name + ", path: " + result.Path);
-                return result;  //root.FindChildByPath(path);
-            }
+            return root.FindChildByPath(path);
         }
         return null;
     }
@@ -274,6 +257,24 @@ public partial class TreeModel : ObservableObject
             return current.Path;
         }
     }
+
+    //public IEnumerable<TreeModel> Flatten()
+    //{
+    //    yield return GetRootNode(this);
+    //    foreach (var child in Children)
+    //    {
+    //        foreach (var descendant in child.Flatten())
+    //        {
+    //            yield return descendant;
+    //        }
+    //    }
+    //}
+
+
+    //var foundNode = tree
+    //.SelectMany(node => node.Children)
+    //.SelectMany(child => child.Children)
+    //.FirstOrDefault(subChild => subChild.Id == targetId);
 
     #region static methods
     // metody statyczne można przenieść do innego obiektu, tu raczej nie mają sensu 
@@ -335,4 +336,33 @@ public partial class TreeModel : ObservableObject
 public class TreeModel : TreeModel<Guid>
 {
 }
+
+/// spłaszczanie drzewa na potrzeby linq
+public static IEnumerable<T> Flatten<T>(this IEnumerable<T> nodes, Func<T, IEnumerable<T>> childrenSelector)
+{
+    foreach (var node in nodes)
+    {
+        yield return node;
+        var children = childrenSelector(node);
+        if (children != null)
+        {
+            foreach (var child in Flatten(children, childrenSelector))
+            {
+                yield return child;
+            }
+        }
+    }
+}
+
+    public IEnumerable<Node> Flatten()
+    {
+        yield return this;//tu dać root
+        foreach (var child in Children)
+        {
+            foreach (var descendant in child.Flatten())
+            {
+                yield return descendant;
+            }
+        }
+    }
 */

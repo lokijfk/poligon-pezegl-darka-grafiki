@@ -5,9 +5,11 @@ using System.Reflection;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Security.Principal;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 
 
@@ -354,6 +356,42 @@ internal class BrokerFile
         {
             Debug.WriteLine(ex.Message);
         }
+    }
+
+
+    public static void MoveDirectory(string sourceDir, string destinationDir)
+    {
+        Debug.WriteLine("MoveDirectory");
+        var dir = new DirectoryInfo(sourceDir);
+        if (string.IsNullOrEmpty(sourceDir) || string.IsNullOrEmpty(destinationDir))
+            throw new FileNotFoundException("Katalog żródłowy lub docelowy nie istnieje");
+        
+        if (sourceDir == destinationDir)
+            throw new IOException("MoveFoderToFolder: ścieżka źródłowa i docelowa są takie same");       
+        
+        if (!dir.Exists)
+            throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");        
+        DirectoryInfo[] dirs = dir.GetDirectories();
+        Debug.WriteLine("destinationDir" + destinationDir);
+        Directory.CreateDirectory(destinationDir);
+        //var dirDext = new DirectoryInfo(destinationDir);
+        //if (!Directory.Exists(destinationDir)) throw new DirectoryNotFoundException($"Destination directory not found: {dirDext.FullName}");
+        
+        //if (!dirDext.Exists) throw new DirectoryNotFoundException($"Destination directory not found: {dirDext.FullName}");
+        foreach (FileInfo file in dir.GetFiles())
+        {
+            string targetFilePath = Path.Combine(destinationDir, file.Name);
+            //Debug.WriteLine("copy file path:" + targetFilePath);
+            file.CopyTo(targetFilePath);
+        }
+
+        foreach (DirectoryInfo subDir in dirs)
+        {
+            string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+            MoveDirectory(subDir.FullName, newDestinationDir);
+        }
+        
+        DeleteDirectory(sourceDir);
     }
 
     public static bool RenameFilDirectory(string oldName, string newName)

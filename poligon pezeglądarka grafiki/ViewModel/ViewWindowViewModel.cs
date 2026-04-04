@@ -2,7 +2,9 @@
 using CommunityToolkit.Mvvm.Input;
 using poligon_pezeglądarka_grafiki.Model;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -45,8 +47,10 @@ public partial class ViewWindowViewModel : ObservableObject
             LoadImage(path);
             LoadFiles(path);
         }
-        Init();
+        Init();        
     }
+
+
 
     public ViewWindowViewModel(int index, ref readonly ObservableCollection<Photo> Photos_X)
     {
@@ -62,6 +66,8 @@ public partial class ViewWindowViewModel : ObservableObject
         var vx = Application.Current.Resources["MaterialDesign.Brush.Background"];
         Bacground_C = (Color)ColorConverter.ConvertFromString(vx.ToString());
         Opacity_C = 0.9;
+
+        
     }
 
     /*
@@ -86,6 +92,8 @@ public partial class ViewWindowViewModel : ObservableObject
 
         //Uri src = new Uri(path, UriKind.RelativeOrAbsolute);
         //dodać wysokość i szerokosć obrazka o ile jest to zaznaczone w ini
+
+        
         MyBitmapImage = new();
         MyBitmapImage.BeginInit();
         MyBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
