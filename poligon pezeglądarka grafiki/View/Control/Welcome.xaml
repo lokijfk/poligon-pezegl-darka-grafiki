@@ -4,14 +4,42 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:vm="clr-namespace:poligon_pezeglądarka_grafiki.ViewModel"
              mc:Ignorable="d"              
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
+             >
     <Grid x:Name="InfoBlock">
-        <Grid.ColumnDefinitions>
+        <!--Grid.ColumnDefinitions>
             <ColumnDefinition />
             <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0"  Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+        </Grid.ColumnDefinitions-->
+
+        <StackPanel  Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+            <Image Source="/Img/00041-3739771558.jpg" Width="100"  Stretch="UniformToFill">
+                <Image.Clip>                    
+                    <EllipseGeometry Center="50,50" RadiusX="60" RadiusY="60"/>
+                </Image.Clip>
+            </Image>
+            <!-- The Center is at (Width/2, Height/2), RadiusX and RadiusY are Width/2 -->
+
+            <TextBlock>
+                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" 
+                           NavigateUri="https://www.github.com/lokijfk/poligon-pezegl-darka-grafiki/">
+                    "Poligon - Przeglądarka grafiki" na Githubie by LokiJFK
+                </Hyperlink>
+                           
+            </TextBlock>
+
+            <TextBlock TextWrapping="Wrap" Margin="10" Text="{Binding Wersion}"/>
+
+            <TextBlock TextWrapping="Wrap" Text="Witaj w Poligon - Przeglądarka grafiki! To prosta aplikacja stworzona w WPF, która umożliwia przeglądanie i zarządzanie Twoimi obrazami w wygodny sposób."/>
+            <TextBlock TextWrapping="Wrap" Text="Poligon - Przeglądarka grafiki to darmowa aplikacja open-source, stworzona przez entuzjastę programowania, LokiJFK. Projekt ten jest dostępny na GitHubie, gdzie można znaleźć kod źródłowy, zgłaszać problemy i przyczyniać się do rozwoju aplikacji."/>            
+            <TextBlock TextWrapping="Wrap" Text="Aplikacja została stworzona w celu nauki i doskonalenia umiejętności programowania w C# oraz WPF. Nie jest przeznaczona do użytku komercyjnego i może zawierać błędy lub niedoskonałości."/>
+            <TextBlock TextWrapping="Wrap" Text="Jeśli masz jakiekolwiek sugestie, pytania lub chcesz przyczynić się do rozwoju projektu, zapraszam do kontaktu poprzez GitHub."/>
+            <TextBlock TextWrapping="Wrap" Text="Dziękuję za zainteresowanie i życzę miłego korzystania z aplikacji!" />
+        <!--</StackPanel>
+        <StackPanel   Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">-->
             <TextBlock Margin="10" TextWrapping="Wrap">
 			<Bold><Italic>Klawiszologia.</Italic></Bold>
             </TextBlock>
@@ -28,23 +56,6 @@
             <TextBlock TextWrapping="Wrap" Text="CTRL + A - zaznacza/odznacza wszystkie elementy w wybranym katalogu"/>
 
         </StackPanel>
-        <StackPanel Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
-            <Image Source="/Img/00041-3739771558.jpg" Width="100"  Stretch="UniformToFill">
-                <Image.Clip>                    
-                    <EllipseGeometry Center="50,50" RadiusX="60" RadiusY="60"/>
-                </Image.Clip>
-            </Image>
-            <!-- The Center is at (Width/2, Height/2), RadiusX and RadiusY are Width/2 -->
-
-            <TextBlock>
-                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" 
-                           NavigateUri="https://www.github.com/lokijfk/poligon-pezegl-darka-grafiki/">
-                    "Poligon - Przeglądarka grafiki" na Githubie by LokiJFK
-                </Hyperlink>
-                           
-            </TextBlock>
-        </StackPanel>
-        
         
     </Grid>
 </UserControl>

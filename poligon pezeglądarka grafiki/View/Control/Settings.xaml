@@ -63,9 +63,19 @@
                     <ListBoxItem>
                         <!-- tu pozmieniać kolory i podłączyć tekst z VM -->
                         <materialDesign:Card   Padding="8" UniformCornerRadius="6"
-                          Background="{DynamicResource PrimaryHueDarkBrush}"
-                            
-                         >
+                          Background="{DynamicResource PrimaryHueDarkBrush}" >
+                            <StackPanel Orientation="Horizontal" >
+                                <TextBlock TextWrapping="Wrap" Text="{Binding Path=StatusVersion}" />
+                                <!--<TextBlock  Text=" aktualna wersja programu: "/>-->
+                                <!--<TextBlock TextWrapping="Wrap" Text="{Binding Path=Version}" />-->
+                                <!--TextBlock TextWrapping="Wrap" Text="{Binding Path=ActualPath}" /-->
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <!-- tu pozmieniać kolory i podłączyć tekst z VM -->
+                        <materialDesign:Card   Padding="8" UniformCornerRadius="6"
+                          Background="{DynamicResource PrimaryHueDarkBrush}" >
                             <StackPanel Orientation="Horizontal" >
                                 <TextBlock  Text=" aktualny katalog: "/>
                                 <TextBlock TextWrapping="Wrap" Text="{Binding Path=ActualPath}" />
@@ -90,7 +100,6 @@
         <Expander Name="RegistryWrite" Header="Wpisy do rejestru, kojażenie plików z programem" Expanded="Expander_Expanded"
           BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
           >
-
             <TextBlock Text="wpisy do rejestru" />
         </Expander>
         <Border Style="{StaticResource HorizontalDividerBorder}" />

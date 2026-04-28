@@ -29,4 +29,15 @@ public partial class Welcome : UserControl
         Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
         e.Handled = true;
     }
+
+    //public string Wersion => GetVersion();
+
+    //private string GetVersion()
+    //{
+    //    var assembly = Assembly.GetExecutingAssembly();
+    //    var versionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+    //    return versionAttribute?.InformationalVersion ?? "Unknown Version";
+
+    //    //$"Wersja:" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    //}
 }

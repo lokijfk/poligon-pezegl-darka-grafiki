@@ -12,17 +12,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Path = System.IO.Path;
+using System.Windows.Threading;
 using Application = System.Windows.Application;
-using System.Runtime.ExceptionServices;
+using Path = System.IO.Path;
 
 
 namespace poligon_pezeglądarka_grafiki.ViewModel;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    [assembly: AssemblyVersionAttribute("4.3.2.1")]
-
     #region notatki
     /*
      * poprawić przenoszenie katalogu na inny dysk, systemow move tego nie obsługuje
@@ -40,13 +38,14 @@ public partial class MainWindowViewModel : ObservableObject
     - poprawić widok do wyświetlania pełnoekranowego
     - dodać widok z miniaturami w liście prewijanej na dole i dużym podglądem na górze
 
-    - dodać widok z edytorem zdjęć - obracanie, odbicia lustrzane, kadrowanie, zmiana rozmiaru
+    - dodać obsługę wielu monitorów
     */
     #endregion notatki
 
     #region Properties and [observableProperty]
     #region Collection
-    private BrokerIni iniFile = BrokerIni.GetBroker();  
+    //private readonly BrokerIni iniFile = BrokerIni.GetBroker();  
+    private readonly BrokerIni BrokerIni = BrokerIni.GetBroker();
     //BrokerIni BrokerIni = App.Services.
     private ImageSource BlinkIcom { get; set; } = PhotoHelper.CreateEmtpyBitmapSource();
     
@@ -70,9 +69,7 @@ public partial class MainWindowViewModel : ObservableObject
     #endregion Collection
 
     [ObservableProperty]
-    private SelectionMode _CurSelectionMode = SelectionMode.Single;
-
-    public readonly DateTime CreationTime = File.GetCreationTime(Assembly.GetExecutingAssembly().Location);
+    private SelectionMode _CurSelectionMode = SelectionMode.Single;    
 
     //============================================
     [ObservableProperty]
@@ -124,7 +121,45 @@ public partial class MainWindowViewModel : ObservableObject
     /// w krócie na pulpicie wystarczy dodać katalog startowy i działa
     /// </summary>
     public string ActualPath { get => Directory.GetCurrentDirectory(); }
-    public string InstallPath { get => BrokerFile.GetUserAppDataPath; }    
+    public string InstallPath { get => BrokerFile.GetUserAppDataPath; }
+
+    //public readonly DateTime CreationTime = File.GetCreationTime(Assembly.GetExecutingAssembly().Location);
+    /// <summary>
+    /// wykożystywane do wyświetlenia wersji w module "Welcome"
+    /// </summary>
+    public string Version { get => $"{GetVersion()}"; }
+
+    private string GetVersion()
+    {
+        //var assembly = Assembly.GetExecutingAssembly();
+        //var versionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        //return versionAttribute?.InformationalVersion ?? "Unknown Version";
+
+        //$"Wersja:" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
+        return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+    }
+
+    public string StatusVersion
+    {
+        get
+        {
+            string version = GetVersion();
+            if (CampareVersion(BrokerIni.Version))
+            {
+                return $"Wersja: {version} - posiadasz najnowszą wersję programu!";
+            }
+            else
+            {
+                return $"Wersja: {version} - program można zaktualizować!";
+            }
+        }
+    }
+    private bool CampareVersion(string version)
+    {
+        Version currentVersion = new Version(GetVersion());
+        Version otherVersion = new Version(version);
+        return currentVersion.CompareTo(otherVersion) == 0;
+    }
 
     #region Interface
     public bool FirstAdd
@@ -134,31 +169,31 @@ public partial class MainWindowViewModel : ObservableObject
 
     public bool VisibleSeparator
     {
-        get => !iniFile.VisibleToolBar;
+        get => !BrokerIni.VisibleToolBar;
     }
 
     public bool VisibleToolBar
     {
-        get => iniFile.VisibleToolBar;
-        set => SetProperty(iniFile.VisibleToolBar, value, iniFile, static (u, n) => u.VisibleToolBar = n);
+        get => BrokerIni.VisibleToolBar;
+        set => SetProperty(BrokerIni.VisibleToolBar, value, BrokerIni, static (u, n) => u.VisibleToolBar = n);
     }
 
 
     public Brush DropCollor
     {
-        get => iniFile.DropCollor;
-        set => SetProperty(iniFile.DropCollor, value, iniFile, static (u, n) => u.DropCollor = n);//nie wiem czy to zadziała
+        get => BrokerIni.DropCollor;
+        set => SetProperty(BrokerIni.DropCollor, value, BrokerIni, static (u, n) => u.DropCollor = n);//nie wiem czy to zadziała
     }
     public bool VisibleStatusBar
     {
-        get => iniFile.VisibleStatusBar;
-        set => SetProperty(iniFile.VisibleStatusBar, value, iniFile, static (u, n) => u.VisibleStatusBar = n);
+        get => BrokerIni.VisibleStatusBar;
+        set => SetProperty(BrokerIni.VisibleStatusBar, value, BrokerIni, static (u, n) => u.VisibleStatusBar = n);
     }
 
     public bool VisibleFilesInTree
     {
-        get => iniFile.VisibleFilesInTree;
-        set => SetProperty(iniFile.VisibleFilesInTree, value, iniFile, static (u, n) => u.VisibleFilesInTree = n);
+        get => BrokerIni.VisibleFilesInTree;
+        set => SetProperty(BrokerIni.VisibleFilesInTree, value, BrokerIni, static (u, n) => u.VisibleFilesInTree = n);
     }
 
     #endregion Interface
@@ -202,97 +237,11 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(InstallCanExecute))]
     private void Install()
     {
-        MovingFilesUI();
+         MovingFilesUI();
     }
 
-    /// <summary>
-    /// metoda odpowiada za operacje install i update, czyli przenoszenie plików i katalogów
-    /// </summary>
-    /// <param name="update"></param>
-    private void MovingFilesUI(bool update = false)
-    {
-        if (RunAnotherVersion()) return;
-        //RunAnotherVersion();
-        // tu trzeba dodać jakieś opóźnienie żeby proces który ma się zamknąć zdążył się zamknąć,
-        // bo czasami zdarza się że ten proces jeszcze jest aktywny i wtedy mamy błąd że plik jest używany
-        // przez inny proces
-        string sourcedir = Directory.GetCurrentDirectory();
-        string destinyDir = BrokerFile.GetUserAppDataPath;        
-        ClearDirectory(destinyDir);
-        string pathExe = CopyFiles(sourcedir, destinyDir);
-        string[] subdirectories = Directory.GetDirectories(sourcedir);
-        foreach (string directory in subdirectories)
-        {
-            if (Directory.GetDirectories(directory).Length > 0 || Directory.GetFiles(directory).Length > 0)
-            {
-                string dirNam = directory.Substring(directory.LastIndexOf(Path.DirectorySeparatorChar) + 1);
-                if (dirNam == "Img" || dirNam == "Config")
-                {
-                    string destSubDir = Path.Combine(destinyDir, dirNam);
-                    _ = Directory.CreateDirectory(destSubDir);
-                    _ = CopyFiles(directory, destSubDir);
-                }
-            }
-        }
-        if (pathExe != string.Empty && !update)        
-        {
-            StartExe(pathExe);
-            Application.Current.Shutdown();
-        }        
-    }
-
-    private bool RunAnotherVersion()
-    {
-        Process thisProc = Process.GetCurrentProcess();       
-        var procs = Process.GetProcessesByName(thisProc.ProcessName);
-        //if (Process.GetProcessesByName(thisProc.ProcessName).Length > 1)
-        if(procs.Length > 1)
-        {
-            MessageBox.Show("Application is already running.");// działa
-            foreach(var proc in procs)
-            {
-                if(proc.Id != thisProc.Id)
-                {
-                    try
-                    {
-                        proc.Kill();
-                        //proc.CloseMainWindow();
-                        //proc.Close();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error closing process: {ex.Message}");
-                    }
-                }
-            }
 
 
-            //Application.Current.Shutdown();
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// czyszczenie wybranego katalogu, pozostawia tylko pliki ini w katalogu głównym
-    /// </summary>
-    /// <param name="directory"></param>
-    /// <returns></returns>
-    private bool ClearDirectory(string directory)
-    {
-        string[] files = Directory.GetFiles(directory);
-        foreach (string file in files)
-        {
-            if(Path.GetExtension(file) != ".ini") File.Delete(file);
-        }
-        string[] dirs = Directory.GetDirectories(directory);
-        foreach(string dir in dirs)
-        {
-            Directory.Delete(dir, true);
-        }
-        return false;
-    }
 
     /// <summary>
     /// usuwanie plików z katalogu " deinstalacja
@@ -405,13 +354,115 @@ public partial class MainWindowViewModel : ObservableObject
         //Debug.WriteLine("InstallCanExecute: " + InstallCanExecute);
     }
 
+    /// <summary>
+    /// zdarzenie wywoływane przez DispatcherTimer //po zamknięciu innych instancji programu, pozwala na odświeżenie stanu przycisków i przeniesienie plików
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    /// <param name="dispatcherTimer"></param>
+    private void TickEvent(object sender, EventArgs e, DispatcherTimer dispatcherTimer)
+    {
+        dispatcherTimer.Stop();        
+        MovingFilesUI(true);
+    }
+
+    /// <summary>
+    /// metoda odpowiada za operacje install i update, czyli przenoszenie plików i katalogów
+    /// </summary>
+    /// <param name="update"></param>
+    private void MovingFilesUI(bool update = false)
+    {        
+        BrokerIni.Version = GetVersion();
+        string sourcedir = Directory.GetCurrentDirectory();
+        string destinyDir = BrokerFile.GetUserAppDataPath;
+        ClearDirectory(destinyDir);
+        string pathExe = CopyFiles(sourcedir, destinyDir);
+        string[] subdirectories = Directory.GetDirectories(sourcedir);
+        foreach (string directory in subdirectories)
+        {
+            if (Directory.GetDirectories(directory).Length > 0 || Directory.GetFiles(directory).Length > 0)
+            {
+                string dirNam = directory.Substring(directory.LastIndexOf(Path.DirectorySeparatorChar) + 1);
+                if (dirNam == "Img" || dirNam == "Config")
+                {
+                    string destSubDir = Path.Combine(destinyDir, dirNam);
+                    _ = Directory.CreateDirectory(destSubDir);
+                    _ = CopyFiles(directory, destSubDir);
+                }
+            }
+        }
+        if (pathExe != string.Empty && !update)
+        {
+            StartExe(pathExe);
+            Application.Current.Shutdown();
+        }
+    }
+
+    private bool ClouseAnotherVersion()
+    {
+        Process thisProc = Process.GetCurrentProcess();
+        var procs = Process.GetProcessesByName(thisProc.ProcessName);
+        //if (Process.GetProcessesByName(thisProc.ProcessName).Length > 1)
+        if (procs.Length > 1)
+        {
+            //MessageBox.Show("Application is already running.");// działa
+            foreach (var proc in procs)
+            {
+                if (proc.Id != thisProc.Id)
+                {
+                    try
+                    {
+                        proc.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error closing process: {ex.Message}");
+                    }
+                }
+            }
+            //Application.Current.Shutdown();
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// czyszczenie wybranego katalogu, pozostawia tylko pliki ini w katalogu głównym
+    /// </summary>
+    /// <param name="directory"></param>
+    /// <returns></returns>
+    private bool ClearDirectory(string directory)
+    {
+        string[] files = Directory.GetFiles(directory);
+        foreach (string file in files)
+        {
+            if (Path.GetExtension(file) != ".ini") File.Delete(file);
+        }
+        string[] dirs = Directory.GetDirectories(directory);
+        foreach (string dir in dirs)
+        {
+            Directory.Delete(dir, true);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Wykonuje operację aktualizacji poprzez zamknięcie innej wersji aplikacji i uruchomienie licznika czasu, aby kontynuować
+    /// proces aktualizacji.
+    /// </summary>
+    /// <remarks>Ta metoda jest przeznaczona do obsługi poleceń i może zostać wykonana tylko wtedy, gdy
+    /// powiązana metoda CanExecute zwróci wartość true. Należy ją wywołać w scenariuszach, w których aplikacja musi
+    /// upewnić się, że żadna inna wersja nie jest uruchomiona przed kontynuowaniem aktualizacji.</remarks>
     [RelayCommand(CanExecute = nameof(UpdateCanExecute))]
     private void Update()
     {
-        
-       MovingFilesUI(true);
-        
-
+        //zamknięcie innych instancji programu, które mogą być uruchomione, a które blokują aktualizację
+        ClouseAnotherVersion();
+        //opóźnienie działania w celu umożliwienia zamknięcia innych instancji programu, które mogą być uruchomione, a które blokują aktualizację
+        DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
+        dispatcherTimer.Tick += (sender, e) => { TickEvent(sender, e, dispatcherTimer); };//wywołanie metody po upływie czasu, która wykona aktualizację
+        dispatcherTimer.Interval = TimeSpan.FromMilliseconds(100);
+        dispatcherTimer.Start();
     }
 
     [ObservableProperty]
@@ -669,13 +720,14 @@ public partial class MainWindowViewModel : ObservableObject
     {
         //Debug.WriteLine("MenuCopy called." +parameter.GetType().ToString() );
         //ok mamy prametr jako IList z zaznaczonymi elementami :)
-        if (parameter is System.Collections.IList ph)
-        {
-            //string[] photos = [.. ph.Cast<Photo>().Select(static p => p.Path)];
-            StringCollection paths = [.. ph.Cast<Photo>().Select(static p => p.Path)];
-            _ = CopyX(paths);
-        }
-        else _ = CopyX();
+        //if (parameter is System.Collections.IList ph)
+        //{
+        //    //string[] photos = [.. ph.Cast<Photo>().Select(static p => p.Path)];
+        //    StringCollection paths = [.. ph.Cast<Photo>().Select(static p => p.Path)];
+        //    _ = CopyX(paths);
+        //}
+        //else _ = CopyX();
+        _=CopyX(GetCollection(parameter));
     }
 
     /// <summary>
@@ -686,16 +738,27 @@ public partial class MainWindowViewModel : ObservableObject
     private void MenuCut(object parameter)
     {
         //Debug.WriteLine("MenuCut called.");
+        //if (parameter is System.Collections.IList ph)
+        //{
+        //    StringCollection paths = [.. ph.Cast<Photo>().Select(static p => p.Path)];
+        //    _cut = CopyX(paths);
+        //}
+        //else
+        //{
+        //    _cut = CopyX();
+        //}
+        _cut = CopyX(GetCollection(parameter));
+    }
+
+    private StringCollection?  GetCollection(object parameter)
+    {
         if (parameter is System.Collections.IList ph)
         {
-            StringCollection paths = [.. ph.Cast<Photo>().Select(static p => p.Path)];
-            _cut = CopyX(paths);
+            return [.. ph.Cast<Photo>().Select(static p => p.Path)];
         }
-        else
-        {
-            _cut = CopyX();
-        }
+        return null;
     }
+
 
     /// <summary>
     /// metoda wykonawcza dla kopiowani i wycinania elementów do schowka systemowego
@@ -900,11 +963,11 @@ public partial class MainWindowViewModel : ObservableObject
 
     #endregion
 
-    [RelayCommand]
-    private void DataGridLDoubleClick(object parameter)
-    {
-        Debug.WriteLine("LBM klik: " + parameter.ToString());
-    }
+    //[RelayCommand]
+    //private void DataGridLDoubleClick(object parameter)
+    //{
+    //    Debug.WriteLine("LBM klik: " + parameter.ToString());
+    //}
 
 
 
@@ -941,19 +1004,9 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel()
     {
         //var Broker = App.Services<BrokerIni>();
-        //Debug.WriteLine($"Wersja:"+GetBuildDateFromVersion());
-        Debug.WriteLine($"Wersja:" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
-        //pobiera czas kompilacji ustawiony w projekcie ale godzina jest ustawiana na 2 godziny wczesniej tak jakby brał złąstrefęczasową
-        //var attribute = System.Reflection.Assembly.GetExecutingAssembly()
-        //.GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
-        //.Cast<System.Reflection.AssemblyMetadataAttribute>()
-        //.FirstOrDefault(a => a.Key == "BuildDateTime");
+        //Debug.WriteLine($"Wersja:" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
-        //string buildDate = attribute?.Value;
-
-        //Debug.WriteLine($"BuildDateTime from attribute: {buildDate}");
-        //System.DateTime.Now
         _init(String.Empty);
     }
 
@@ -1088,14 +1141,14 @@ public partial class MainWindowViewModel : ObservableObject
     #region Sortowanie
     private string Sortowaniekryterium
     {
-        get => iniFile.Sortowaniekryterium;
-        set => SetProperty(iniFile.Sortowaniekryterium, value, iniFile, static (u,n) => u.Sortowaniekryterium = n);
+        get => BrokerIni.Sortowaniekryterium;
+        set => SetProperty(BrokerIni.Sortowaniekryterium, value, BrokerIni, static (u,n) => u.Sortowaniekryterium = n);
     }
 
     private string Sortowaniekierunek
     {
-        get =>iniFile.Sortowaniekierunek;
-        set => SetProperty(iniFile.Sortowaniekierunek, value, iniFile, static (u,n) => u.Sortowaniekierunek = n);
+        get =>BrokerIni.Sortowaniekierunek;
+        set => SetProperty(BrokerIni.Sortowaniekierunek, value, BrokerIni, static (u,n) => u.Sortowaniekierunek = n);
     }
     private void Sortowanie(string kryterium, string kierunek, string[] patternArray)
     {
@@ -2204,8 +2257,8 @@ public partial class MainWindowViewModel : ObservableObject
     #region zapis/odczyt z ini
     private string TreePath
     {
-        get => iniFile.PathFolderTree;
-        set => SetProperty(iniFile.PathFolderTree, value, iniFile, static (u, n) => u.PathFolderTree = n);
+        get => BrokerIni.PathFolderTree;
+        set => SetProperty(BrokerIni.PathFolderTree, value, BrokerIni, static (u, n) => u.PathFolderTree = n);
     }
 
     /// <summary>
@@ -2213,20 +2266,20 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     private string SelectedTreePath
     {
-        get => iniFile.SelectedPathFolderTree;
-        set => SetProperty(iniFile.SelectedPathFolderTree, value, iniFile, static (u, n) => u.SelectedPathFolderTree = n);
+        get => BrokerIni.SelectedPathFolderTree;
+        set => SetProperty(BrokerIni.SelectedPathFolderTree, value, BrokerIni, static (u, n) => u.SelectedPathFolderTree = n);
     }
 
     private string PathFolderExcluded
     {
-        get => iniFile.PathFolderExcluded;
-        set => SetProperty(iniFile.PathFolderExcluded, value, iniFile, static (u, n) => u.PathFolderExcluded = n);
+        get => BrokerIni.PathFolderExcluded;
+        set => SetProperty(BrokerIni.PathFolderExcluded, value, BrokerIni, static (u, n) => u.PathFolderExcluded = n);
     }
 
     private string SelectedViewWindow
     {
-        get => iniFile.SelectedView;
-        set => SetProperty(iniFile.SelectedView, value, iniFile, static (u, n) => u.SelectedView = n);
+        get => BrokerIni.SelectedView;
+        set => SetProperty(BrokerIni.SelectedView, value, BrokerIni, static (u, n) => u.SelectedView = n);
     }
     #endregion
     #endregion Tree and View
@@ -2260,22 +2313,22 @@ public partial class MainWindowViewModel : ObservableObject
 
     private bool SwitchToggleButton
     {
-        get => iniFile.SwitchToggleButton;
-        set => SetProperty(iniFile.SwitchToggleButton, value, iniFile, static (u, n) => u.SwitchToggleButton = n);        
+        get => BrokerIni.SwitchToggleButton;
+        set => SetProperty(BrokerIni.SwitchToggleButton, value, BrokerIni, static (u, n) => u.SwitchToggleButton = n);        
     }
 
 
 
     private Color PrimaryColor
     {
-        get => iniFile.PrimaryColor;
-        set => SetProperty(iniFile.PrimaryColor, value, iniFile, static (u, n) => u.PrimaryColor = n);
+        get => BrokerIni.PrimaryColor;
+        set => SetProperty(BrokerIni.PrimaryColor, value, BrokerIni, static (u, n) => u.PrimaryColor = n);
     }
 
     private Color SecondaryColor
     {
-        get => iniFile.SecondaryColor;
-        set => SetProperty(iniFile.SecondaryColor, value, iniFile, static (u, n) => u.SecondaryColor = n);
+        get => BrokerIni.SecondaryColor;
+        set => SetProperty(BrokerIni.SecondaryColor, value, BrokerIni, static (u, n) => u.SecondaryColor = n);
     }
 
     #endregion Theme Window
@@ -2343,61 +2396,61 @@ public partial class MainWindowViewModel : ObservableObject
 
     private double LastWidth
     {
-        get => iniFile.LastWidth;
-        set => SetProperty(iniFile.LastWidth, value, iniFile, static (u, n) => u.LastWidth = n);
+        get => BrokerIni.LastWidth;
+        set => SetProperty(BrokerIni.LastWidth, value, BrokerIni, static (u, n) => u.LastWidth = n);
     }
     private double LastHeihgt
     {
-        get => iniFile.LastHeihgt;
-        set => SetProperty(iniFile.LastHeihgt, value, iniFile, static (u, n) => u.LastHeihgt = n);
+        get => BrokerIni.LastHeihgt;
+        set => SetProperty(BrokerIni.LastHeihgt, value, BrokerIni, static (u, n) => u.LastHeihgt = n);
     }
     private double LastTop
     {
-        get => iniFile.LastTop;
-        set => SetProperty(iniFile.LastTop, value, iniFile, static (u, n) => u.LastTop = n);
+        get => BrokerIni.LastTop;
+        set => SetProperty(BrokerIni.LastTop, value, BrokerIni, static (u, n) => u.LastTop = n);
     }
     private double LastLeft
     {
-        get => iniFile.LastLeft;
-        set => SetProperty(iniFile.LastLeft, value, iniFile, static (u, n) => u.LastLeft = n);
+        get => BrokerIni.LastLeft;
+        set => SetProperty(BrokerIni.LastLeft, value, BrokerIni, static (u, n) => u.LastLeft = n);
     }
 
 
 
     public WindowState CurMainWindowState
     {
-        get => iniFile.CurMainWindowState;
-        set => SetProperty(iniFile.CurMainWindowState, value, iniFile, static (u, n) => u.CurMainWindowState = n);
+        get => BrokerIni.CurMainWindowState;
+        set => SetProperty(BrokerIni.CurMainWindowState, value, BrokerIni, static (u, n) => u.CurMainWindowState = n);
     }
 
     public string CurMainWindowStateString
     {
-        get => iniFile.CurMainWindowState.ToString();
-        set => SetProperty(iniFile.CurMainWindowStateString, value, iniFile, static (u, n) => u.CurMainWindowStateString = n);
+        get => BrokerIni.CurMainWindowState.ToString();
+        set => SetProperty(BrokerIni.CurMainWindowStateString, value, BrokerIni, static (u, n) => u.CurMainWindowStateString = n);
     }
 
     public double Width
     {
-        get => iniFile.WindowWidth;
-        set => SetProperty(iniFile.WindowWidth, value, iniFile, static (u, n) => u.WindowWidth = n);
+        get => BrokerIni.WindowWidth;
+        set => SetProperty(BrokerIni.WindowWidth, value, BrokerIni, static (u, n) => u.WindowWidth = n);
     }
 
     public double Height
     {
-        get => iniFile.WindowHeight;
-        set => SetProperty(iniFile.WindowHeight, value, iniFile, static (u, n) => u.WindowHeight = n);
+        get => BrokerIni.WindowHeight;
+        set => SetProperty(BrokerIni.WindowHeight, value, BrokerIni, static (u, n) => u.WindowHeight = n);
     }
 
     public double Top
     {
-        get => iniFile.WindowTop;
-        set => SetProperty(iniFile.WindowTop, value, iniFile, static (u, n) => u.WindowTop = n);
+        get => BrokerIni.WindowTop;
+        set => SetProperty(BrokerIni.WindowTop, value, BrokerIni, static (u, n) => u.WindowTop = n);
     }
 
     public double Left
     {
-        get => iniFile.WindowLeft;
-        set => SetProperty(iniFile.WindowLeft, value, iniFile, static (u, n) => u.WindowLeft = n);
+        get => BrokerIni.WindowLeft;
+        set => SetProperty(BrokerIni.WindowLeft, value, BrokerIni, static (u, n) => u.WindowLeft = n);
     }
 
     #endregion WindowState

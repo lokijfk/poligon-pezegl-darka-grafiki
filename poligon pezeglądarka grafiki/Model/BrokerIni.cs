@@ -103,6 +103,16 @@ class BrokerIni //: IBrokerIni
 
 
     #region Metody publiczne
+    #region Global
+    public string Version
+    {
+        get => GetStringValue(GetCurrentMethod());
+        set => SetStringValue(GetCurrentMethod(), value);
+    }
+
+    #endregion Global
+
+
     #region interface
     public bool VisibleToolBar
     {
@@ -311,18 +321,18 @@ class BrokerIni //: IBrokerIni
     //do tych metod dodać mozliwość zmiany sekcji a więc jeszcze jeden paramwetr bo na potrzeby produkcyjne może być wszystko w "G"
     // ale później lepiej żeby to można było rozdzielić
     private static bool IsNotNull([NotNullWhen(true)] object? obj) => obj != null;
-    private int GetIntValue(string mert) => iniFile.GetIniValue("General", mert);
-    private int GetIntValue(string mert, string sec) => iniFile.GetIniValue(sec, mert);
-    private Double GetDoubleValue(string mert, string sec) => iniFile.GetDoubleValue(sec, mert);
+    private int GetIntValue(string met) => iniFile.GetIniValue("General", met);
+    private int GetIntValue(string met, string sec) => iniFile.GetIniValue(sec, met);
+    private Double GetDoubleValue(string met, string sec) => iniFile.GetDoubleValue(sec, met);
     private void SetIntValue(string met, int val) => iniFile.SetValue("General", met, val.ToString());
     private void SetIntValue(string met, int val, string sec) => iniFile.SetValue(sec, met, val.ToString());
     private void SetDoubleValue(string met, double val, string sec) => iniFile.SetValue(sec, met, val.ToString());
-    private bool GetBoolValue(string mert) => iniFile.GetBoolValue("General", mert);
-    private bool GetBoolValue(string mert, string sec) => iniFile.GetBoolValue(sec, mert);
+    private bool GetBoolValue(string met) => iniFile.GetBoolValue("General", met);
+    private bool GetBoolValue(string met, string sec) => iniFile.GetBoolValue(sec, met);
     private void SetBoolValue(string met, bool val) => iniFile.SetValue("General", met, val.ToString());
     private void SetBoolValue(string met, bool val, string sec) => iniFile.SetValue(sec, met, val.ToString());
-    private string GetStringValue(string mert) => iniFile.GetStringValue("General", mert);
-    private string GetStringValue(string mert, string sec) => iniFile.GetStringValue(sec, mert);
+    private string GetStringValue(string met) => iniFile.GetStringValue("General", met);
+    private string GetStringValue(string met, string sec) => iniFile.GetStringValue(sec, met);
     private void SetStringValue(string met, string val) => iniFile.SetValue("General", met, val);
     private void SetStringValue(string met, string val, string sec) => iniFile.SetValue(sec, met, val);
 

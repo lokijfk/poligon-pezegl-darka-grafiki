@@ -19,13 +19,6 @@
     <None Remove="Img\g1.png" />
   </ItemGroup>
 
-	<!--ItemGroup>
-		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-			<_Parameter1>BuildDateTime</_Parameter1>
-			<_Parameter2>$([System.DateTime]::UtcNow.ToString("yyyy-MM-dd HH:mm:ss"))</_Parameter2>
-		</AssemblyAttribute>
-
-	</ItemGroup-->
 	
   <ItemGroup>
     <EmbeddedResource Include="Img\73042biohazard_109537%281%29.ico">
@@ -44,7 +37,6 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="gong-wpf-dragdrop" Version="4.0.0" />
     <PackageReference Include="MaterialDesignThemes" Version="5.3.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.142" />
   </ItemGroup>
 
