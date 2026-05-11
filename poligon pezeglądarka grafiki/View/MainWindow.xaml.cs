@@ -439,6 +439,15 @@ public partial class MainWindow : Window
         }        
         TreeView treeView = (TreeView)sender;
         TreeViewItem treeViewItem = treeView.GetItem(e.GetPosition(treeView));
+
+        if (treeViewItem == null)
+        {
+            Debug.WriteLine("treeview_Drop: brak treeviewitem");// ok to się pokazuje
+            //tu muszę podjąć inną akcję ale tylko wtedy jak jest przeciągany katalog
+            //i to najlepiej z poza programu, bo przeciąganie z galerii jest tylko do katalogu a nie do pustego miejsca w drzewie
+            return;
+        }
+
         //if (treeViewItem != null && temp != null)
         //{
         //    treeViewItem.Foreground = temp;
@@ -510,6 +519,10 @@ public partial class MainWindow : Window
                         paths = [dc.Path];
                         var effect = DragDrop.DoDragDrop(item, new DataObject(DataFormats.FileDrop, paths),
                           DragDropEffects.Copy | DragDropEffects.Move);
+                    }
+                    if ((dc != null) && (item == null))
+                    {
+                        Debug.WriteLine("TreeView_MouseMove - brak itemu do przeciągnięcia");
                     }
                 }
             }

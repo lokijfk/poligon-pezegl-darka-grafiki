@@ -78,7 +78,12 @@
                           Background="{DynamicResource PrimaryHueDarkBrush}" >
                             <StackPanel Orientation="Horizontal" >
                                 <TextBlock  Text=" aktualny katalog: "/>
-                                <TextBlock TextWrapping="Wrap" Text="{Binding Path=ActualPath}" />
+                                <!--<TextBlock TextWrapping="Wrap" Text="{Binding Path=ActualPath}" />-->
+                                <TextBlock TextWrapping="Wrap">
+                                    <Hyperlink Command="{Binding Path=OpenExplorerCommand}" CommandParameter="{Binding Path=ActualPath}">
+                                        <TextBlock Text="{Binding Path=ActualPath}"  />
+                                    </Hyperlink>
+                                </TextBlock>
                             </StackPanel>
                         </materialDesign:Card>
                     </ListBoxItem>
@@ -88,7 +93,12 @@
                              Background="{DynamicResource PrimaryHueDarkBrush}" >
                             <StackPanel Orientation="Horizontal" >
                                 <TextBlock  Text="katalog programu w profilu urzytkownika: "/>
-                                <TextBlock TextWrapping="Wrap" Text="{Binding Path=InstallPath}" />
+                                <!--<TextBlock TextWrapping="Wrap" Text="{Binding Path=InstallPath}" />-->
+                                <TextBlock TextWrapping="Wrap">
+                                    <Hyperlink Command="{Binding Path=OpenExplorerCommand}" CommandParameter="{Binding Path=InstallPath}">
+                                        <TextBlock Text="{Binding Path=InstallPath}"  />
+                                    </Hyperlink>
+                                </TextBlock>
                             </StackPanel>
                         </materialDesign:Card>
                     </ListBoxItem>
@@ -100,7 +110,36 @@
         <Expander Name="RegistryWrite" Header="Wpisy do rejestru, kojażenie plików z programem" Expanded="Expander_Expanded"
           BorderBrush="Indigo" BorderThickness="3"   materialDesign:ExpanderAssist.HeaderBackground="Indigo"
           >
-            <TextBlock Text="wpisy do rejestru" />
+            <StackPanel>
+                <TextBlock Text="wpisy do rejestru" />
+                <!-- tu potrzebna jest struktura danych w ViewModel
+                    oprócz nazwy rozszeżenia ma być również jego stan
+                (czy jest kojażone z programem czy nie) i możliwość odznaczenia/odkojażenia rozszeżenia
+                patternArray daje tylko nazwy 
+                -->
+                <ListView ItemsSource="{Binding MovieList}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ListView ItemsSource="{Binding}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Margin="0,0,10,0"/>
+                                            <TextBlock Text="{Binding Title}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <!--<List >
+                -->
+                <!-- tu trzeba zobaczyć jak dodawać dynamicznie check pointy-->
+                <!--
+            </List>-->
+            </StackPanel>
         </Expander>
         <Border Style="{StaticResource HorizontalDividerBorder}" />
         <Expander Name="AddFolderX"  VerticalAlignment="Center" 

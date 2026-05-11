@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -203,12 +204,19 @@ public partial class MainWindowViewModel : ObservableObject
     /*
      * to przerobić na odczyt z pliku ini?
      */
-    public string pattern { get; set; } = @"\.(jpg|jpeg|bmp|png|webp)";
-    public string pattern2
-    {
-        get => @"\.(" + string.Join("|", patternArray) + ")";
-    }
-    private string[] patternArray = [".jpg",".jpeg",".bmp",".png",".webp"];
+    //public string pattern { get; set; } = @"\.(jpg|jpeg|bmp|png|webp)";
+    //public string pattern2
+    //{
+    //    get => @"\.(" + string.Join("|", patternArray) + ")";
+    //}
+    //public string Pattern 
+    //{
+    //    get => @"\.(" + string.Join("|", patternArray) + ")";
+    //} 
+    public string Pattern { get => @"\.(" + string.Join("|", BrokerIni.Extension.Split(',')) + ")";}
+    //private string[] patternArray = [".jpg",".jpeg",".bmp",".png",".webp"];
+    private string[] patternArray => BrokerIni.Extension.Split(',').Select(e => e.Trim().ToLower()).ToArray();
+    public string[] PatternArray => patternArray;
 
     #region Private
 
@@ -509,10 +517,10 @@ public partial class MainWindowViewModel : ObservableObject
     /// katalog programu to katalog dzie jest plik ini i gdzie zostanie zainstalowany program
     /// </summary>
     [RelayCommand]
-    private void OpenExplorer()
+    private void OpenExplorer(string path)
     {
-        string destinyDir = BrokerFile.GetUserAppDataPath;
-        StartExe("explorer", destinyDir);
+        //string destinyDir = BrokerFile.GetUserAppDataPath;
+        StartExe("explorer", path);
     }
 
     /// <summary>
@@ -874,7 +882,7 @@ public partial class MainWindowViewModel : ObservableObject
                     {
                         string pathFile = Path.GetDirectoryName(p.Path);
                         int x = GetCountFiles(pathFile);
-                        selectedItem.CountFiles = x;
+                        SelectedItem.CountFiles = x;
                         //można zrobić metodę ToolBarStatusRefresh() i tam to wszystko wrzucić
                         // ze sprawdzeniem ilości plików w aktualnie wyświetlanym katalogu
                         //FilesToLoad = x.ToString();
@@ -989,9 +997,9 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     private void RefreshStatusBarFileCount()
     {
-        if (selectedItem != null)
+        if (SelectedItem != null)
         {
-            int x = GetCountFiles(selectedItem.Path);
+            int x = GetCountFiles(SelectedItem.Path);
             //selectedItem.CountFiles = x;
             FilesToLoad = x;
             FileLoaded = x;
@@ -1003,13 +1011,10 @@ public partial class MainWindowViewModel : ObservableObject
     #region Konstruktory
     public MainWindowViewModel()
     {
-        //var Broker = App.Services<BrokerIni>();
-
-        //Debug.WriteLine($"Wersja:" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-
         _init(String.Empty);
     }
 
+    //na razie zostawiam ale raczej będzie do wyżucenia
     //public DateTime GetBuildDateFromVersion()
     //{
     //    Version version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -1640,7 +1645,7 @@ public partial class MainWindowViewModel : ObservableObject
             string newFilePath = FileMove(file, path.Path, copy);
             string pathFile = System.IO.Path.GetDirectoryName(file);
             path.CountFiles = GetCountFiles(path.Path);//dodaje liczbę plików w katalogu docelowym
-            selectedItem.CountFiles = GetCountFiles(selectedItem.Path);
+            SelectedItem.CountFiles = GetCountFiles(SelectedItem.Path);
             RefreshStatusBarFileCount();
             if (!copy)
                 _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));

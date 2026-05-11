@@ -31,9 +31,8 @@ class BrokerIni //: IBrokerIni
     */
     private readonly IniFile iniFile;
     private static BrokerIni brokerini;
-    //private static bool FirstRunKey = false;
+
     #region HEAD
-    //public static bool IsFirstRun() => FirstRunKey;
 
     public static IniFile LoadIni(string inis)
     {
@@ -48,11 +47,6 @@ class BrokerIni //: IBrokerIni
             string path = Path.Combine(katalog, inis);
             if (!Directory.Exists(katalog) || (Directory.Exists(katalog) && !File.Exists(path)))
             {
-                //ini = new IniFile(path);
-                //FirstRunKey = true;
-               // Debug.WriteLine("pierwsze uruchomienie programu - ładuję ustawienia domyślne");                
-                //IniFile defaultIni = new IniFile(Path.Combine(BrokerFile.GetUserAppDataPath, @"Config\\default.ini"));
-                //Debug.WriteLine(Path.Combine(Directory.GetCurrentDirectory(), "Config\\default.ini"));
                 ini = new IniFile(Path.Combine(Directory.GetCurrentDirectory(), "Config\\default.ini"));
                 ini.SaveAs(path);
             }
@@ -61,7 +55,6 @@ class BrokerIni //: IBrokerIni
                 ini = new IniFile(path);
             }               
         }
-        //Debug.WriteLine(Tools.GetUserAppDataPath);
         return ini;
     }
 
@@ -105,6 +98,12 @@ class BrokerIni //: IBrokerIni
     #region Metody publiczne
     #region Global
     public string Version
+    {
+        get => GetStringValue(GetCurrentMethod()) == string.Empty ? "0.0.0.0" : GetStringValue(GetCurrentMethod());
+        set => SetStringValue(GetCurrentMethod(), value);
+    }
+
+    public string Extension
     {
         get => GetStringValue(GetCurrentMethod());
         set => SetStringValue(GetCurrentMethod(), value);

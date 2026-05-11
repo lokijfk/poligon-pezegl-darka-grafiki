@@ -161,7 +161,7 @@ public partial class Photo : ObservableObject, IDisposable
 
             // TODO: Zwolnić niezarządzane zasoby (niezarządzane obiekty) i przesłonić finalizator
             // TODO: Ustawić wartość null dla dużych pól
-            image = null;
+            Image = null;
             Icon = null;
             disposedValue = true;
         }

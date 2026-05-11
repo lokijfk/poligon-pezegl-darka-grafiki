@@ -580,7 +580,7 @@ public partial class GalleryCan : UserControl
         {
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
             //pobieranie wzorców rozszezeń z wspólnego punktu
-            string pattern = ((MainWindowViewModel)this.DataContext).pattern;
+            string pattern = ((MainWindowViewModel)this.DataContext).Pattern;
             Match m;
             foreach (var dataString in dataStrings)
             {
