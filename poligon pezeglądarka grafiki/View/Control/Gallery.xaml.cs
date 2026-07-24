@@ -459,6 +459,16 @@ public partial class Gallery : UserControl
             //Debug.WriteLine("ListBox_Drop - upuszczono plik(effects != none): "+e.Effects.ToString());
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
             MainWindowViewModel mv = (MainWindowViewModel)this.DataContext;
+            if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+            {
+                mv.MoveFileToFolder(dataStrings, true);
+            }
+            else
+            {
+                mv.MoveFileToFolder(dataStrings, false);
+            }
+            /*
+            
             foreach (var dataString in dataStrings)
             {
                 //tu dodać sprawdzenie czy dany plik już nie znajduje się w tym folderze o ile to jest przenoszenie
@@ -480,9 +490,9 @@ public partial class Gallery : UserControl
                     //przenoszenie 
                     mv.MoveFileToFolder(dataString);
                 }
-            }
-            //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
-            //dodawać na sam koniec a nie odświeżać, to zajmuje czas
+            }*/
+                //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
+                //dodawać na sam koniec a nie odświeżać, to zajmuje czas
         }
 
     }

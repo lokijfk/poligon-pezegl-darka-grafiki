@@ -26,6 +26,25 @@ w:
 HKEY_CURRENT_USER\Software\Classes\Applications
 HKEY_CURRENT_USER\Software\Classes\Applications\poligon pezeglądarka grafiki.exe
 
+Komputer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts
+dodać klucz Applications\poligon pezeglądarka grafiki.exe_.jpeg DWORD szesnastkowy 0 
+            Applications\poligon pezeglądarka grafiki.exe_.jpg
+
+            Komputer\HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.jpeg\OpenWithList
+            odczytać jaki jest ostatni klucz i dodać kolejny o odpowiedniej literze  typ REG_SZ poligon pezeglądarka grafiki.exe
+            to wyświetlanie w listach tego typu rozszeżenia
+
+
+
+//accessing the CurrentUser root element  
+//and adding "OurSettings" subkey to the "SOFTWARE" subkey  
+RegistryKey key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\OurSettings"); 
+
+//storing the values  
+key.SetValue("Setting1", "This is our setting 1");  
+key.SetValue("Setting2", "This is our setting 2");  
+key.Close(); 
+
 i to samo co w HKEY_CLASSES_ROOT
 
 w:

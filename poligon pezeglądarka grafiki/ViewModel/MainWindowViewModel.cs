@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaterialDesignThemes.Wpf;
+
 using poligon_pezeglądarka_grafiki.Model;
 using poligon_pezeglądarka_grafiki.View.Control;
 using System.Collections.ObjectModel;
@@ -9,8 +10,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Automation.Peers;
+
 using System.Windows.Controls;
+
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -65,7 +67,9 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     public ObservableCollection<Photo> Photos { get; set; } = [];
 
-    public ObservableCollection<MenuRadioButton> MenuSort { get; set; } = [];    
+    public ObservableCollection<MenuRadioButton> MenuSort { get; set; } = []; 
+    
+    public ObservableCollection<Extension> Extensions { get; set; } = [];
 
     #endregion Collection
 
@@ -200,23 +204,10 @@ public partial class MainWindowViewModel : ObservableObject
     #endregion Interface
 
     private bool _cut = false;
-
-    /*
-     * to przerobić na odczyt z pliku ini?
-     */
-    //public string pattern { get; set; } = @"\.(jpg|jpeg|bmp|png|webp)";
-    //public string pattern2
-    //{
-    //    get => @"\.(" + string.Join("|", patternArray) + ")";
-    //}
-    //public string Pattern 
-    //{
-    //    get => @"\.(" + string.Join("|", patternArray) + ")";
-    //} 
-    public string Pattern { get => @"\.(" + string.Join("|", BrokerIni.Extension.Split(',')) + ")";}
-    //private string[] patternArray = [".jpg",".jpeg",".bmp",".png",".webp"];
+    
+    public string Pattern { get => @"\.(" + string.Join("|", BrokerIni.Extension.Split(',')) + ")";}    
     private string[] patternArray => BrokerIni.Extension.Split(',').Select(e => e.Trim().ToLower()).ToArray();
-    public string[] PatternArray => patternArray;
+    //public string[] PatternArray => patternArray;
 
     #region Private
 
@@ -479,10 +470,11 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void StartExe(string path, string param = "")
     {
+        Debug.WriteLine($"StartExe called with path: {path}, param: {param}");
         //if (File.Exists(path))
         //to powoduje ryzyko powstania błędu
         if (!string.IsNullOrEmpty(path))
-        {
+        { 
             try
             {
                 if (!string.IsNullOrEmpty(param))
@@ -494,6 +486,7 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     if (File.Exists(path))
                     {
+                        //Debug.WriteLine($"StrtExe:{path}");
                         //ale tu to naprawiam
                         _ = Process.Start(path);
                     }
@@ -502,6 +495,7 @@ public partial class MainWindowViewModel : ObservableObject
             catch (Exception ex)
             {
                 Debug.WriteLine($"Wystąpił błąd: {ex.Message}");
+                Log.Write(LogLevel.Error, $"Wystąpił błąd: {ex.Message}");
             }
         }
     }
@@ -519,7 +513,8 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void OpenExplorer(string path)
     {
-        //string destinyDir = BrokerFile.GetUserAppDataPath;
+        path = BrokerFile.GetUserAppDataPath;
+        //Debug.WriteLine($"OpenExplorer called with path: {path}");
         StartExe("explorer", path);
     }
 
@@ -545,6 +540,13 @@ public partial class MainWindowViewModel : ObservableObject
 
 
     #endregion
+
+    [RelayCommand]
+    private void ShowDialog()
+    {
+        //Debug.WriteLine($"ShowDialog called");
+        ShowDialogProgresBarr();
+    }
 
     [RelayCommand]
     private void ReloadView()
@@ -670,26 +672,20 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(ClipboardListenerResoult))]
     private void MenuPaste()
     {
-        //Debug.WriteLine("MenuPaste called.");
-        //Match m;
         if (Clipboard.ContainsFileDropList())
         {
             var fileList = Clipboard.GetFileDropList();//zwraca StringCollection i taką kolekcję trzeba tam podawać
             foreach (var file in fileList)
             {
-                if (System.IO.Path.GetExtension(file) is string ext)
+                if ((File.Exists(file))&&(System.IO.Path.GetExtension(file) is string ext))
                 {
-                    //Debug.WriteLine("Pasting file: " + file);
-                    //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
-                    //m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                    //if (m.Success)
                     if(patternArray.Contains(ext.ToLower()))
                     {
                         if (MenuSelectedTreeItem != null)
                         {
                             //to do wklejania do katalogu wskazanego poprzez context menu w drzewie
                             MoveFileToFolder(file, MenuSelectedTreeItem, !_cut);
-                            MenuSelectedTreeItem = null;
+                            //MenuSelectedTreeItem = null;
                         }
                         else
                             //to do wklejania do aktualnie wybranego katalogu w drzewie
@@ -697,6 +693,7 @@ public partial class MainWindowViewModel : ObservableObject
                     }
                 }
             }
+            MenuSelectedTreeItem = null;
             Clipboard.Clear();
             _ = RefreshClipboardListenerResoult();
         }
@@ -726,15 +723,6 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void MenuCopy(object parameter)
     {
-        //Debug.WriteLine("MenuCopy called." +parameter.GetType().ToString() );
-        //ok mamy prametr jako IList z zaznaczonymi elementami :)
-        //if (parameter is System.Collections.IList ph)
-        //{
-        //    //string[] photos = [.. ph.Cast<Photo>().Select(static p => p.Path)];
-        //    StringCollection paths = [.. ph.Cast<Photo>().Select(static p => p.Path)];
-        //    _ = CopyX(paths);
-        //}
-        //else _ = CopyX();
         _=CopyX(GetCollection(parameter));
     }
 
@@ -745,16 +733,6 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void MenuCut(object parameter)
     {
-        //Debug.WriteLine("MenuCut called.");
-        //if (parameter is System.Collections.IList ph)
-        //{
-        //    StringCollection paths = [.. ph.Cast<Photo>().Select(static p => p.Path)];
-        //    _cut = CopyX(paths);
-        //}
-        //else
-        //{
-        //    _cut = CopyX();
-        //}
         _cut = CopyX(GetCollection(parameter));
     }
 
@@ -825,17 +803,20 @@ public partial class MainWindowViewModel : ObservableObject
         if (Clipboard.ContainsFileDropList())
         {
             //Debug.WriteLine("Clipboard contains FileDropList data.");//to jest
-            var fileList = Clipboard.GetFileDropList();//zwraca StringCollection i taką kolekcję trzeba tam podawać
-            foreach (var file in fileList)
+            try
             {
-                if (System.IO.Path.GetExtension(file) is string ext)
+                var fileList = Clipboard.GetFileDropList();//zwraca StringCollection i taką kolekcję trzeba tam podawać
+                foreach (var file in fileList)
                 {
-                    //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
-                    //pattern to zmienne globalna, będzie ustawiana przy starcie z ini, na razie jest to string na stałe
-                    //m = Regex.Match(ext, pattern, RegexOptions.IgnoreCase);
-                    //if (m.Success) { ClipboardListenerResoult = true; return true; }
-                    if (ExtO(ext)) { ClipboardListenerResoult = true; return true; }
+                    if (System.IO.Path.GetExtension(file) is string ext)
+                    {
+                        if (ExtO(ext)) { ClipboardListenerResoult = true; return true; }
+                    }
                 }
+            } catch(Exception ex) 
+            {
+                Log.Write(LogLevel.Error, "Error occurred while processing clipboard data: " + ex.Message);
+                Debug.WriteLine("Error occurred while processing clipboard data: " + ex.Message);
             }
         }
         else
@@ -1012,6 +993,36 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel()
     {
         _init(String.Empty);
+        //Debug.WriteLine("MainWindowViewModel constructor without parameters called.");
+        //foreach (string ext in patternArray) 
+        //{   
+        //    object obj = null;
+        //    if (BrokerRegistry.RegistryValueExists("HKCU",
+        //    @"Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts",
+        //    @"Applications\poligon pezeglądarka grafiki.exe_" + ext))
+        //    {
+        //        obj = null;
+        //        obj = BrokerRegistry.RegistryGetValue("HKCU",
+        //            @"Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts",
+        //            @"Applications\poligon pezeglądarka grafiki.exe_" + ext);
+        //        if (obj != null)
+        //        {
+        //            Debug.WriteLine($"Registry value for extension {ext}: {obj.GetType()}");
+        //        }
+        //    }
+                
+        //    Debug.WriteLine($"Pattern extension: {ext} in register : {BrokerRegistry.RegistryValueExists("HKCU",
+        //    @"Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts",
+        //    @"Applications\poligon pezeglądarka grafiki.exe_"+ext)}");
+        //}
+       // Brokerregistry.RegistryGetSubKeyNames("HKCU", @"Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts").ToList().ForEach(static s => Debug.WriteLine($"Registry subkey: {s}"));
+       //BrokerRegistry.RegistrySetValue("HKCU",
+       //     @"Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts",
+       //     @"Applications\poligon pezeglądarka grafiki.exe_.png", 0, RegistryValueKind.DWord);
+
+        //Debug.WriteLine($"rejestr: {BrokerRegistry.RegistryValueExists("HKCU", 
+        //    @"Software\Microsoft\Windows\CurrentVersion\ApplicationAssociationToasts",
+        //    @"Applications\poligon pezeglądarka grafiki.exe_.png")}");//działa
     }
 
     //na razie zostawiam ale raczej będzie do wyżucenia
@@ -1467,6 +1478,62 @@ public partial class MainWindowViewModel : ObservableObject
         return "";
     }
 
+    private async Task<string> ShowDialogProgresBarr()
+    {
+        //Debug.WriteLine($"ShowDialogProgresBarr called  ");//to jest wywoływane ale nie wyświetla okna dialogowego
+        object? view = new ProgresDialog { WindowName = "Copy Or Move File To Folder" };// dodać resztę...
+        object? result = await DialogHost.Show(view, "WindowDialogHost", OpenDialogOpenedEventArgs_SDPB, null, ClosedEventHandler_SDPB);
+        var x = result as DialogHost;
+        //var session = x.CurrentSession;
+        //if (session != null)
+        //{
+        //    session.Close();
+        //}
+        
+        return "";
+    }
+
+    //tego urzyć żeby sprawdzić czy okno jest jeszcze otwarte
+    // i zamknąć je z poziomu kodu jeżeli jest otwarte
+    // Podsumowanie:
+    //     Retrieve the current dialog session for a DialogHost
+    //
+    // Parametry:
+    //   dialogIdentifier:
+    //     The identifier to use to retrieve the DialogHost
+    //
+    // Zwraca:
+    //     The DialogSession if one is in process, or null
+    //public static DialogSession? GetDialogSession(object? dialogIdentifier)
+    //{
+    //    return GetInstance(dialogIdentifier).CurrentSession;
+    //}
+
+    private void OpenDialogOpenedEventArgs_SDPB(object sender, DialogOpenedEventArgs eventArgs)
+    {
+        //Debug.WriteLine("OpenDialogOpenedEventArgs_SDPB called");
+        var x = eventArgs.Session;
+
+        if (x != null)
+        {
+            Debug.WriteLine("OpenDialogOpenedEventArgs_SDPB - Session is not null");
+            //x.Close();// ok zamyka okno z poziomu kodu, trzeba przesłać sesję gdzieś na zewnątrz do wykożystania
+            //DialogHost.Close("WindowDialogHost");//to działa, nie muszę niczego przekazywać !!!
+        }
+    }
+
+    private void ClosedEventHandler_SDPB(object sender, DialogClosedEventArgs eventArgs)
+    {
+        //ok - to działa i po anulowaniu można próbować zatrzymać kopiowanie / przenoszenie plików
+        //jak okno jest zamknięte z poziomu kodu to zwraca null w eventArgs.Parameter, jeżeli z poziomu przycisku to zwraca true/false
+        Debug.WriteLine("You can intercept the closed event here (1)." + eventArgs.Parameter);
+        if(eventArgs.Parameter is bool param)
+        {
+            Debug.WriteLine("ClosedEventHandler_SDPB - parameter: " + param);//ok mamy bool 
+            //jeżeli jest false to można próbować anulować operację
+        }
+    }
+
     private void ClosedEventHandler(object sender, DialogClosedEventArgs eventArgs)
     {
         //to jest opcjonalne, na razie zostawiam może jeszcze wykozystam
@@ -1482,6 +1549,63 @@ public partial class MainWindowViewModel : ObservableObject
 
     #region DragDrop
 
+    public void MoveFileToFolder(string[] dataStrings, bool copy = false)
+    {
+        foreach (var dataString in dataStrings)
+        {
+            if (!FileIsFolder(dataString))
+            {
+                string newDestinyPath = Path.Combine(SelectedItem.Path, Path.GetFileName(dataString));
+                if (copy)
+                {
+                    //BrokerFile.CopyFile(dataString, newDestinyPath);
+                    MoveFileToFolder(dataString, SelectedTreePath, true);
+                }
+                else
+                {
+                    //BrokerFile.MoveFile(dataString, newDestinyPath);
+                    MoveFileToFolder(dataString, SelectedTreePath, false);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// przenoszenie plików  i katalogów a w drzewie
+    /// </summary>
+    /// <param name="dataStrings"></param>
+    /// <param name="target"></param>
+    /// <param name="copy"></param>
+    public void MoveFileToFolder(string[] dataStrings, TreeModel target, bool copy = false)
+    {
+        foreach (var dataString in dataStrings)
+        {
+            //jeżeli nie jest to plik a jest katalogiem to przenosimy katalog do katalogu docelowego
+            if (!File.Exists(dataString) && Directory.Exists(dataString))
+            {
+                if (dataString != target.Path)
+                {
+                    MoveFoderToFolder(dataString, target.Path);
+                    Log.Write(LogLevel.Info, $"MoveFoderToFolder - przenoszenie katalogu {dataString} do {target.Path}");
+                }else Log.Write(LogLevel.Warning, $"MoveFoderToFolder - katalog źródłowy i docelowy są takie same: {dataString} == {target.Path}");
+                //Log.Write(LogLevel.Info, "MoveFileToFolder: przenoszenie katalogów z poziomu przenoszenia plików jest wyłączone");
+
+            }
+            else
+            {
+                Log.Write(LogLevel.Info, $"MoveFileToFolder(string[] dataStrings, TreeModel target, bool copy = false) - {dataString}");
+                MoveFileToFolder(dataString, target, copy);
+
+                //jak przenosimy plik do tego samego katalogu to zmienia jego nazwę zamast wstrzymać się
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// zwraca kolor tła dla elementu docelowego przy przeciąganiu plików
+    /// </summary>
+    /// <returns></returns>
     public Brush GetDropCollor()
     {
         //Debug.WriteLine($"GetDropCollor called: {DropCollor}");
@@ -1489,24 +1613,30 @@ public partial class MainWindowViewModel : ObservableObject
         return DropCollor;
     }
 
-    public void MoveFoderToFolder(string folder, TreeModel DestinyPath)
+    /// <summary>
+    /// przenosi katalog do innego katalogu, aktualizuje drzewo
+    /// </summary>
+    /// <param name="folder">Katalog źródłowy, przenoszony</param>
+    /// <param name="DestinyPath">Katalog docelowy</param>
+    /// <exception cref="FileNotFoundException">wywoływane jeżeli któryś z katalogów nie istnieje</exception>
+    private void MoveFoderToFolder(string folder, string DestinyPath)
     {
-        MoveFoderToFolder(folder, DestinyPath.Path);
-    }
-
-    public void MoveFoderToFolder(string folder, string DestinyPath)
-    {
-        Debug.WriteLine("MoveFoderToFolder");
+        Debug.WriteLine("Move Foder To Folder - przenoszenie KATALOGU do katalogu");
         if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(DestinyPath))
-        {
+        {   
+            Log.Write(LogLevel.Warning, "MoveFoderToFolder: Katalog żródłowy lub docelowy nie istnieje");
             throw new FileNotFoundException("Katalog żródłowy lub docelowy nie istnieje");
         }
         if (folder == DestinyPath)
         {
+            Log.Write(LogLevel.Warning, "MoveFoderToFolder: ścieżka źródłowa i docelowa są takie same");
             Debug.WriteLine("MoveFoderToFolder: ścieżka źródłowa i docelowa są takie same");
             return;
         }
-        string newDestinyPath = Path.Combine(DestinyPath, folder.Substring(folder.LastIndexOf('\\') + 1));        
+        string newDestinyPath = Path.Combine(DestinyPath, folder.Substring(folder.LastIndexOf('\\') + 1));
+
+        //jeżeli katalog źródłowy nie jest plikiem i jest katalogiem i katalog docelowy istnieje
+        //i nie istnieje katalog docelowy z tą samą nazwą co przenoszony katalog
         if ((!File.Exists(folder)) && (Directory.Exists(folder)) && (Directory.Exists(DestinyPath))
             && (!Directory.Exists(newDestinyPath)))
         {
@@ -1518,9 +1648,10 @@ public partial class MainWindowViewModel : ObservableObject
                 {
                     cts.Cancel();
                     //Debug.WriteLine("MoveFoderToFolder: Waiting for cancellation");
+                    //oczekujemy aż wątek się zatrzyma, jeżeli nie to przenosimy katalog i aktualizujemy drzewo
                     while (!cts.IsCancellationRequested)
                     {
-                        Debug.WriteLine("MoveFoderToFolder: still waiting..."); 
+                        //Debug.WriteLine("MoveFoderToFolder: still waiting..."); 
                         Thread.SpinWait(5000);
                     }
                 }
@@ -1579,24 +1710,28 @@ public partial class MainWindowViewModel : ObservableObject
             }
             catch (Exception ex)
             {
+                Log.Write(LogLevel.Error, "MoveFoderToFolder: błąd przenoszenia katalogu: " + ex.Message);
                 Debug.WriteLine(ex.ToString());
             }
             //return selectedItem;
         }
-        else if ((Directory.Exists(newDestinyPath))) Debug.WriteLine("katalog już istnieje");
+        else if ((Directory.Exists(newDestinyPath))) Log.Write(LogLevel.Warning, "MoveFoderToFolder: katalog już istnieje: " + newDestinyPath);//tu przydało by się okno z zapytaniem czy scalić?? czy anulować??
     }
 
 
      /// <summary>
     /// usuwa przeniesione pliki z kolekcji Photos
     /// </summary>
-    /// <param name="photos"></param>
-    public void RemoveFileFromPhotos(List<Photo> photos)
+    /// <param name="photos">lista plików do usunięcia</param>
+    public void RemoveFileFromPhotos(List<Photo> photos)//zmienić nawę na list
     {
         //wszystkie operacje na Photos zatrzymują generowanie miniatur, trzeba ustawiać znacznik i wznawiać w jakiś sposób
         //ale wcześniej warto przerywać tak żeby nie było błędu, albo raczej go przewidzieć !!!
         //odejmować też pliki z "kolejki" znacznika plików na pasku statusu - statusbar
         // zwrócić uwagę na zmiany ilości plików
+
+        //urzywane  tylko w module galerii
+        //może da sie przerobić jakoś?? do przemyslenia
         if (cts != null)
         {            
             cts.Cancel();            
@@ -1611,87 +1746,186 @@ public partial class MainWindowViewModel : ObservableObject
     /// </summary>
     /// <param name="file"></param>
     /// <param name="copy"></param>
-    public void MoveFileToFolder(string file, bool copy = false)
-    {        
-        if (string.IsNullOrEmpty(file)) return;
-        if (!File.Exists(file)) return;
-        string ViewPath = SelectedTreePath;
-        MoveFileToFolder(file, ViewPath, copy);
-    }
+    //public void MoveFileToFolder(string file, bool copy = false)
+    //{        
+    //    if (string.IsNullOrEmpty(file)) return;
+    //    if (!File.Exists(file)) return;
+    //    string ViewPath = SelectedTreePath;//katalog zaznaczony w drzewie katalogów, galeria nie ma do niego dostępu
+    //    MoveFileToFolder(file, ViewPath, copy);
+    //}
 
-    public void MoveFileToFolder(string file, TreeModel path, bool copy = false)
+    /// <summary>
+    /// przenosi plik do katalogu docelowego, aktualizuje kolekcję Photos i liczbę plików w katalogu docelowym
+    /// </summary>
+    /// <param name="file">plik do przeniesienia</param>
+    /// <param name="path">katalog docelowy</param>
+    /// <param name="copy">czy kopiować, domyślnie False</param>
+    private void MoveFileToFolder(string file, TreeModel path, bool copy = false)
     {
-        Debug.WriteLine("MoveFileToFolder");
+        //Debug.WriteLine("Move File To Folder - przenoszenie PLIKU do katalogu");
         //jak przenosimy plik do tego samego katalogu to zmienia jego nazwę zamast wstrzymać się
+
+        //odświeża listę plików jeżeli nie podano pliku i katalogu docelowego i nie kopiujemy
         if ((file == String.Empty) && (path == null) && !copy)
         {            
             RefreshFileList();
             return;
         }
 
+        //to mi się nie podoba,przemysleć i sprawdzić
+        //czy to nie miało na celu kopiowania drzewa katalogów?
+        //if (string.IsNullOrEmpty(file) || !File.Exists(file) || !Directory.Exists(path.Path) || !Path.HasExtension(file))
+        //{
+        //    Debug.WriteLine("MoveFileToFolder: niepoprawny plik lub katalog docelowy");
+
+        //    return;
+        //}
+        //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
         if (string.IsNullOrEmpty(file) || !File.Exists(file) || !Directory.Exists(path.Path) || !Path.HasExtension(file))
         {
-            if (!File.Exists(file) && Directory.Exists(file))
-            {
-                //Debug.WriteLine("przenoszenie katalogu");
-                MoveFoderToFolder(file, path.Path);
-            }
+            //Debug.WriteLine("MoveFileToFolder: niepoprawny plik lub katalog docelowy"); 
+            Log.Write(LogLevel.Warning, "MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower()+" lub nie istniejący katalog docelowy: " + path.Path);
             return;
         }
-        //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
+
         //to poniżej poprawić na metodęz brokerfile, ale metoda z brokerfile musi i tak pobierać tablicę rozszeżeń z mv to błędne koło        
+        //tu zrobić sprawdzanie a tam wysyłać już do kopiowania/przenoszenia pliku do katalogu docelowego
         if (ExtO(Path.GetExtension(file).ToLower()))
         {
             string newFilePath = FileMove(file, path.Path, copy);
             string pathFile = System.IO.Path.GetDirectoryName(file);
             path.CountFiles = GetCountFiles(path.Path);//dodaje liczbę plików w katalogu docelowym
             SelectedItem.CountFiles = GetCountFiles(SelectedItem.Path);
+
             RefreshStatusBarFileCount();
             if (!copy)
                 _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
-            //usuwamy go z FilesList o ile tam istnieje
-            /*
-            if ((FilesList != null) && (FilesList.Count > 0))
-            {
-                if (FilesList.Any(i => i.Path == file))
-                    _ = FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
-            }*/
+
                         
             if (SelectedTreePath == path.Path)
             {
-                //to trzeba przerobić bo przy 1000 plików jest to bardzo widoczne i uciążliwe
-                //tu trzeba wygenerować nową ścieżkę pliku, chyba że dostaniemy ją z przeniesienia
-                //if (newFilePath != String.Empty && cts != null)
-                //{
-                //    var token = cts.Token;
-                //    if (!token.IsCancellationRequested)
-                //    {
-                //        //Debug.WriteLine("load file: " + imFile.value)
-                //        Photo p = new Photo(newFilePath);
-                //        p.Image = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png")); 
-                //        //Photos.Add(p);//dodaje na końcu
-                //        Photos.Insert(0, p);//dodaje na początku albo w wyznaczonym miejscu
-                //        //p.AddToken(token);
-                //        //jak zrobić żeby to było odpalane przez interfejs? a nie tutaj
-                //        _ = p.Load(token);
-                //    }
-                //}
-                //else ReloadFileList(SelectedItem);//to jako ostateczność
+
                 if (!newPhoto(newFilePath)) ReloadFileList(SelectedItem);//to jako ostateczność
             }
         }
-        else Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
+        else Log.Write(LogLevel.Warning, "MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
     }
 
+    /// <summary>
+    /// metoda wykożystywana w menu paste i w listbox drop
+    /// </summary>
+    /// <param name="file"></param>
+    /// <param name="path"></param>
+    /// <param name="copy"></param>
+    /// <returns></returns>
+    /// 
+    public bool MoveFileToFolder(string file, string path, bool copy = false)
+    {
+        if(GetTreeModel(path) is TreeModel treeModel)
+        {
+            MoveFileToFolder(file, treeModel, copy);
+            return true;
+        }
 
+        return false;
+    }
+
+    //public bool MoveFileToFolder(string file, string path, bool copy = false)
+    //{
+
+    //    if ((file == String.Empty) && (path == String.Empty) && !copy)
+    //    {
+    //        //czyszczenie kolekcji po przeniesieniu pliku do np explorera plików
+    //        RefreshFileList();
+    //        return false;
+    //    }
+
+
+    //    if (string.IsNullOrEmpty(file) || !File.Exists(file) || !Directory.Exists(path) || !Path.HasExtension(file))
+    //    {
+    //        Log.Write("MoveFileToFolder: brak pliku lub katalogu docelowego: " + Path.GetExtension(file).ToLower());
+    //        return false;
+    //    }
+    //    //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
+
+    //    if (ExtO(Path.GetExtension(file).ToLower()))
+    //    {
+    //        string newFilePath = FileMove(file, path, copy);//przenoszenie/kopiowanie pliku
+    //        string pathFile = System.IO.Path.GetDirectoryName(file);
+    //        //to dlatego że Tree jest tablicą kilku drzew
+    //        //wyszukiwanie właściwego drzewa
+
+
+    //        //jeżeli to przeniosę do innych metod to będzie można inaczej to zorganizować
+    //        foreach (var treeItem in Tree)
+    //        {
+    //            TreeModel? item = treeItem.GetElementByPath(path);
+    //            if (item != null) item.CountFiles = GetCountFiles(item.Path);//dodaje liczbę plików w katalogu docelowym
+    //            item = treeItem.GetElementByPath(pathFile);
+    //            if (item != null) item.CountFiles = GetCountFiles(item.Path);//odejmuje liczbę plików w katalogu źródłowym
+    //            RefreshStatusBarFileCount();
+    //        }
+
+
+    //        //jeżeli nie kopiujemy to usuwamy go z Photos o ile tam istnieje
+    //        if (!copy) _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
+
+    //        if (SelectedTreePath == path)
+    //        {
+    //            if (!newPhoto(newFilePath))
+    //            {
+    //                //Debug.WriteLine("MoveFileToFolder -- ReloadFileList");
+    //                ReloadFileList(SelectedItem);
+    //            }//to jako ostateczność
+    //        }
+    //        return true;
+    //    }
+    //    else
+    //    {
+    //        Log.Write(LogLevel.Warning, "MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
+    //        //Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
+    //    }
+
+    //    return false;
+    //}
+
+
+    private TreeModel GetTreeModel(string path)
+    {
+        foreach (var treeItem in Tree)
+        {
+            TreeModel? item = treeItem.GetElementByPath(path);
+            if (item != null) return item;
+        }
+        return null;
+    }
 
     /// <summary>
     /// przenoszenie pliku do innego katalogu
     /// </summary>
     /// <param name="path">katalog docelowy</param>
     /// <param name="file">plik ze ścieżką</param>
-    public void MoveFileToFolder(string file, string path, bool copy = false)
+    public void MoveFileToFolder(string file, object pathX, bool copy = false)
     {
+        //czy da się zamienic string na object i testować jaki to jest typ ??
+        // dalej podejmować działania zgodne z typem ojektu czyli string lub treeModel??
+        string path = string.Empty;
+        if(pathX is string)
+        {
+            path = (string)pathX;
+        }
+        else if (pathX is TreeModel)
+        {
+            path = ((TreeModel)pathX).Path;
+        }
+        else
+        {
+            Log.Write("MoveFileToFolder: nieobsługiwany typ katalogu docelowego");
+            return;
+        }
+
+
+
         //Debug.WriteLine("MoveFileToFolder(string file, string path, bool copy");
         if ((file == String.Empty) && (path == String.Empty) && !copy)
         {
@@ -1700,23 +1934,29 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
+
         if (string.IsNullOrEmpty(file) || !File.Exists(file) || !Directory.Exists(path) || !Path.HasExtension(file))
         {
             if (!File.Exists(file) && Directory.Exists(file))
             {
-                MoveFoderToFolder(file, path);
+                //MoveFoderToFolder(file, path); //przenieść jako osobną metodę
+                Log.Write("MoveFileToFolder: przenoszenie katalogu do katalogu docelowego nie jest obsługiwane");
+                return;
             }
+            Log.Write("MoveFileToFolder: brak pliku lub katalogu docelowego: " + Path.GetExtension(file).ToLower());
             return;
         }
         //List<string> files = [.. Directory.GetFiles(p).Where(f => patternArray.Contains(System.IO.Path.GetExtension(f).ToLower()))];
 
-        if(ExtO(Path.GetExtension(file).ToLower()))
-        {
-            string newFilePath = FileMove(file, path, copy);
-
+        if (ExtO(Path.GetExtension(file).ToLower()))
+        {            
+            string newFilePath = FileMove(file, path, copy);//przenoszenie/kopiowanie pliku
             string pathFile = System.IO.Path.GetDirectoryName(file);
             //to dlatego że Tree jest tablicą kilku drzew
             //wyszukiwanie właściwego drzewa
+
+
+            //jeżeli to przeniosę do innych metod to będzie można inaczej to zorganizować
             foreach (var treeItem in Tree)
             {
                 TreeModel? item = treeItem.GetElementByPath(path);
@@ -1726,15 +1966,7 @@ public partial class MainWindowViewModel : ObservableObject
                 RefreshStatusBarFileCount();
             }
             //jeżeli nie kopiujemy to usuwamy go z Photos o ile tam istnieje
-            if (!copy)
-                _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
-            //usuwamy go z FilesList o ile tam istnieje
-            /*
-            if ((FilesList != null) && (FilesList.Count > 0))
-            {
-                if (FilesList.Any(i => i.Path == file))
-                    _ = FilesList.Remove(FilesList.FirstOrDefault(i => i.Path == file));
-            }*/
+            if (!copy) _ = Photos.Remove(Photos.FirstOrDefault(i => i.Path == file));
 
             if (SelectedTreePath == path)
             {
@@ -1764,7 +1996,11 @@ public partial class MainWindowViewModel : ObservableObject
                 }//to jako ostateczność
             }
         }
-        else Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
+        else
+        {
+            Log.Write("MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
+            //Debug.WriteLine("MoveFileToFolder: nieobsługiwany format pliku: " + Path.GetExtension(file).ToLower());
+        }
     }
 
     /// <summary>
@@ -1820,6 +2056,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <returns>string: zwraca nowąścieżkę pliku z nazwą lub String.Empty jak pojawią się błędy</returns>
     private string FileMove(string file, string path, bool copy = false, bool overwrite = false)
     {
+        //przenieść do BrokerFile??
         //tu dodać wywoływanie wyjątków w razie błędów
         if (string.IsNullOrEmpty(path))
         {
@@ -1843,12 +2080,12 @@ public partial class MainWindowViewModel : ObservableObject
         {
             string ext = Path.GetExtension(file);
             string filenameX = Path.GetFileNameWithoutExtension(file);
-            //for (int i = 0; true; i++)
-            //{
-            //    fileName = filenameX + "(i)" + ext;
-            //    newPath = System.IO.Path.Combine(path, fileName);
-            //}
+            // dodać sprawdzenie czy istniejący plik nie ma nazwy z (x)
+            // i jeżeli ma to zwiększyć x o 1 i sprawdzić czy istnieje plik o takiej nazwie
+
             int i = 1;
+            // to o ile dobrze pamiętam to jest zmiana nazwy pliku o ile istnieje plik o tekiej samej nazwie
+            // w katalogu docelowym i o ile nie ma zaznaczonego nadpisywania pliku docelowego
             while (File.Exists(newPath))
             {
                 fileName = filenameX + "(" + i.ToString() + ")" + ext;
@@ -1862,13 +2099,21 @@ public partial class MainWindowViewModel : ObservableObject
         {
             //tu dodać sprawdzanie czy w miejscu docelowym istnieje już pliko podanej nazwie
             //jak istnieje to modyfikujemy ścieżkę (1) lub (x) i przenosimy wskazany
-            if (copy) File.Copy(file, newPath,overwrite);
-            else File.Move(file, newPath);
+            if (copy)
+            {
+                Log.Write(LogLevel.Info, $"Copy file: {file} to {newPath}");
+                File.Copy(file, newPath, overwrite);
+            }
+            else 
+            {
+                Log.Write(LogLevel.Info, $"Move file: {file} to {newPath}");
+                File.Move(file, newPath);
+            }
             return newPath;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex.Message);
+            Log.Write(LogLevel.Error, $"Error occurred while moving file: {ex.Message}");
             return String.Empty;
         }
         //return String.Empty;
@@ -2457,6 +2702,7 @@ public partial class MainWindowViewModel : ObservableObject
         get => BrokerIni.WindowLeft;
         set => SetProperty(BrokerIni.WindowLeft, value, BrokerIni, static (u, n) => u.WindowLeft = n);
     }
+    
 
     #endregion WindowState
 }

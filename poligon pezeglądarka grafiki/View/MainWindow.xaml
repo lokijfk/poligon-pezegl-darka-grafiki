@@ -65,8 +65,12 @@
     </i:Interaction.Triggers>
 
     <Border CornerRadius="5" BorderBrush="Indigo" BorderThickness="2" Padding="6" Background="Transparent">
-        <!--materialDesign:DialogHost x:Name="DialogHostSettings"-->
-                <Grid>
+        <!--<materialDesign:DialogHost x:Name="WindowDialogHost">-->
+        
+            <!--Grid.Row=" 1" IsOpen="{Binding IsDialogOpen}" 
+                      DialogContentUniformCornerRadius="20"
+                      DialogTheme="Inherit" Identifier="RootDialog"-->
+            <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto" MaxHeight="40"/><!-- pasek tytułowy -->                        
                         <RowDefinition /><!-- body -->                        
@@ -153,7 +157,11 @@
                                         ToolTip="widok listy, starszy, nie dokończony">
                                     <materialDesign:PackIcon Kind="ViewList" />
                                 </Button>
-                                <Separator x:Name="SeparatorToolBar" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                            <Button Command="{Binding Path=ShowDialogCommand}"  
+                                    ToolTip="pokaż okno postępu - metoda testowa">
+                                <materialDesign:PackIcon Kind="ViewList" />
+                            </Button>
+                            <Separator x:Name="SeparatorToolBar" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
                                 
                                 <!--Label VerticalAlignment="Center" Content="sortowanie w/g:" />
                                 <ComboBox ItemsSource="{Binding Path=TypSotowania}" IsSynchronizedWithCurrentItem="True"
@@ -194,14 +202,17 @@
                         </ToolBar>
                         <!--/StackPanel-->
                         </Grid>
+                        <materialDesign:DialogHost Grid.Row=" 1"  
+                                DialogContentUniformCornerRadius="10"
+                                DialogTheme="Inherit" Identifier="WindowDialogHost">
                         <Grid Grid.Row="1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition  Width="auto"/>
                                 <ColumnDefinition  Width="5"/>
                                 <ColumnDefinition  Width="*"/>
                             </Grid.ColumnDefinitions>
-
-                        <TreeView  x:Name="TreeViewX" MinWidth="220" ItemsSource="{Binding Tree}" 
+                            
+                            <TreeView  x:Name="TreeViewX" MinWidth="220" ItemsSource="{Binding Tree}" 
                                             ScrollViewer.CanContentScroll="True"                      
                                             
                                            AllowDrop="True"  Drop="TreeView_Drop"
@@ -358,8 +369,9 @@
                             
                             <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Cursor="SizeWE"  />
                             <ContentControl Grid.Column="2" x:Name="Pages"  Content="{Binding SelectedViewModel}"/>
+                                
                         </Grid>
-                        
+                        </materialDesign:DialogHost>
                         <StatusBar Grid.Row="2" Background="{DynamicResource MaterialDesignToolBarBackground}"
                                    Visibility="{Binding VisibleStatusBar, Converter={StaticResource BooleanToVisibilityConverter}}" 
                                      >
@@ -427,6 +439,6 @@
                     </Grid>
                 </Grid>
             
-        <!--/materialDesign:DialogHost-->
+        
     </Border>
 </Window>

@@ -456,17 +456,14 @@ public partial class MainWindow : Window
 
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
-            string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
-            bool copy = false;
-
+            //zostawiam zmienne dla przejżystości kodu, ale można je usunąć i użyć bezpośrednio w metodzie
+            string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);            
             var vm = (MainWindowViewModel)this.DataContext;
+
+            vm.MoveFileToFolder(dataStrings, (TreeModel)treeViewItem.DataContext, e.KeyStates.HasFlag(DragDropKeyStates.ControlKey));
+            /*
             foreach (var dataString in dataStrings)
-            {
-                if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
-                {
-                    copy = true;
-                }else copy = false;
-                TreeModel target = (TreeModel)treeViewItem.DataContext;
+            {                
                 if (!File.Exists(dataString) && Directory.Exists(dataString))
                 {
                     //Debug.WriteLine("przenoszenie katalogu");
@@ -484,7 +481,8 @@ public partial class MainWindow : Window
                     //jak przenosimy plik do tego samego katalogu to zmienia jego nazwę zamast wstrzymać się
                 }                
             }
-                       
+            */
+            SetForeground(treeViewItem);
             //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
             /*
              //ten element w zasadzie już nie istnieje po upuszczeniu i tu generuje błąd

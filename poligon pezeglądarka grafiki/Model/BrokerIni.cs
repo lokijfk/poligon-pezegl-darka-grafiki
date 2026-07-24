@@ -14,7 +14,7 @@ namespace poligon_pezeglądarka_grafiki.Model;
 /// ma na celu ułatwienie dostępu do tych danych, zapewnie konwersję typów na te wymagane przez program, oraz dostarcza właściwości odpowiaddające pobieranym lub zapisywanym danym, 
 /// a także zapewnienie, że dane są ładowane tylko raz i są dostępne dla całego programu, czyli implementacja wzorca singletona 
 /// </summary>
-class BrokerIni //: IBrokerIni
+internal class BrokerIni //: IBrokerIni
 {
     //interfejs  jest niepotrzebny, zastosowany do testowania DI, ale na razie nie widzę zastosowanie dla DI i na razie chyba odpuszczę  to rozwiązanie, ale zostawię ten interfejs na wszelki wypadek, może kiedyś się przyda
 

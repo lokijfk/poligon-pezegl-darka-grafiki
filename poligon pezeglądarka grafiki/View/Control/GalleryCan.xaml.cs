@@ -417,6 +417,10 @@ public partial class GalleryCan : UserControl
     #endregion ListBox & ListBoxItem events
 
     #region DragDrop
+
+    // do przebudowania, prenieść do ViewModelu, bo to jest logika biznesowa a nie widoku
+    // przynajmniej częściowo
+
     private void ListBox_MouseMove(object sender, MouseEventArgs e)
     {
         //tu powinno być dodane że jakiś element jest zaznaczony 
@@ -543,6 +547,15 @@ public partial class GalleryCan : UserControl
             //Debug.WriteLine("ListBox_Drop - upuszczono plik(effects != none): "+e.Effects.ToString());
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
             MainWindowViewModel mv = (MainWindowViewModel)this.DataContext;
+            if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
+            {
+                mv.MoveFileToFolder(dataStrings, true);
+            }
+            else
+            {
+                mv.MoveFileToFolder(dataStrings, false);
+            }
+            /*
             foreach (var dataString in dataStrings)
             {
                 //tu dodać sprawdzenie czy dany plik już nie znajduje się w tym folderze o ile to jest przenoszenie
@@ -564,7 +577,7 @@ public partial class GalleryCan : UserControl
                     //przenoszenie 
                     mv.MoveFileToFolder(dataString);
                 }
-            }
+            }*/
             //tu muszę dodać jakoś odświeżenie galerii o ile dodaję do katalogu który jest aktualnie wyświetlany
             //dodawać na sam koniec a nie odświeżać, to zajmuje czas
         }

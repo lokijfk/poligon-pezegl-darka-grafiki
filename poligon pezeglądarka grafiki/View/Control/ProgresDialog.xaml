@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="poligon_pezeglądarka_grafiki.View.Control.ProgresDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:poligon_pezeglądarka_grafiki.View.Control"
+             xmlns:wpf="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             MinWidth="200" Width="Auto"
+             >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition /> <!--nagłówek-->
+            <RowDefinition /> <!--progres bar i tekst poniżej-->
+            <RowDefinition /> <!--przyciski-->
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=WindowName}" FontSize="16" 
+                   FontWeight="Bold" HorizontalAlignment="Center" Margin="10,20,10,10"/>
+        <!--TextBlock Text="{Binding WindowName,ElementName=ProgresBarWindow}"/>-->
+
+        <Grid Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <ProgressBar Grid.Row="0" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=FilesToCopy}" Minimum="0" Maximum="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=FilesCopy}"
+                 Width="Auto" MinWidth="180" Height="Auto"/>
+            <StackPanel  Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Label  x:Name="FileLoad" Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=FilesToCopy}"/>
+                <Label>\</Label>
+                <Label Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=FilesCopy}"/>
+            </StackPanel>
+            <TextBlock Grid.Row="1" Text="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+                                                        AncestorType={x:Type UserControl}}, Path=ProgressText}" HorizontalAlignment="Center"/>
+        </Grid>
+        <Button Grid.Row="2" Margin="0,0,0,10"
+                Command="{x:Static wpf:DialogHost.CloseDialogCommand}" 
+                IsCancel="True"
+                Style="{StaticResource MaterialDesignFlatButton}">
+            <Button.CommandParameter>
+                <system:Boolean>False</system:Boolean>
+            </Button.CommandParameter>
+            ANULUJ
+        </Button>
+    </Grid>
+</UserControl>
