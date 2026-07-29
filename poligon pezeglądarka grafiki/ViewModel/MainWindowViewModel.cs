@@ -15,6 +15,7 @@ using System.Windows.Controls;
 
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
 using Path = System.IO.Path;
@@ -2241,7 +2242,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>
     /// ładuje kolekcje FilesList i Photos według podanej ścieżki
     /// dodać znacznik określający czy Photos jest potrzebne
-    /// PRZEBUDOWAĆ - połączyć FilesIO i Photo
+    /// PRZEBUDOWAĆ - przy 2000 plików jest lag trzeba wywoływać to w osobnym wątku i z możliwością przerwania
     /// </summary>
     /// <param name="path"></param>
     /// <param name="token"></param>
@@ -2256,39 +2257,49 @@ public partial class MainWindowViewModel : ObservableObject
             var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
             string maska = @"pack://application:,,,/img/g1.png";            
             string View = SelectedView.Split('.').Last();
-            FilesToLoad = GetCountFiles(path);            
-            foreach (var imFile in imFiles)
+            FilesToLoad = GetCountFiles(path);
+            //to poniżej zmienić na wywpływaną funkcję
+            if (imFiles.Count() > 100)
             {
-                if (token.IsCancellationRequested)
+                Debug.WriteLine($"FileListLoad: Loading {imFiles.Count()} files, this may take a while...");
+                bool x = await FileLostLoadEX(token, path);
+                if (x == false) return;
+            }
+            else
+            {
+                foreach (var imFile in imFiles)
                 {
-                    counter = false;                    
-                    return;
-                }
-                counter = true;
-                if (!token.IsCancellationRequested)
-                {                    
-                    try
-                    {                        
-                        finfo = new FileInfo(imFile);                        
-                        Photo p = new Photo(imFile);
-                        p.Size = finfo.Length;//BrokerFile.Prdouble(finfo.Length);
-                        //p.RealSize = finfo.Length;
-                        p.DateModified = finfo.LastWriteTime;
-                        p.Icon = BlinkIcom;
-                        p.maska = maska;
-                        p.Image = back;
-                        Photos.Add(p);
-                        if (Photos.IndexOf(p) == 0)
-                        {
-                            p.IsSelected = true;
-                        }                        
-                    }
-                    catch (Exception ex)
+                    if (token.IsCancellationRequested)
                     {
-                        Debug.WriteLine(ex.Message);
+                        counter = false;
+                        return;
                     }
+                    counter = true;
+                    if (!token.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            finfo = new FileInfo(imFile);
+                            Photo p = new Photo(imFile);
+                            p.Size = finfo.Length;//BrokerFile.Prdouble(finfo.Length);
+                                                  //p.RealSize = finfo.Length;
+                            p.DateModified = finfo.LastWriteTime;
+                            p.Icon = BlinkIcom;
+                            p.maska = maska;
+                            p.Image = back;
+                            Photos.Add(p);
+                            if (Photos.IndexOf(p) == 0)
+                            {
+                                p.IsSelected = true;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex.Message);
+                        }
+                    }
+                    counter = false;
                 }
-                counter = false;
             }
             if (GalleryView.Contains(View) && !token.IsCancellationRequested)
             {
@@ -2328,6 +2339,47 @@ public partial class MainWindowViewModel : ObservableObject
     //    }
     //}
 
+    private async Task<bool> FileLostLoadEX(CancellationToken token,string path)
+    {
+        var imFiles = BrokerFile.IGetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
+        FileInfo finfo;
+        var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
+        string maska = @"pack://application:,,,/img/g1.png";
+        foreach (var imFile in imFiles)
+        {
+            if (token.IsCancellationRequested)
+            {
+                counter = false;
+                return false;
+            }
+            counter = true;
+            if (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    finfo = new FileInfo(imFile);
+                    Photo p = new Photo(imFile);
+                    p.Size = finfo.Length;//BrokerFile.Prdouble(finfo.Length);
+                                          //p.RealSize = finfo.Length;
+                    p.DateModified = finfo.LastWriteTime;
+                    p.Icon = BlinkIcom;
+                    p.maska = maska;
+                    p.Image = back;
+                    Photos.Add(p);
+                    if (Photos.IndexOf(p) == 0)
+                    {
+                        p.IsSelected = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+            counter = false;
+        }
+        return true;
+    }
 
     private async Task PhotosLoadImae(CancellationToken token)
     {
