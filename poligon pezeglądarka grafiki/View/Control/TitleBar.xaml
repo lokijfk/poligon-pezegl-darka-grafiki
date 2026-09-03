@@ -21,7 +21,7 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <!-- ikona i tytół -->
-        <Image Grid.Column="0" Width="22" Height="22" Margin="4" Source="/img/73042biohazard_109537(1).ico"/>
+        <Image Grid.Column="0" Width="22" Height="22" Margin="4" Source="pack://application:,,,/img/73042biohazard_109537(1).ico"/>
         <TextBlock Grid.Column="1" Margin="4 0 0 0" VerticalAlignment="Center" FontSize="14" Text="{Binding WindowTitle}">
             <!--TextBlock.Style>
                 <Style TargetType="TextBlock">

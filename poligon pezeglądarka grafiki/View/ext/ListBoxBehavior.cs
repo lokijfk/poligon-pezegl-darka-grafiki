@@ -16,7 +16,7 @@ public static class ListBoxBehavior
     #region bool ShouldSelectItemOnMouseUp
 
     //sam pomysł z dołączeniem zachowania nie jest zły ale wymaga modyfikacji
-
+    // pozwala poprawnie zaznaczać elementy z listy
     public static readonly DependencyProperty SelectItemOnMouseUpProperty =
         DependencyProperty.RegisterAttached(
             "SelectItemOnMouseUp",
@@ -228,7 +228,7 @@ public static class ListBoxBehavior
     #endregion ScrollToTopOnItemsSourceChange
 
     #region ScrollToTopOnItemsSourceChange Property
-
+    // po zmianie ItemsSource przewija listę do góry 
     public static readonly DependencyProperty ScrollToTopOnItemsSourceChangeProperty =
         DependencyProperty.RegisterAttached(
             "ScrollToTopOnItemsSourceChange",
@@ -318,3 +318,4 @@ public static class ListBoxBehavior
 
     #endregion
 }
+

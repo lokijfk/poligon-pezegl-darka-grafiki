@@ -88,6 +88,7 @@ internal class BrokerFile
     /// <returns></returns>
     public static IEnumerable<string> IGetFiles(string folder, string kryterium, string kierunek, string[] patternArray)
     {
+        //może zrobić lustrzaną metodę ale jako astnc task<IEnumerable<string>> żeby nie blokować wątku UI przy dużych katalogach??
         //string[] files = [];
         if (kierunek == "Rosnąco")
         {
@@ -132,6 +133,57 @@ internal class BrokerFile
                     .OrderByDescending(f => new FileInfo(f).Length);
             }
             
+        }
+        return Directory.EnumerateFiles(folder);
+    }
+
+    public static async Task<IEnumerable<string>> IGetFilesAsync(string folder, string kryterium, string kierunek, string[] patternArray)
+    {
+        //może zrobić lustrzaną metodę ale jako astnc task<IEnumerable<string>> żeby nie blokować wątku UI przy dużych katalogach??
+        //string[] files = [];
+        if (kierunek == "Rosnąco")
+        {
+            if (kryterium == "Nazwa")
+            {
+                /*
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(
+                    new FileInfo(f).Extension.ToLower())).OrderBy(f => new FileInfo(f).Name).ToArray();
+                */
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(
+                    new FileInfo(f).Extension.ToLower())).OrderBy(f => new FileInfo(f).Name);
+                /*
+                return files = Directory.GetFiles(folder).Where(f => patternArray.Contains(
+                    new FileInfo(f).Extension.ToLower())).OrderBy(f => new FileInfo(f).Name).ToArray();*/
+            }
+            else if (kryterium == "Data")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderBy(f => new FileInfo(f).CreationTime);
+            }
+            else if (kryterium == "Wielkość")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderBy(f => new FileInfo(f).Length);
+            }
+        }
+        else
+        {
+            if (kryterium == "Nazwa")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).Name);
+            }
+            else if (kryterium == "Data")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).CreationTime);
+            }
+            else if (kryterium == "Wielkość")
+            {
+                return Directory.EnumerateFiles(folder).Where(f => patternArray.Contains(new FileInfo(f).Extension.ToLower()))
+                    .OrderByDescending(f => new FileInfo(f).Length);
+            }
+
         }
         return Directory.EnumerateFiles(folder);
     }

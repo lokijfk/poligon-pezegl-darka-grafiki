@@ -29,15 +29,14 @@ public partial class Gallery : UserControl
      */
     public bool edit = false;
     private ListBoxItem? selectedItem = null;
-
+    //private MainWindowViewModel _vm;// = new MainWindowViewModel();
 
 
     public Gallery()
     {
         InitializeComponent();
-
+        //_vm = (DataContext as MainWindowViewModel);// (MainWindowViewModel)this.DataContext;
     }
-
 
     #region TextBox events
     //tu gdzieś jest błąd który powoduje że po powrocie do textblock obrazy nie wyświetlają się na pełnym ekranie
@@ -180,11 +179,11 @@ public partial class Gallery : UserControl
     private void ViewSelectedImage(ListBox List, Photo ph)
     {
         int curentIndex = 0;
-        var mainWindowViewModel = DataContext as MainWindowViewModel;
-        if (ph != null && mainWindowViewModel != null && mainWindowViewModel.Photos != null)
+        var _vm = DataContext as MainWindowViewModel;
+        if (ph != null && _vm != null && _vm.Photos != null)
         {
-            var index = mainWindowViewModel.Photos.IndexOf(ph);
-            var photos = mainWindowViewModel.Photos; // przypisz do zmiennej, aby spełnić wymagania ref readonly
+            var index = _vm.Photos.IndexOf(ph);
+            var photos = _vm.Photos; // przypisz do zmiennej, aby spełnić wymagania ref readonly
             ViewWindow viewWindow = new()
             {
                 DataContext = new ViewWindowViewModel(index, in photos) // <-- poprawka: dodaj "in"
@@ -458,14 +457,14 @@ public partial class Gallery : UserControl
             //Debug.WriteLine("orginal source: "+e.Source.GetType().Name);
             //Debug.WriteLine("ListBox_Drop - upuszczono plik(effects != none): "+e.Effects.ToString());
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
-            MainWindowViewModel mv = (MainWindowViewModel)this.DataContext;
+            //MainWindowViewModel mv = (MainWindowViewModel)this.DataContext;
             if (e.KeyStates.HasFlag(DragDropKeyStates.ControlKey))
             {
-                mv.MoveFileToFolder(dataStrings, true);
+                (DataContext as MainWindowViewModel).MoveFileToFolder(dataStrings, true);
             }
             else
             {
-                mv.MoveFileToFolder(dataStrings, false);
+                (DataContext as MainWindowViewModel).MoveFileToFolder(dataStrings, false);
             }
             /*
             
@@ -506,7 +505,7 @@ public partial class Gallery : UserControl
         {
             string[] dataStrings = (string[])e.Data.GetData(DataFormats.FileDrop);
             //pobieranie wzorców rozszezeń z wspólnego punktu
-            string pattern = ((MainWindowViewModel)this.DataContext).Pattern;
+            string pattern = (DataContext as MainWindowViewModel).Pattern;
             Match m;
             foreach (var dataString in dataStrings)
             {
@@ -553,4 +552,28 @@ public partial class Gallery : UserControl
 
     #endregion DragDrop
 
+
+    private void Lista_ScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        
+        double verticalOffset = e.VerticalOffset;
+        //Debug.WriteLine(" przesunięto pasek: " + verticalOffset);
+        // Maksymalny zakres przewijania
+        double maxScrollable = e.ExtentHeight - e.ViewportHeight;
+        //jak obliczyć zakres procentowy bo interesuje mnie przesunięcie w procentach, np. o 50%
+        double scrollPercentage = (verticalOffset / maxScrollable) * 100;
+        //Debug.WriteLine(" Przesunięcie w procentach: " + (int)scrollPercentage);
+        // Sprawdzenie czy użytkownik przewinął do samego dołu
+        if((int)scrollPercentage >= 75)
+        {
+            //Debug.WriteLine(" Przewinięto do 75% listy");
+            //(DataContext as MainWindowViewModel).LoadPartFileList();
+            (DataContext as MainWindowViewModel).LoadPartFileList();
+        }
+    }
+
+    //private void ThumbinailView_Loaded(object sender, RoutedEventArgs e)
+    //{
+    //     (DataContext as MainWindowViewModel).GalleryLoaded();
+    //}
 }

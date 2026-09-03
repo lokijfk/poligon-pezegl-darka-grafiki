@@ -22,11 +22,11 @@
 	
   <ItemGroup>
     <EmbeddedResource Include="Img\73042biohazard_109537%281%29.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Content Include="Config\default.ini">
+    <Resource Include="Config\default.ini">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </Resource>
     <Resource Include="Img\00041-3739771558.jpg" />
     <Resource Include="Img\g1.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -46,7 +46,7 @@
   </ItemGroup>
 	<ItemGroup>
 		<Resource Include="Img\73042biohazard_109537(1).ico">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</Resource>
 	</ItemGroup>
 	

@@ -24,9 +24,9 @@
         Style="{StaticResource MaterialDesignWindow }" WindowStyle="None"    
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
         Background="{DynamicResource MaterialDesign.Brush.Background}" 
-        Icon="/img/73042biohazard_109537(1).ico"          
+        Icon="pack://application:,,,/img/73042biohazard_109537(1).ico"          
         >
-
+    
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="32" ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" GlassFrameThickness="0" CornerRadius="0" />
     </WindowChrome.WindowChrome>
@@ -62,6 +62,9 @@
         <i:EventTrigger EventName="StateChanged">
             <i:InvokeCommandAction Command="{Binding ButtonRefreshCommand,Mode=OneWay}" />
         </i:EventTrigger>
+        <!--<i:EventTrigger EventName="shown">
+            <i:InvokeCommandAction Command="{Binding InitializedCommand}" />
+        </i:EventTrigger>-->
     </i:Interaction.Triggers>
 
     <Border CornerRadius="5" BorderBrush="Indigo" BorderThickness="2" Padding="6" Background="Transparent">

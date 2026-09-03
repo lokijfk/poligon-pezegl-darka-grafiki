@@ -43,6 +43,11 @@ public partial class MainWindow : Window
     private TreeViewItem? menuSelectedItem = null;
     private System.Windows.Media.Brush temp = null;
 
+    //protected override void OnContentRendered(EventArgs e)
+    //{
+    //    base.OnContentRendered(e);
+
+    //}
 
     /// <summary>
     /// zmienne pomocnicze do rozwijania drzewa katalogów
@@ -655,6 +660,7 @@ public partial class MainWindow : Window
         (DataContext as MainWindowViewModel).MenuSelectedItem((TreeModel)menuSelectedItem.DataContext);
         _ = (DataContext as MainWindowViewModel).RefreshClipboardListenerResoult();
     }
+
     #endregion Menu Context
 
     #region EndGame
@@ -662,6 +668,5 @@ public partial class MainWindow : Window
 
 
     #endregion
-
 
 }

@@ -12,6 +12,7 @@
              d:DataContext="{d:DesignInstance vm:MainWindowViewModel}"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"  
              x:Name="ThumbinailView"
+             
              >
     <UserControl.Resources>
         <ResourceDictionary>
@@ -37,6 +38,7 @@
                  DragOver="ListBox_DragOver"  
                  SelectionMode="{Binding CurSelectionMode,Mode=TwoWay}"
                  Focusable="True"
+                 ScrollViewer.ScrollChanged="Lista_ScrollChanged"
                  >            
             <ListBox.ContextMenu>
                 <ContextMenu  materialDesign:MenuAssist.MenuItemsPresenterMargin="0"
@@ -176,6 +178,7 @@
                     <Setter Property="Background" Value="Transparent"/>
                     <!--Setter Property="ContextMenu" Value="{StaticResource listViewContextMenu}"/-->
                     <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListBox_PreviewMouseRightButtonDown" />
+                    
                 </Style>
             </ListBox.Style>      
         </ListBox>

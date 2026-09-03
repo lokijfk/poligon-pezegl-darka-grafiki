@@ -10,11 +10,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
-
 using System.Windows.Controls;
-
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Application = System.Windows.Application;
@@ -43,6 +42,9 @@ public partial class MainWindowViewModel : ObservableObject
     - dodać widok z miniaturami w liście prewijanej na dole i dużym podglądem na górze
 
     - dodać obsługę wielu monitorów
+
+    przejąeć zapiski w PhotosLoadImae(CancellationToken token)
+    dodać ładowanie krokowe listy miniatur, żeby nie blokować UI, bo przy dużej ilości plików to trwa długo i blokuje UI
     */
     #endregion notatki
 
@@ -51,8 +53,9 @@ public partial class MainWindowViewModel : ObservableObject
     //private readonly BrokerIni iniFile = BrokerIni.GetBroker();  
     private readonly BrokerIni BrokerIni = BrokerIni.GetBroker();
     //BrokerIni BrokerIni = App.Services.
-    private ImageSource BlinkIcom { get; set; } = PhotoHelper.CreateEmtpyBitmapSource();
-    
+    private ImageSource _BlinkIcom { get; set; } = PhotoHelper.CreateEmtpyBitmapSource();
+    private ImageSource _BackImage { get; set; } = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
+    private IEnumerable<string> _imFiles;// = await BrokerFile.IGetFilesAsync(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
     /// <summary>
     /// kolekcja zawierająca tablicę z osobnymi drzewami katalogów do przeglądu
     /// </summary>
@@ -216,7 +219,7 @@ public partial class MainWindowViewModel : ObservableObject
     /// zmienna wspomagająca wklejanie plików do katalogu wybranego w menu kontekstowym drzewa
     /// </summary>
     private TreeModel? MenuSelectedTreeItem = null;
-    private bool counter = false;
+    //private bool counter = false;
     private CancellationTokenSource? cts = null;
     private CancellationToken token;
     string[] GalleryView = ["Gallery", "Gallery2", "GaleryCan"];
@@ -946,7 +949,7 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 cts = new CancellationTokenSource();
                 token = cts.Token;                
-                await PhotosLoadImae(token);                
+                PhotosLoadImae(token);                
             }
         }
     }
@@ -1039,6 +1042,7 @@ public partial class MainWindowViewModel : ObservableObject
     public MainWindowViewModel(string path)
     {
         _init(path);
+        //_initFileList(path);
     }
 
     /// <summary>
@@ -1054,34 +1058,26 @@ public partial class MainWindowViewModel : ObservableObject
         MenuSort.Add(new("Rosnąco", (kierunek == "Rosnąco"),  "kierunek"));
         MenuSort.Add(new("Malejąco", (kierunek == "Malejąco"),  "kierunek"));
     }
+
+    //private string _iniPath = String.Empty;
     private void _init(string path)
     {
-        
-
         if (CurMainWindowState == WindowState.Minimized)
             CurMainWindowState = WindowState.Normal;
-
         // MenuSort.Add(new { NAme="Nazwa", IsChecked= false,Value= 0 });
-
         //uzupełnianie menu sortowania       
         LoadSortowanie(Sortowaniekryterium, Sortowaniekierunek);
-
         SwitchTglButton = SwitchToggleButton;
         SwitchThemeMode();
         ButtonRefresh();
         //tu upewnić się że katalog wyświetlany jak nie ma dzieci  to nie jest expand
         BuildTree(Path.GetDirectoryName(path));//to tu wskazuje katalog ostatnio urzyty i tu jest problem
-
         SelectedView = SelectedViewWindow;
-        //if (SelectedView == String.Empty)
-        //{
-        //    SelectedView = "Welcome";// to tylko zabezpieczenie nie powinno dojść do takiej sytuacji
-        //    // w sumie to można tu wywołać wyjątek
-        //    //SelectedView = DefaultSettings.SelectedView;
-        //    //SelectedViewWindow = SelectedView;
-        //}
+
         Debug.Assert(!string.IsNullOrEmpty(SelectedView), "SelectedView is null or empty in MainWindowViewModel _init");
         SelectedViewModel = CallMethod(SelectedView);
+        //_iniPath = path;
+        //_initFileList(path);
         //Debug.WriteLine("SelectedView:" + SelectedView);
         try
         {
@@ -1091,6 +1087,7 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 string pathFile = Path.GetDirectoryName(path);
                 //Debug.WriteLine($"ściezka do katalogu: {pathFile}");
+                // LoadFileList(path);
                 FileListLoad(pathFile, token);
             }
             else
@@ -1103,16 +1100,45 @@ public partial class MainWindowViewModel : ObservableObject
         {
             Debug.WriteLine(ex.ToString());
         }
-
-        
-        //DropCollor = Brushes.Red;
-        //Debug.WriteLine($"DropCollor set to: {DropCollor.ToString()}");
-
     }
+
+    //private void _initFileList(string path)
+    //{
+
+    //    //Debug.WriteLine("SelectedView:" + SelectedView);
+    //    //if(_iniPath == String.Empty)path = _iniPath;
+    //    try
+    //    {
+    //        cts = new CancellationTokenSource();
+    //        token = cts.Token;
+    //        if (!string.IsNullOrEmpty(path) && File.Exists(path))
+    //        {
+    //            string pathFile = Path.GetDirectoryName(path);
+    //            //Debug.WriteLine($"ściezka do katalogu: {pathFile}");
+    //            FileListLoad(pathFile, token);
+    //        }
+    //        else
+    //        {
+    //            //Debug.WriteLine("nie znaleziono pliku: " + path);
+    //            FileListLoad(SelectedTreePath, token);
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Debug.WriteLine(ex.ToString());
+    //    }
+    //}
+
+
+    //public void GalleryLoaded()
+    //{
+    //    _initFileList(_iniPath);
+    //    //MessageBox.Show("GalleryLoaded");
+    //}
 
     #endregion
 
-    #region wywołania Control
+            #region wywołania Control
 
     private object CallMethod(string p, object?[]? x = null)
     {
@@ -1207,7 +1233,7 @@ public partial class MainWindowViewModel : ObservableObject
             //string ViewPath = SelectedTreePath;            
             //var files = BrokerFile.IGetFiles(ViewPath, kryterium, kierunek, patternArray);  
             
-            Photos.Clear();
+            Photos.Clear();// to zmienić, zrobić zastępowanie elementów w Photos, żeby nie było zawieszania się galerii przy dużej ilości plików a nadmiar usuwać po załadowaniu plików, urzyć .Remove
             //foreach (var file in files)
             foreach (var file in PhotosKopia)
             {
@@ -1241,7 +1267,7 @@ public partial class MainWindowViewModel : ObservableObject
             if (cts != null)
             {
                 cts.Cancel();
-                while (!cts.IsCancellationRequested && counter)
+                while (!cts.IsCancellationRequested)
                 {
                     //Thread.SpinWait(50000);
                     Debug.WriteLine("RenameFolder - nadal czekam ...");
@@ -1249,7 +1275,7 @@ public partial class MainWindowViewModel : ObservableObject
                 }
                 //cts.Dispose();
             }
-            if (cts == null || (cts.IsCancellationRequested && !counter))
+            if (cts == null || cts.IsCancellationRequested )
             {
                 var xuz = treeModel.GetSelfFromParent();
                 bool x = BrokerFile.RenameFilDirectory(treeModel.Path, newNameX);
@@ -2027,7 +2053,7 @@ public partial class MainWindowViewModel : ObservableObject
                 }
                 else
                 {
-                    p.Image = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
+                    p.Image = _BackImage;
                 }
                 if (pos == -1)
                 {
@@ -2200,16 +2226,41 @@ public partial class MainWindowViewModel : ObservableObject
     }
 
     private void ReloadFileList(TreeModel treeModel)
+    {        
+
+        try
+        {
+            if (CtsReload())
+            {
+                kolejka = 0;
+                if (treeModel != null)
+                {
+                    string path = treeModel.Path;
+                    SelectedTreePath = path;
+                    FileListLoad(path, cts.Token);
+                }
+            }
+            else
+            {
+                Debug.WriteLine("ReloadFileList: CtsReload failed");//tu trzeba dodać wywołanie ... błędu
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+    }
+
+    private bool CtsReload()
     {
-        //Debug.WriteLine("ReloadFileList");
         if (cts != null)
         {
             try
             {
                 cts.Cancel();
-                while (!cts.IsCancellationRequested && counter)
+                while (!cts.IsCancellationRequested)
                 {
-                    Debug.WriteLine("ReloadFileList: still waiting...");
+                    //Debug.WriteLine("ReloadFileList: still waiting...");
                     Thread.SpinWait(5000);
                 }
                 cts.Dispose();
@@ -2217,27 +2268,51 @@ public partial class MainWindowViewModel : ObservableObject
             }
             catch (Exception ex)
             {
-
                 Debug.WriteLine(ex.ToString());
+                return false;
             }
         }
-        try
+        if (cts == null)
         {
-            if (treeModel != null)
-            {
-                string path = treeModel.Path;
-                SelectedTreePath = path;
-                if (cts == null) cts = new CancellationTokenSource();
-                FileListLoad(path, cts.Token);
-            }
+            cts = new CancellationTokenSource();
+            //Debug.WriteLine($"ReloadFileList - cts sksowano !! CTS:{cts != null} cts.IsCancellationRequested: {cts.IsCancellationRequested}");
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex.Message);
-        }
+        //else Debug.WriteLine("ReloadFileList - cts nie zostałskasowany");
 
-
+        return true;
     }
+
+
+    private bool _lock = false;// przenieść do zmiennych
+     private int kolejka = 0;//kolejka wywołań metody LoadPartFileList, żeby nie wywoływać jej w nieskończoność przy przesuwaniu paska przewijania do końca
+    /// <summary>
+    /// chodzi ale są poważne błędy jak się przesunie pasek do końca myszką, koejkuje się wywołanie
+    /// </summary>
+    public async void LoadPartFileList()
+    {
+        if (FileLoaded >= FilesToLoad)
+        {
+            kolejka = 0;
+            return;
+        }
+        //tu dodać kolejkę wywołań metody, to da pewną płynność w przewijaniu listy plików, bo ktośmoże chcieć przesunąć do końca
+        // trzeba dodać też kasowanie tej kolejki jak już zostazostanie wszystko załadowane, bo inaczej będzie się wywoływać metoda w nieskończoność
+
+        if (_lock)
+        {
+            kolejka++;// ale jak ją później automatycznie uruchomić ?? trzeba dodać timer który będzie sprawdzał czy _lock jest false i jeżeli tak to wywołać metodę LoadPartFileList
+            return;
+        }
+        //_lock = true;        
+        string View = SelectedView.Split('.').Last();       
+        await FileLostLoadEX(cts.Token, 100);
+        if (GalleryView.Contains(View) && !cts.Token.IsCancellationRequested)
+        {            
+            PhotosLoadImae(cts.Token);
+        }
+    }
+
+    
 
     /// <summary>
     /// ładuje kolekcje FilesList i Photos według podanej ścieżki
@@ -2247,112 +2322,43 @@ public partial class MainWindowViewModel : ObservableObject
     /// <param name="path"></param>
     /// <param name="token"></param>
     private async void FileListLoad(string path, CancellationToken token)
-    {        
+    {
         Photos.Clear();
         if (Directory.Exists(path))
         {
-            SelectedTreeItem = path;
-            var imFiles = BrokerFile.IGetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
-            FileInfo finfo;
-            var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
-            string maska = @"pack://application:,,,/img/g1.png";            
+            SelectedTreeItem = path;     
             string View = SelectedView.Split('.').Last();
             FilesToLoad = GetCountFiles(path);
-            //to poniżej zmienić na wywpływaną funkcję
-            if (imFiles.Count() > 100)
-            {
-                Debug.WriteLine($"FileListLoad: Loading {imFiles.Count()} files, this may take a while...");
-                bool x = await FileLostLoadEX(token, path);
-                if (x == false) return;
-            }
-            else
-            {
-                foreach (var imFile in imFiles)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        counter = false;
-                        return;
-                    }
-                    counter = true;
-                    if (!token.IsCancellationRequested)
-                    {
-                        try
-                        {
-                            finfo = new FileInfo(imFile);
-                            Photo p = new Photo(imFile);
-                            p.Size = finfo.Length;//BrokerFile.Prdouble(finfo.Length);
-                                                  //p.RealSize = finfo.Length;
-                            p.DateModified = finfo.LastWriteTime;
-                            p.Icon = BlinkIcom;
-                            p.maska = maska;
-                            p.Image = back;
-                            Photos.Add(p);
-                            if (Photos.IndexOf(p) == 0)
-                            {
-                                p.IsSelected = true;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex.Message);
-                        }
-                    }
-                    counter = false;
-                }
-            }
+            FileLoaded = 0;
+            _imFiles = await BrokerFile.IGetFilesAsync(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);            
+            await FileLostLoadEX(token, 100);//włączone ograniczenie do 200 pierwszych plików            
             if (GalleryView.Contains(View) && !token.IsCancellationRequested)
             {
                // Debug.WriteLine("FileListLoad Starting PhotosLoadImae...");
-                FileLoaded = 0;//teraz jest to wymagane żeby liczyć od początku
-                await PhotosLoadImae(token);
+                //FileLoaded = 0;//teraz jest to wymagane żeby liczyć od początku
+                PhotosLoadImae(token);
             }
-            // tu wywala błąd przy przenoszeniu katalogów
-            if (imFiles.Count() == 0) FileLoaded = 0;
         }
     }
 
+
     /// <summary>
-    /// przeniesienie ładowania obrazów do osobnej metody, ponowna iteracja kolekcji
+    /// ładuje kolekcję Photos plikami według podanej ścieżki (bez obrazów), ograniczenie do count plików
     /// </summary>
     /// <param name="token"></param>
+    /// <param name="path"></param>
+    /// <param name="count"></param>
     /// <returns></returns>
-    //private async Task PhotosLoadImae(List<Photo> PhotoSKopia, CancellationToken token)
-    //{
-    //    //Debug.WriteLine($"PhotosLoadImae - token: {token}")
-    //    if (PhotoSKopia.Count > 0 && !token.IsCancellationRequested)
-    //    {
-    //        try
-    //        {
-    //            for (var  i = 0; i < PhotoSKopia.Count && !token.IsCancellationRequested; i++)                
-    //            {
-    //                var photo = PhotoSKopia[i];
-    //                FileLoaded = i+1;
-    //                await photo.Load(token);
-    //                //_= PhotoHelper.Load(photo, token);
-    //            }
-    //        }
-    //        catch(Exception ex)
-    //        {
-    //            Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
-    //        }
-    //    }
-    //}
-
-    private async Task<bool> FileLostLoadEX(CancellationToken token,string path)
-    {
-        var imFiles = BrokerFile.IGetFiles(path, Sortowaniekryterium, Sortowaniekierunek, patternArray);
-        FileInfo finfo;
-        var back = new BitmapImage(new Uri(@"pack://application:,,,/img/g1.png"));
+    private async Task FileLostLoadEX(CancellationToken token, int count = 0)
+    {        
+        FileInfo finfo;//potrzebne do pobrania rozmiaru pliku i daty modyfikacji       
         string maska = @"pack://application:,,,/img/g1.png";
-        foreach (var imFile in imFiles)
-        {
-            if (token.IsCancellationRequested)
-            {
-                counter = false;
-                return false;
-            }
-            counter = true;
+        IEnumerable<string> imFilesLimited;
+        if(count == 0) imFilesLimited = _imFiles;
+        else imFilesLimited = _imFiles.Skip(FileLoaded).Take(count);
+        _lock = true;
+        foreach (var imFile in imFilesLimited)
+        {            
             if (!token.IsCancellationRequested)
             {
                 try
@@ -2362,9 +2368,10 @@ public partial class MainWindowViewModel : ObservableObject
                     p.Size = finfo.Length;//BrokerFile.Prdouble(finfo.Length);
                                           //p.RealSize = finfo.Length;
                     p.DateModified = finfo.LastWriteTime;
-                    p.Icon = BlinkIcom;
+                    p.Icon = _BlinkIcom;
                     p.maska = maska;
-                    p.Image = back;
+                    p.Image = _BackImage;
+                    //obciąża sama ilość rekordów w liście, nawet jak są prawie puste, trzeba to przerobić na ładowanie sukcesywne, w partiach
                     Photos.Add(p);
                     if (Photos.IndexOf(p) == 0)
                     {
@@ -2376,40 +2383,42 @@ public partial class MainWindowViewModel : ObservableObject
                     Debug.WriteLine(ex.Message);
                 }
             }
-            counter = false;
         }
-        return true;
+        if (_imFiles.Count() == 0) FileLoaded = 0;
     }
 
-    private async Task PhotosLoadImae(CancellationToken token)
+    private async void PhotosLoadImae(CancellationToken token, int count = 100)
     {
         if (Photos.Count > 0 && !token.IsCancellationRequested)
         {  
             try
             {                   
                 string path = string.Empty;
-                for (var i = 0; i < Photos.Count && !token.IsCancellationRequested; i++)
+                var PhotosPart = Photos.Skip(FileLoaded).Take(count).ToList();//ograniczenie do 100 plików, potem można zwiększyć
+                foreach (var i in Enumerable.Range(FileLoaded, PhotosPart.Count))
                 {
+                    if(token.IsCancellationRequested) return;//przerwanie ładowania zdjęć, zabezpieczenie ma wyłączać ja zmienimy katalog w trakcie ładowania zdjęć
                     var photo = Photos[i];
                     if (photo.Image is BitmapImage BI) 
                     {
                         path = BI.UriSource.AbsolutePath.ToString();
                     }
+                    //tu na razie jest tak do póki nie wymyślę czegoś lepszego
                     if (path == "/img/g1.png")
-                    {
-                        FileLoaded++; //=++licznik;//gdzieś następuje dodanie kolejnych liczb do FileLoaded, trzeba to sprawdzićS
-                        //Debug.WriteLine($"PhotosLoadImae: Loading {photo.Name}, FileLoaded: {FileLoaded}, i: {i}, licznik: {licznik}");
+                    {                        
                         await photo.Load(token);
-                        //_= PhotoHelper.Load(photo,token,true);
+                        FileLoaded++; //=++licznik;//gdzieś następuje dodanie kolejnych liczb do FileLoaded, trzeba to sprawdzićS
                     }
                     path = string.Empty;
                 }
+                _lock = false;//odblokowanie kolejnego wywołania stronicowania, przydało by się to jakoś inaczej zrobić
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"PhotosLoadImae: {ex.ToString()}");
             }
         }
+        //_lock = false;
     }
 
     /// <summary>
@@ -2687,11 +2696,20 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private void Test()
-    {
-        Debug.WriteLine("Test");
-    }
+    //[RelayCommand]
+    //private void Test()
+    //{
+    //    Debug.WriteLine("Test");
+    //}
+
+    //[RelayCommand]
+    //private void Initialized()
+    //{
+    //    Debug.WriteLine("onInitialized");
+    //    MessageBox.Show("onInitialized");
+    //}
+
+
 
     [ObservableProperty]
     private string _ContentMax = string.Empty;

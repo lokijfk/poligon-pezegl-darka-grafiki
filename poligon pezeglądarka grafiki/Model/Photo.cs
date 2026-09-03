@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-
+using System.Windows.Media.Media3D;
+using System.Windows.Shapes;
+//using NetVips;
 
 
 namespace poligon_pezeglądarka_grafiki.Model;
@@ -73,6 +75,23 @@ public partial class Photo : ObservableObject, IDisposable
     /// <returns></returns>
     public async Task Load(CancellationToken token = default(CancellationToken), bool x = true)
     {
+        /*
+         * Jeśli aplikacja WPF zacznie zwalniać przy podejściu GPU przez narzut pamięci,
+         * zamień kod na ekstremalnie szybki odpowiednik CPU:
+        // Wymaga NuGeta: NetVips i NetVips.Native
+        using NetVips;
+
+        Parallel.ForEach(inputPaths, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, path =>
+        {
+            string outputPath = Path.Combine(outputFolder, Path.GetFileName(path));
+            // Wykorzystuje libvips: ładuje tylko fragmenty, niezwykle szybkie skalowanie CPU
+            using var image = Image.Thumbnail(path, width, height: height, size: Enums.Size.Force);
+            image.WriteToFile(outputPath);
+        });
+        */
+
+
+
         bool errored = false;
         if (token.IsCancellationRequested && x)
         {
@@ -90,6 +109,10 @@ public partial class Photo : ObservableObject, IDisposable
         {
             Image = await Task.Run(() =>
             {
+                //string outputPath = System.IO.Path.Combine(outputFolder, System.IO.Path.GetFileName(this.Path));
+                //using var image = NetVips.Image.Thumbnail(this.Path, width, height: height, size: Enums.Size.Force);
+                //image.WriteToFile(outputPath);
+                
                 using (var fileStream = new FileStream(
                     Path, FileMode.Open, FileAccess.Read))
                 {

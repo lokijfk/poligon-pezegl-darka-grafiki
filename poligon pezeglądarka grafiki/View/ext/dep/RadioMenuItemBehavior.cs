@@ -7,20 +7,23 @@ using System.Windows.Data;
 
 namespace poligon_pezeglądarka_grafiki.View.ext;
 
-class RadioMenuItemBehavior : Behavior<MenuItem>
+/// <summary>
+/// nie urzywane, ale zostawione na wszelki wypadek, bo może się przydać
+/// </summary>
+class RadioMenuItemBehaviorX : Behavior<MenuItem>
 {
     public static readonly DependencyProperty GroupNameProperty =
         DependencyProperty.Register(
             nameof(GroupName),
             typeof(string),
-            typeof(RadioMenuItemBehavior),
+            typeof(RadioMenuItemBehaviorX),
             new PropertyMetadata(null));
 
     public static readonly DependencyProperty IsCheckedProperty =
         DependencyProperty.Register(
             nameof(IsChecked),
             typeof(bool),
-            typeof(RadioMenuItemBehavior),
+            typeof(RadioMenuItemBehaviorX),
             new FrameworkPropertyMetadata(
                 false,
                 FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
